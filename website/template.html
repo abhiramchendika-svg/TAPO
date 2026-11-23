@@ -1,0 +1,1016 @@
+<title>TAPO Rewards Wallet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="TAPO: an India-first multi-card rewards wallet prototype. Capstone project, Product Engineering.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&text=%E2%82%B9&display=swap">
+<style>
+/*__FONT_FACES__*/
+
+/* Layout: a dark "gallery at night" — cards float under spotlights, content sits in one 1160px column
+   that breaks into split hero / grids on wide screens and stacks to a single column on phones. */
+:root {
+  --night: #0B0E18;
+  --night-2: #10142200;
+  --surface: #151A29;
+  --surface-2: #1C2236;
+  --line: #262D42;
+  --cream: #ECE9E2;
+  --ink: #F2EFE8;
+  --muted: #9AA3B8;
+  --subtle: #6C7590;
+  --green: #6FD9A4;
+  --green-bg: #12291F;
+  --amber: #F5C66B;
+  --amber-bg: #2C2310;
+  --red: #FF9A8B;
+  --gold: #D8B96A;
+  --font-display: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --max: 1160px;
+  --radius: 22px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60;
+  background: var(--night);
+}
+a { color: inherit; }
+img, svg { max-width: 100%; }
+:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; border-radius: 8px; }
+.wrap {
+  max-width: var(--max); margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(32px, 5vw, 54px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.02; }
+h3 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+p { margin: 0; }
+.kicker {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0.01em;
+}
+.kicker::before { content: ""; width: 26px; height: 1px; background: var(--subtle); }
+.lede { color: var(--muted); font-size: clamp(17px, 2vw, 19px); max-width: 62ch; }
+
+/* ------------------------------------------------------------------ nav */
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
+  background: color-mix(in srgb, var(--night) 82%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+.nav .wrap { display: flex; align-items: center; gap: 24px; height: 66px; }
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.brand b { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: 0.14em; }
+.nav-links { display: flex; gap: 26px; margin-left: auto; font-size: 15px; font-weight: 500; }
+.nav-links a { text-decoration: none; color: var(--muted); transition: color .2s; }
+.nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--ink); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent;
+  font: 700 16px/1 var(--font-body); text-decoration: none; cursor: pointer;
+  transition: transform .2s, background .2s, border-color .2s;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--cream); color: var(--night); }
+.btn-primary:hover { background: #fff; }
+.btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+.btn-ghost:hover { border-color: var(--muted); }
+.btn-sm { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.menu-btn { display: none; margin-left: auto; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+@media (max-width: 860px) {
+  .nav-links { display: none; }
+  .nav .nav-cta { display: none; }
+  .menu-btn { display: inline-grid; place-items: center; }
+  .nav.open .nav-links {
+    display: flex; flex-direction: column; gap: 4px; position: absolute; left: 0; right: 0; top: 66px;
+    background: var(--night); border-bottom: 1px solid var(--line);
+    padding: 12px max(20px, env(safe-area-inset-right, 0px)) 20px max(20px, env(safe-area-inset-left, 0px));
+  }
+  .nav.open .nav-links a { padding: 12px 0; font-size: 18px; color: var(--ink); }
+}
+
+/* ------------------------------------------------------------------ hero */
+.hero { position: relative; padding-block: clamp(40px, 7vw, 88px) clamp(48px, 7vw, 96px); overflow: hidden; }
+.hero::before {
+  content: ""; position: absolute; inset: -20% -10% auto 35%; height: 120%;
+  background: radial-gradient(closest-side, rgba(236,233,226,.10), transparent 70%);
+  pointer-events: none;
+}
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; position: relative; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  font-size: 13px; font-weight: 500; line-height: 1.2;
+}
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+.hero h1 { font-size: clamp(44px, 7.4vw, 92px); font-weight: 900; letter-spacing: -0.045em; line-height: .94; }
+.hero h1 em { font-style: normal; color: var(--green); }
+.hero .lede { margin-top: 24px; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+.hero-proof { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 44px; padding-top: 26px; border-top: 1px solid var(--line); }
+.hero-proof div { min-width: 0; }
+.hero-proof strong { display: block; font-family: var(--font-display); font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+.hero-proof span { font-size: 14px; color: var(--muted); }
+
+/* floating card stage */
+.stage { position: relative; aspect-ratio: 1 / 0.95; max-width: 100%; perspective: 1400px; }
+.stage .floor {
+  position: absolute; left: 12%; right: 12%; bottom: 2%; height: 16%;
+  background: radial-gradient(closest-side, rgba(236,233,226,.16), transparent);
+  filter: blur(6px);
+}
+.float-card { position: absolute; width: 68%; transform-style: preserve-3d; will-change: transform; }
+.float-card:nth-child(1) { left: 2%; top: 8%; --r: -14deg; --d: 0s; z-index: 1; }
+.float-card:nth-child(2) { right: 0; top: 30%; --r: 9deg; --d: -1.6s; z-index: 2; }
+.float-card:nth-child(3) { left: 14%; top: 52%; --r: -4deg; --d: -3.1s; z-index: 3; }
+.float-card .inner { animation: bob 6s ease-in-out infinite; animation-delay: var(--d); transform: rotate(var(--r)); }
+@keyframes bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+@media (prefers-reduced-motion: reduce) { .float-card .inner { animation: none; } }
+.stage-note {
+  position: absolute; right: 2%; bottom: 0; z-index: 5;
+  display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); max-width: 78%;
+}
+.stage-note b { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--amber); }
+.stage-note small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+
+/* card face (matches the app's CardTile) */
+.cardface {
+  position: relative; aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%;
+  padding: 6% 7%; color: #fff; overflow: hidden; isolation: isolate;
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000));
+  box-shadow: 0 30px 60px -20px color-mix(in srgb, var(--c) 70%, transparent), 0 0 0 1px rgba(255,255,255,.08) inset;
+  font-family: var(--font-body);
+}
+.cardface::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(circle at 110% -10%, transparent 30%, rgba(255,255,255,.07) 30.5%, transparent 31%, transparent 40%, rgba(255,255,255,.06) 40.5%, transparent 41%, transparent 50%, rgba(255,255,255,.05) 50.5%, transparent 51%),
+    linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%);
+}
+.cf-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cf-name { font-weight: 700; font-size: clamp(11px, 1.55vw, 17px); letter-spacing: .02em; text-transform: uppercase; }
+.cf-issuer { font-size: clamp(8px, 1vw, 11px); opacity: .72; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+.cf-sample { font: 700 clamp(7px, .9vw, 10px)/1 var(--font-mono); letter-spacing: .12em; padding: 4px 6px; border-radius: 4px; background: rgba(255,255,255,.18); }
+.cf-chip {
+  position: absolute; left: 7%; top: 40%; width: 13%; aspect-ratio: 1.3; border-radius: 14%;
+  background: linear-gradient(135deg, #F1DDA0, var(--gold) 55%, #A88A45);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
+}
+.cf-chip::after { content: ""; position: absolute; inset: 28% 0; border-block: 1px solid rgba(0,0,0,.25); }
+.cf-tap { position: absolute; left: 24%; top: 41%; width: 7%; opacity: .85; }
+.cf-num { position: absolute; left: 7%; bottom: 22%; font: 500 clamp(10px, 1.5vw, 16px)/1 var(--font-mono); letter-spacing: .14em; }
+.cf-bottom { position: absolute; left: 7%; right: 7%; bottom: 8%; display: flex; justify-content: space-between; align-items: flex-end; }
+.cf-holder { font-size: clamp(7px, .9vw, 10px); letter-spacing: .1em; opacity: .8; text-transform: uppercase; }
+.cf-net { font-weight: 900; font-size: clamp(10px, 1.5vw, 16px); font-style: italic; letter-spacing: .02em; }
+
+/* ------------------------------------------------------------------ sections */
+section { scroll-margin-top: 80px; }
+.section { padding-block: clamp(64px, 9vw, 120px); border-top: 1px solid var(--line); }
+.section-head { display: grid; gap: 18px; margin-bottom: clamp(32px, 5vw, 56px); max-width: 760px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+
+/* recommender */
+.reco { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
+.reco-controls { padding: 26px; display: grid; gap: 22px; }
+.label { font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 10px; display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink); font: 500 15px/1 var(--font-body); cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--cream); color: var(--night); border-color: var(--cream); font-weight: 700; }
+.amount {
+  display: flex; align-items: center; gap: 8px; padding: 0 18px; min-height: 60px; border-radius: 16px;
+  background: var(--night); border: 1px solid var(--line);
+}
+.amount:focus-within { border-color: var(--cream); }
+.amount span { font-family: "Inter", var(--font-body); font-size: 26px; font-weight: 700; color: var(--muted); }
+.reco-controls > *, .drop > *, .result > * { min-width: 0; }
+.amount input {
+  flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; color: var(--ink);
+  font: 900 32px/1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.note { font-size: 13.5px; color: var(--subtle); line-height: 1.5; }
+.reco-results { padding: 10px; display: grid; gap: 10px; }
+.rank {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+  padding: 16px 18px; border-radius: 16px; background: var(--surface-2); border: 1px solid transparent;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s;
+}
+.rank.best { border-color: color-mix(in srgb, var(--green) 45%, transparent); background: linear-gradient(180deg, var(--green-bg), var(--surface-2)); }
+.rank .pos { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font: 700 14px/1 var(--font-mono); background: var(--night); color: var(--muted); }
+.rank.best .pos { background: var(--green); color: var(--night); }
+.rank .who { min-width: 0; }
+.rank .who b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16.5px; }
+.rank .who b i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+.rank .why { font-size: 13.5px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+.rank .why.cap { color: var(--amber); }
+.rank .val { text-align: right; font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rank.best .val { color: var(--green); }
+.bar { height: 4px; border-radius: 4px; background: var(--night); margin-top: 10px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; background: var(--c); transition: width .5s cubic-bezier(.2,.8,.2,1); }
+.verdict { padding: 14px 18px 8px; font-size: 15px; color: var(--muted); }
+.verdict b { color: var(--ink); }
+
+/* statement import demo */
+.import { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.drop {
+  padding: 30px; display: grid; gap: 18px; text-align: left;
+  border: 1.5px dashed var(--line); background: repeating-linear-gradient(135deg, transparent 0 14px, rgba(255,255,255,.012) 14px 28px), var(--surface);
+  transition: border-color .2s, background .2s;
+}
+.drop.over { border-color: var(--cream); background: var(--surface-2); }
+.drop .icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
+.drop-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.select {
+  min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--night); color: var(--ink); font: 500 15px var(--font-body); max-width: 100%;
+}
+.privacy { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
+.privacy svg { flex: none; margin-top: 3px; }
+.result { padding: 26px; display: grid; gap: 20px; }
+.result-empty { color: var(--muted); display: grid; gap: 14px; align-content: center; min-height: 260px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat { padding: 14px; border-radius: 14px; background: var(--surface-2); min-width: 0; }
+.stat small { display: block; font-size: 12.5px; color: var(--muted); }
+.stat b { display: block; font-family: var(--font-display); font-size: clamp(18px, 2.4vw, 26px); font-weight: 900; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat.warn b { color: var(--amber); }
+.catbars { display: grid; gap: 12px; }
+.catbar .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 500; }
+.catbar .top span:last-child { font-variant-numeric: tabular-nums; color: var(--muted); }
+.tips { display: grid; gap: 8px; }
+.tip { padding: 12px 14px; border-radius: 12px; background: var(--amber-bg); color: #F8DFA6; font-size: 14.5px; line-height: 1.45; }
+.rows { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; font-size: 14px; }
+.rows div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; color: var(--muted); }
+.rows div span:first-child { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.err { color: var(--red); font-size: 14.5px; }
+
+/* phones */
+.phones {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 22px;
+  overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 24px; scrollbar-width: thin;
+}
+.phone { scroll-snap-align: start; display: grid; gap: 14px; }
+.screen {
+  aspect-ratio: 9 / 18.5; border-radius: 34px; padding: 10px; background: #05070D;
+  border: 1px solid #2A3147; box-shadow: 0 40px 60px -30px rgba(0,0,0,.8);
+}
+.screen-in { height: 100%; border-radius: 26px; background: var(--night); overflow: hidden; padding: 18px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; }
+.s-bar { display: flex; justify-content: space-between; align-items: center; }
+.s-h { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.02em; line-height: 1.05; }
+.s-k { color: var(--muted); font-size: 10.5px; }
+.s-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+.s-tile b { font-family: var(--font-display); font-weight: 900; font-size: 17px; display: block; }
+.s-row { display: flex; gap: 8px; }
+.s-row > * { flex: 1; min-width: 0; }
+.s-li { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.s-li:last-child { border-bottom: 0; }
+.s-bar-track { height: 5px; border-radius: 3px; background: var(--surface-2); margin-top: 5px; overflow: hidden; }
+.s-bar-track i { display: block; height: 100%; }
+.s-tabs { margin-top: auto; display: flex; justify-content: space-between; padding: 8px 4px 0; border-top: 1px solid var(--line); color: var(--subtle); font-size: 9.5px; }
+.s-tabs .on { color: var(--ink); font-weight: 700; }
+.phone h3 { font-size: 18px; }
+.phone p { color: var(--muted); font-size: 15px; }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; counter-reset: s; }
+.step { padding: 28px; display: grid; gap: 12px; align-content: start; }
+.step .n { font: 700 13px/1 var(--font-mono); color: var(--subtle); }
+.step p { color: var(--muted); font-size: 16px; }
+
+/* safety */
+.safety { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 24px; }
+.never { padding: 28px; display: grid; gap: 18px; align-content: start; }
+.never-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.never-list span {
+  padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--night);
+  font-weight: 500; font-size: 15px; text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; color: var(--muted);
+}
+.checks { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding: 18px 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: 15.5px; }
+.checks li b { display: block; font-size: 16.5px; margin-bottom: 2px; }
+.checks li span { color: var(--muted); }
+
+/* engineering */
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+.metric { padding: 26px; border-right: 1px solid var(--line); min-width: 0; }
+.metric:last-child { border-right: 0; }
+.metric b { display: block; font-family: var(--font-display); font-weight: 900; font-size: clamp(34px, 4.6vw, 52px); letter-spacing: -0.04em; line-height: 1; }
+.metric span { display: block; margin-top: 10px; font-size: 14.5px; color: var(--muted); }
+.arch { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.arch-diagram { padding: 26px; display: grid; gap: 10px; font-size: 14.5px; }
+.layer { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--night); }
+.layer b { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+.layer .mods { display: flex; flex-wrap: wrap; gap: 6px; }
+.layer .mods code { font: 500 12.5px var(--font-mono); padding: 4px 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink); }
+.arrow { text-align: center; color: var(--subtle); font-family: var(--font-mono); font-size: 12px; }
+.stack { padding: 26px; display: grid; gap: 16px; align-content: start; }
+.stack dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 12px 18px; font-size: 15px; }
+.stack dt { color: var(--muted); }
+.stack dd { margin: 0; }
+
+/* validation + roadmap */
+.hyp { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 620px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.hyp th, .hyp td { text-align: left; padding: 16px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.hyp tr:last-child td { border-bottom: 0; }
+.hyp th { font-size: 13px; font-weight: 500; color: var(--muted); }
+.hyp td:first-child { font-family: var(--font-mono); color: var(--subtle); }
+.status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--amber-bg); color: var(--amber); white-space: nowrap; }
+.road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+.road .panel { padding: 26px; display: grid; gap: 12px; align-content: start; }
+.road ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; font-size: 15.5px; }
+.road .when { font: 700 12.5px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.road .now .when { color: var(--green); }
+.road .next .when { color: var(--amber); }
+.road .later .when { color: var(--muted); }
+
+/* team */
+.team { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.member { padding: 22px; display: grid; gap: 14px; justify-items: start; }
+.avatar { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font: 900 18px var(--font-display); }
+.member small { color: var(--muted); font-size: 14px; display: block; }
+.placeholder { color: var(--subtle); font-style: italic; }
+
+/* footer */
+footer { border-top: 1px solid var(--line); padding-block: 40px 56px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: grid; gap: 18px; }
+footer .row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; }
+
+
+/* ------------------------------------------------------------------ responsive */
+@media (max-width: 980px) {
+  .hero .wrap, .reco, .import, .safety, .arch { grid-template-columns: minmax(0, 1fr); }
+  .stage { max-width: 560px; width: 100%; margin: 0 auto; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric:nth-child(2) { border-right: 0; }
+  .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .team { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .steps, .road { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .stats .stat:last-child { grid-column: 1 / -1; }
+  .hero-proof { gap: 20px; }
+  .rank { grid-template-columns: 30px minmax(0, 1fr); }
+  .rank .val { grid-column: 2; text-align: left; font-size: 20px; }
+}
+@media (max-width: 460px) {
+  body { font-size: 16px; }
+  .team { grid-template-columns: minmax(0, 1fr); }
+  .metric { padding: 20px; }
+  .reco-controls, .drop, .result, .never, .step, .stack, .arch-diagram { padding: 20px; }
+  .stage-note { right: 0; max-width: 92%; }
+}
+</style>
+
+<!-- ============================================================ NAV -->
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="TAPO home">
+      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#D9D4C7"/></linearGradient></defs>
+        <rect width="40" height="40" rx="11" fill="url(#lt)"/>
+        <rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/>
+        <rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/>
+        <rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/>
+        <path d="M30 12.5a6 6 0 0 1 0 9" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <b>TAPO</b>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Sections">
+      <a href="#try">Try it</a>
+      <a href="#import">Your statement</a>
+      <a href="#product">Product</a>
+      <a href="#safety">Safety</a>
+      <a href="#engineering">Engineering</a>
+      <a href="#validation">Validation</a>
+      <a href="#team">Team</a>
+    </nav>
+    <a class="btn btn-primary btn-sm nav-cta" href="#try">Find my best card</a>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+<!-- ============================================================ HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="badge-row">
+        <span class="pill"><span class="dot" aria-hidden="true"></span>Capstone · Product Engineering, Year 2</span>
+        <span class="pill">iOS · Android · Web</span>
+      </div>
+      <h1>Every card you own.<br>The <em>right one</em> for every purchase.</h1>
+      <p class="lede">TAPO is an India-first rewards wallet. It compares the reward rules on all your cards, tells you which one to use before you pay, and shows how much you left on the table by using the wrong one.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#try">Find my best card
+          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="#import">Check a statement</a>
+      </div>
+      <div class="hero-proof">
+        <div><strong class="num">0</strong><span>Card numbers stored</span></div>
+        <div><strong class="num" id="testCount">51</strong><span>Automated tests</span></div>
+        <div><strong class="num">3</strong><span>Platforms, one codebase</span></div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage" aria-label="Three sample cards floating in the air">
+      <div class="floor" aria-hidden="true"></div>
+      <div class="float-card" data-card="online"><div class="inner"></div></div>
+      <div class="float-card" data-card="travel"><div class="inner"></div></div>
+      <div class="float-card" data-card="everyday"><div class="inner"></div></div>
+      <div class="stage-note">
+        <b class="num" id="heroMissed">₹0</b>
+        <span><strong>Missed rewards this month</strong><small>Sample wallet: what the wrong card cost</small></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ RECOMMENDER -->
+<section class="section" id="try">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">The core question</span>
+      <h2>Four cards. One checkout.<br>Which one do you tap?</h2>
+      <p class="lede">Reward rules are scattered across cards, categories and monthly caps. TAPO does the maths in a second. This is the app's real ranking logic running on four fictional sample cards. Change the purchase and watch the ranking move.</p>
+    </div>
+
+    <div class="reco reveal">
+      <div class="panel reco-controls">
+        <div>
+          <span class="label" id="catLabel">What are you buying?</span>
+          <div class="chips" id="catChips" role="group" aria-labelledby="catLabel"></div>
+        </div>
+        <div>
+          <label class="label" for="amount">How much?</label>
+          <div class="amount"><span aria-hidden="true">₹</span><input id="amount" inputmode="numeric" autocomplete="off" value="2340" aria-describedby="amountNote"></div>
+          <div class="presets" id="presets"></div>
+        </div>
+        <p class="note" id="amountNote">Caps count rewards already earned this month in the sample wallet. Notice that Online Saver has already used up its online cap this month, so it drops down the list.</p>
+      </div>
+      <div class="panel">
+        <div class="reco-results" id="ranks" aria-live="polite"></div>
+        <p class="verdict" id="verdict"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ IMPORT -->
+<section class="section" id="import">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Real spending, not sample data</span>
+      <h2>Drop in a statement.<br>See what it cost you.</h2>
+      <p class="lede">Export a bank or card statement as CSV and TAPO reads it on your device. It finds the date, merchant and amount columns, skips money coming in, sorts each purchase into a category and works out how much more your best card would have earned. This page uses the same parser as the app.</p>
+    </div>
+
+    <div class="import reveal">
+      <div class="panel drop" id="drop">
+        <div class="icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+        </div>
+        <div>
+          <h3>Drop a CSV statement here</h3>
+          <p class="note" style="margin-top:6px">Or choose a file, or try the example. Works with most Indian bank and card exports (Date, Narration, Debit or Amount columns).</p>
+        </div>
+        <div class="drop-actions">
+          <label class="btn btn-primary btn-sm" for="file" style="cursor:pointer">Choose CSV file</label>
+          <input id="file" type="file" accept=".csv,text/csv,text/plain" hidden>
+          <button class="btn btn-ghost btn-sm" id="example" type="button">Try the example</button>
+        </div>
+        <div>
+          <label class="label" for="payCard">Which card paid for these?</label>
+          <select class="select" id="payCard"></select>
+        </div>
+        <p class="privacy">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <span>Read in your browser and never uploaded. Only date, merchant and amount are used. Account numbers, card numbers and UPI references are masked.</span>
+        </p>
+        <p class="err" id="importErr" role="alert" hidden></p>
+      </div>
+
+      <div class="panel result" id="result" aria-live="polite">
+        <div class="result-empty">
+          <h3>Your results appear here</h3>
+          <p>Try the example statement: nine lines from a typical month, including a salary credit that TAPO correctly ignores and a card number it masks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ PRODUCT -->
+<section class="section" id="product">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Inside the app</span>
+      <h2>Built like a product, not a demo.</h2>
+      <p class="lede">A dark "gallery at night" interface where cards float under spotlights. Every screen works on phones, tablets and the web, with screen-reader labels, Reduce Motion support and keyboard focus throughout.</p>
+    </div>
+
+    <div class="phones reveal" tabindex="0" aria-label="App screens, scroll sideways">
+      <article class="phone">
+        <div class="screen" aria-hidden="true"><div class="screen-in">
+          <div class="s-bar"><span class="s-k">Good evening</span><span class="s-k">•••</span></div>
+          <div class="s-h">Your wallet</div>
+          <div id="miniCard" style="margin:6px 4px 4px"></div>
+          <div class="s-row">
+            <div class="s-tile"><span class="s-k">Spent · month</span><b class="num">₹24,468</b></div>
+            <div class="s-tile"><span class="s-k" style="color:var(--green)">Est. rewards</span><b class="num">₹1,168</b></div>
+          </div>
+          <div class="s-tile" style="border-color:#4a3c1c"><span class="s-k" style="color:var(--amber)">Missed rewards · month</span><b class="num" id="miniMissed">₹0</b><span class="s-k">Use your best card per category</span></div>
+          <div class="s-tabs"><span class="on">Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
+        </div></div>
+        <h3>Wallet</h3>
+        <p>A floating gallery of your cards, this month's spend and rewards, and the headline number: rewards you missed.</p>
+      </article>
+
+      <article class="phone">
+        <div class="screen" aria-hidden="true"><div class="screen-in">
+          <span class="s-k">Best card</span>
+          <div class="s-h">Groceries · ₹2,340</div>
+          <div class="s-tile" style="border-color:#1F4A3A;background:var(--green-bg)"><span class="s-k" style="color:var(--green)">Best choice</span><b>Everyday Cashback</b><span class="s-k">5% back on Groceries · within cap</span></div>
+          <div class="s-tile"><div class="s-li"><span>Online Saver</span><span class="num">₹23.40</span></div><div class="s-li"><span>Travel Miles</span><span class="num">₹11.70</span></div><div class="s-li"><span>Salary Debit</span><span class="num">₹5.85</span></div></div>
+          <span class="s-k">Why: category rule beats base rates; monthly cap still has room.</span>
+          <div class="s-tabs"><span>Wallet</span><span class="on">Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
+        </div></div>
+        <h3>Best card</h3>
+        <p>Pick a category and amount. TAPO ranks every card, respects monthly caps and explains its answer in plain language.</p>
+      </article>
+
+      <article class="phone">
+        <div class="screen" aria-hidden="true"><div class="screen-in">
+          <span class="s-k">Insights</span>
+          <div class="s-h">November 2026</div>
+          <div class="s-tile">
+            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Travel</span><span class="num">₹8,715</span></div><div class="s-bar-track"><i style="width:36%;background:#9EC2FF"></i></div></div>
+            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Online</span><span class="num">₹5,049</span></div><div class="s-bar-track"><i style="width:21%;background:#C7AEFF"></i></div></div>
+            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Groceries</span><span class="num">₹3,205</span></div><div class="s-bar-track"><i style="width:13%;background:#8FE0AE"></i></div></div>
+          </div>
+          <div class="s-tile" style="background:var(--amber-bg);border-color:#4a3c1c;color:#F8DFA6">Use Everyday Cashback for Everything else</div>
+          <div class="s-tabs"><span>Wallet</span><span>Best</span><span>Activity</span><span class="on">Insights</span><span>Settings</span></div>
+        </div></div>
+        <h3>Insights</h3>
+        <p>Where the money went, what each card earned, and specific swaps that would have earned more.</p>
+      </article>
+
+      <article class="phone">
+        <div class="screen" aria-hidden="true"><div class="screen-in">
+          <span class="s-k">Import statement</span>
+          <div class="s-h">8 purchases found</div>
+          <div class="s-tile" style="border-color:#1F4A3A"><span class="s-k" style="color:var(--green)">Stays on this device</span><span class="s-k">Only date, merchant and amount are kept</span></div>
+          <div class="s-tile"><div class="s-li"><span>SWIGGY</span><span class="num">₹486</span></div><div class="s-li"><span>POS ••1234 DMART</span><span class="num">₹2,310</span></div><div class="s-li"><span>IOCL PETROL PUMP</span><span class="num">₹3,000</span></div></div>
+          <div class="s-tile" style="background:var(--cream);color:var(--night);text-align:center;font-weight:700">Import to Everyday Cashback</div>
+          <div class="s-tabs"><span>Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
+        </div></div>
+        <h3>Statement import</h3>
+        <p>Real spending from a CSV, parsed on the device. Duplicates are skipped, credits ignored, long numbers masked.</p>
+      </article>
+
+      <article class="phone">
+        <div class="screen" aria-hidden="true"><div class="screen-in">
+          <span class="s-k" style="color:var(--amber)">Demo mode · no real money is charged</span>
+          <div class="s-h">Tap-to-pay demo</div>
+          <div class="s-tile" style="display:grid;place-items:center;padding:22px 10px;gap:8px">
+            <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>
+            <span class="s-k">Hold a demo NFC tag near the phone</span>
+          </div>
+          <div class="s-tile"><div class="s-li"><span>Merchant (dummy)</span><span>Sample Chai Stall</span></div><div class="s-li"><span>Result</span><span>Simulated</span></div></div>
+          <div class="s-tabs"><span class="on">Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
+        </div></div>
+        <h3>NFC demo, honestly labelled</h3>
+        <p>An NFC sticker only triggers a simulated checkout. TAPO never reads bank cards, emulates a card or moves money.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ HOW -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">How it works</span>
+      <h2>Three steps to the right card.</h2>
+    </div>
+    <div class="steps reveal">
+      <div class="panel step"><span class="n">STEP 1</span><h3>Add your cards</h3><p>A nickname, the last four digits as a label, and the reward rules: a base rate plus category rates and monthly caps.</p></div>
+      <div class="panel step"><span class="n">STEP 2</span><h3>Import your spending</h3><p>Load a statement CSV. TAPO reads it on the device, categorises each purchase and ignores money coming in.</p></div>
+      <div class="panel step"><span class="n">STEP 3</span><h3>Pay with the best card</h3><p>Ask before you pay, or review afterwards: missed rewards, per-card earnings and the swaps that would earn more.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SAFETY -->
+<section class="section" id="safety">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Safety by design</span>
+      <h2>What TAPO can't leak, it never stores.</h2>
+      <p class="lede">Security here is structural. The data model has no fields for sensitive card data, so there is nothing to protect, encrypt or lose.</p>
+    </div>
+    <div class="safety reveal">
+      <div class="panel never">
+        <h3>Never asked for. Never stored.</h3>
+        <div class="never-list">
+          <span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Bank login</span><span>Payment token</span><span>UPI PIN</span>
+        </div>
+        <p class="note">Nicknames that look like card numbers are rejected. Stored data is re-checked every time the app starts, and anything unexpected is dropped.</p>
+      </div>
+      <ul class="checks">
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>On the device only</b><span>No server, no account, no analytics, no tracking. Data lives in the phone's local storage.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>Statements stay private</b><span>Parsed locally. Only date, merchant and amount are kept; long numbers are masked to the last four digits.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No fake payments</b><span>The NFC demo is labelled as a simulation on every screen. No payment provider, card network or provisioning code exists.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No borrowed credibility</b><span>Issuers are fictional, rules are illustrative, and TAPO claims no partnership with any bank or network.</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ ENGINEERING -->
+<section class="section" id="engineering">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Engineering</span>
+      <h2>One codebase. Tested on every push.</h2>
+      <p class="lede">Pure logic is kept apart from the interface, so the reward maths, insights, statement parser and NFC checks are unit-tested in isolation. Continuous integration runs type checks, lint, tests and a web build on every push.</p>
+    </div>
+    <div class="metrics reveal">
+      <div class="metric"><b class="num" id="testCount2">51</b><span>Unit tests across 6 suites</span></div>
+      <div class="metric"><b class="num">3</b><span>Platforms: iOS, Android, web</span></div>
+      <div class="metric"><b class="num">0</b><span>Network calls with your data</span></div>
+      <div class="metric"><b class="num">4</b><span>CI checks on every push</span></div>
+    </div>
+    <div class="arch reveal">
+      <div class="panel arch-diagram" aria-label="Architecture: screens use a wallet state container, which uses pure logic modules and on-device storage">
+        <div class="layer"><b>Screens · Expo Router</b><div class="mods"><code>Wallet</code><code>Best card</code><code>Insights</code><code>Import</code><code>Activity</code><code>Settings</code><code>Developer</code></div></div>
+        <div class="arrow">↓ useWallet()</div>
+        <div class="layer"><b>State · WalletProvider</b><div class="mods"><code>sanitise on load</code><code>import</code><code>cards</code><code>settings</code></div></div>
+        <div class="arrow">↓ pure functions, unit-tested</div>
+        <div class="layer"><b>Logic</b><div class="mods"><code>rewards.ts</code><code>insights.ts</code><code>csvImport.ts</code><code>validation.ts</code><code>demoNfc.ts</code></div></div>
+        <div class="arrow">↓</div>
+        <div class="layer"><b>On-device storage</b><div class="mods"><code>AsyncStorage</code><code>no server</code></div></div>
+      </div>
+      <div class="panel stack">
+        <h3>Stack</h3>
+        <dl>
+          <dt>App</dt><dd>Expo SDK 58, React Native 0.88, React 19, TypeScript</dd>
+          <dt>Navigation</dt><dd>Expo Router (file-based)</dd>
+          <dt>Graphics</dt><dd>react-native-svg card faces, icons and logo</dd>
+          <dt>NFC</dt><dd>Web NFC in Chrome on Android; react-native-nfc-manager in native builds</dd>
+          <dt>Quality</dt><dd>Jest (jest-expo), ESLint, strict TypeScript, GitHub Actions</dd>
+          <dt>Builds</dt><dd>EAS: development, preview (APK) and production profiles</dd>
+          <dt>Type</dt><dd>Satoshi, with Inter for the ₹ glyph</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ VALIDATION -->
+<section class="section" id="validation">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Validation plan</span>
+      <h2>What we still have to prove.</h2>
+      <p class="lede">A product is a set of bets. These are ours, with the evidence that would confirm or kill each one. Results go here once the interviews are done; none of them are filled in yet.</p>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="hyp">
+        <thead><tr><th scope="col">#</th><th scope="col">We believe</th><th scope="col">We'll know because</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          <tr><td>H1</td><td>People with two or more cards don't know which earns most for a given purchase.</td><td>Most interviewees can't name their best card for three common categories.</td><td><span class="status">Interviews pending</span></td></tr>
+          <tr><td>H2</td><td>They lose a meaningful amount of rewards every month.</td><td>The median missed-rewards figure from participants' own imported statements.</td><td><span class="status">Interviews pending</span></td></tr>
+          <tr><td>H3</td><td>They would check an app before or after paying.</td><td>Several participants say they'd use it weekly and ask to try it.</td><td><span class="status">Interviews pending</span></td></tr>
+          <tr><td>H4</td><td>They'd import a statement if it never leaves the phone.</td><td>Most agree after seeing the on-device privacy promise.</td><td><span class="status">Interviews pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="road reveal">
+      <div class="panel now"><span class="when">Now · prototype</span><h3>Prove the value</h3><ul><li>Card rules and best-card ranking</li><li>Statement CSV import</li><li>Missed-rewards metric and insights</li></ul></div>
+      <div class="panel next"><span class="when">Next · pilot</span><h3>Prove the need</h3><ul><li>10 user interviews and a findings slide</li><li>Installable Android build for testers</li><li>Measure activation and missed rewards</li></ul></div>
+      <div class="panel later"><span class="when">Later · if it works</span><h3>Make it effortless</h3><ul><li>Consent-based data via India's Account Aggregator framework, through a licensed partner</li><li>A maintained library of card reward rules</li><li>Compliance review before any real launch</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ TEAM -->
+<section class="section" id="team">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Team</span>
+      <h2>The people behind TAPO.</h2>
+      <p class="lede placeholder">Team name · College name · Product Engineering, Year 2</p>
+    </div>
+    <div class="team reveal">
+      <div class="panel member"><div class="avatar" aria-hidden="true">S1</div><div><b class="placeholder">Student name</b><small>Role, e.g. Product and research</small></div></div>
+      <div class="panel member"><div class="avatar" aria-hidden="true">S2</div><div><b class="placeholder">Student name</b><small>Role, e.g. Mobile engineering</small></div></div>
+      <div class="panel member"><div class="avatar" aria-hidden="true">S3</div><div><b class="placeholder">Student name</b><small>Role, e.g. Design and accessibility</small></div></div>
+      <div class="panel member"><div class="avatar" aria-hidden="true">M</div><div><b class="placeholder">Mentor name</b><small>Mentor</small></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <a class="brand" href="#top" aria-label="Back to top">
+        <svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+        <b style="font-size:18px">TAPO</b>
+      </a>
+      <span>Rewards wallet · capstone prototype</span>
+    </div>
+    <p>TAPO is a student prototype. It cannot make payments. All issuers, cards and reward rules shown are fictional sample data, and TAPO has no partnership, approval or affiliation with any bank, card network or payment provider. Merchant names in the example statement are used only to show categorisation. Reward figures are estimates, not issuer statements, and nothing here is financial advice. Built with AI assistance; see the project's AI usage declaration.</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- the app's real statement parser (transpiled from src/lib/csvImport.ts at build time) ---------- */
+/*__CSV_IMPORT__*/
+</script>
+<script>
+(function () {
+  'use strict';
+  document.documentElement.classList.add('js');
+
+  // ---------- sample data (mirrors src/lib/sampleData.ts; fictional) ----------
+  var CARDS = [
+    { id: 'everyday', name: 'Everyday Cashback', issuer: 'Sample Bank Alpha', net: 'RuPay', last4: '0001', base: 1, color: '#1E3A8A',
+      rules: { groceries: { rate: 5, cap: 500 }, utilities: { rate: 2 } } },
+    { id: 'travel', name: 'Travel Miles', issuer: 'Demo Bank Beta', net: 'VISA', last4: '0002', base: 0.5, color: '#115E59',
+      rules: { travel: { rate: 6, cap: 1500 }, dining: { rate: 3 } } },
+    { id: 'online', name: 'Online Saver', issuer: 'Example Co-op Bank', net: 'mastercard', last4: '0003', base: 1, color: '#6B21A8',
+      rules: { online: { rate: 7, cap: 300 }, entertainment: { rate: 4 } } },
+    { id: 'debit', name: 'Salary Debit', issuer: 'Placeholder Finance', net: 'RuPay', last4: '0004', base: 0.25, color: '#334155',
+      rules: { fuel: { rate: 2.5, cap: 200 } } }
+  ];
+  // This month's sample spend (the seeds within the last 30 days), used for caps and missed rewards.
+  var MONTH = [
+    ['everyday', 'groceries', 2340], ['online', 'online', 1899], ['travel', 'travel', 1265], ['travel', 'dining', 640],
+    ['debit', 'fuel', 3000], ['everyday', 'utilities', 1820], ['online', 'entertainment', 499], ['everyday', 'groceries', 865],
+    ['travel', 'travel', 7450], ['debit', 'other', 420], ['online', 'online', 3150], ['travel', 'dining', 1120],
+    ['everyday', 'utilities', 399], ['debit', 'fuel', 2500]
+  ];
+  var CATS = [
+    ['groceries', 'Groceries'], ['dining', 'Dining'], ['fuel', 'Fuel'], ['travel', 'Travel'],
+    ['online', 'Online shopping'], ['utilities', 'Bills & utilities'], ['entertainment', 'Entertainment'], ['other', 'Everything else']
+  ];
+  var CAT_LABEL = {}; CATS.forEach(function (c) { CAT_LABEL[c[0]] = c[1]; });
+  var CAT_COLOR = { dining: '#FFB4A2', groceries: '#8FE0AE', fuel: '#F5C66B', travel: '#9EC2FF', online: '#C7AEFF', utilities: '#F0D86A', entertainment: '#FF9FD0', other: '#C2C9D8' };
+
+  // ---------- reward maths (same as src/lib/rewards.ts) ----------
+  function rule(card, cat) { var r = card.rules[cat]; return r ? { rate: r.rate, cap: r.cap, source: 'category' } : { rate: card.base, cap: undefined, source: 'base' }; }
+  function raw(amount, rate) { return Math.floor(amount * rate) / 100; }
+  function earned(card, cat) {
+    var r = rule(card, cat).rate;
+    return MONTH.filter(function (t) { return t[0] === card.id && t[1] === cat; }).reduce(function (s, t) { return s + raw(t[2], r); }, 0);
+  }
+  function evaluate(card, cat, amount) {
+    var r = rule(card, cat), reward = raw(amount, r.rate), left, limited = false;
+    if (r.cap !== undefined) {
+      left = Math.max(0, Math.round((r.cap - earned(card, cat)) * 100) / 100);
+      if (reward > left) { reward = left; limited = true; }
+    }
+    return { card: card, rate: r.rate, source: r.source, cap: r.cap, left: left, reward: reward, limited: limited };
+  }
+  function rank(cat, amount) {
+    return CARDS.map(function (c) { return evaluate(c, cat, amount); }).sort(function (a, b) {
+      return b.reward - a.reward || b.rate - a.rate || a.card.name.localeCompare(b.card.name);
+    });
+  }
+
+  // ---------- formatting (Indian grouping) ----------
+  var fmt0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+  var fmt2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function inr(n, dec) { return '₹' + (dec ? fmt2 : fmt0).format(n); }
+  function pct(n) { return (Math.round(n * 100) / 100) + '%'; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  // ---------- card faces ----------
+  var TAP = '<svg class="cf-tap" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>';
+  function face(c) {
+    return '<div class="cardface" style="--c:' + c.color + '">' +
+      '<div class="cf-top"><div><div class="cf-name">' + esc(c.name) + '</div><div class="cf-issuer">' + esc(c.issuer) + '</div></div><span class="cf-sample">SAMPLE</span></div>' +
+      '<div class="cf-chip"></div>' + TAP +
+      '<div class="cf-num">•••• •••• •••• ' + c.last4 + '</div>' +
+      '<div class="cf-bottom"><span class="cf-holder">Demo cardholder</span><span class="cf-net">' + esc(c.net) + '</span></div></div>';
+  }
+  var byId = {}; CARDS.forEach(function (c) { byId[c.id] = c; });
+  document.querySelectorAll('.float-card').forEach(function (el) { el.querySelector('.inner').innerHTML = face(byId[el.getAttribute('data-card')]); });
+  var mini = document.getElementById('miniCard'); if (mini) mini.innerHTML = face(byId.everyday);
+
+  // ---------- sample-wallet missed rewards (same idea as src/lib/insights.ts tips) ----------
+  function missedFor(rows) { // rows: [cardId, cat, amount]
+    var total = 0, byCat = {};
+    rows.forEach(function (t) {
+      var used = raw(t[2], rule(byId[t[0]], t[1]).rate);
+      var best = CARDS.reduce(function (m, c) { var r = raw(t[2], rule(c, t[1]).rate); return r > m.r ? { r: r, c: c } : m; }, { r: -1, c: null });
+      var extra = best.r - used;
+      if (extra > 0.0001) {
+        total += extra;
+        var k = t[1] + '|' + best.c.id;
+        byCat[k] = byCat[k] || { cat: t[1], card: best.c, extra: 0, count: 0 };
+        byCat[k].extra += extra; byCat[k].count++;
+      }
+    });
+    var tips = Object.keys(byCat).map(function (k) { return byCat[k]; }).sort(function (a, b) { return b.extra - a.extra; });
+    return { total: Math.round(total * 100) / 100, tips: tips };
+  }
+  var sampleMissed = missedFor(MONTH).total;
+  document.getElementById('heroMissed').textContent = inr(sampleMissed, true);
+  document.getElementById('miniMissed').textContent = inr(sampleMissed, true);
+
+  // ---------- recommender ----------
+  var state = { cat: 'groceries', amount: 2340 };
+  var chips = document.getElementById('catChips');
+  CATS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = c[1];
+    b.setAttribute('aria-pressed', c[0] === state.cat ? 'true' : 'false');
+    b.addEventListener('click', function () {
+      state.cat = c[0];
+      chips.querySelectorAll('.chip').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      renderRanks();
+    });
+    chips.appendChild(b);
+  });
+  var amountEl = document.getElementById('amount');
+  var presets = document.getElementById('presets');
+  [499, 2340, 7500, 15000].forEach(function (v) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = inr(v);
+    b.addEventListener('click', function () { amountEl.value = String(v); state.amount = v; renderRanks(); });
+    presets.appendChild(b);
+  });
+  amountEl.addEventListener('input', function () {
+    var digits = amountEl.value.replace(/[^\d]/g, '').slice(0, 7);
+    if (digits !== amountEl.value) amountEl.value = digits;
+    state.amount = Math.min(1000000, Number(digits) || 0);
+    renderRanks();
+  });
+
+  function renderRanks() {
+    var list = rank(state.cat, state.amount);
+    var top = list[0].reward || 1;
+    document.getElementById('ranks').innerHTML = list.map(function (e, i) {
+      var why = e.source === 'category'
+        ? pct(e.rate) + ' back on ' + CAT_LABEL[state.cat]
+        : 'No ' + CAT_LABEL[state.cat] + ' rule · base ' + pct(e.rate);
+      var capLine = '';
+      if (e.cap !== undefined) {
+        capLine = e.limited
+          ? (e.left === 0 ? 'Monthly cap of ' + inr(e.cap) + ' already used this month' : 'Capped: only ' + inr(e.left, true) + ' of the ' + inr(e.cap) + ' monthly cap left')
+          : 'Within the ' + inr(e.cap) + ' monthly cap';
+      }
+      var w = state.amount > 0 ? Math.max(2, (e.reward / top) * 100) : 2;
+      return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '" style="--c:' + e.card.color + '">' +
+        '<span class="pos">' + (i + 1) + '</span>' +
+        '<div class="who"><b><i></i>' + esc(e.card.name) + '</b><div class="why">' + why + '</div>' +
+        (capLine ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + capLine + '</div>' : '') +
+        '<div class="bar"><i style="width:' + w + '%"></i></div></div>' +
+        '<span class="val">' + inr(e.reward, true) + '</span></div>';
+    }).join('');
+    var best = list[0], next = list[1];
+    var v = document.getElementById('verdict');
+    if (!state.amount) { v.innerHTML = 'Enter an amount to compare cards.'; return; }
+    var diff = Math.round((best.reward - next.reward) * 100) / 100;
+    v.innerHTML = '<b>' + esc(best.card.name) + '</b> earns about <b>' + inr(best.reward, true) + '</b> on this ' + inr(state.amount) + ' purchase' +
+      (diff > 0 ? ', ' + inr(diff, true) + ' more than ' + esc(next.card.name) + '.' : '. Ties go to the higher headline rate, then the name.');
+  }
+  renderRanks();
+
+  // ---------- statement import demo ----------
+  var payCard = document.getElementById('payCard');
+  CARDS.forEach(function (c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.name + ' •• ' + c.last4; payCard.appendChild(o); });
+  payCard.value = 'debit';
+  var lastRows = null;
+  var errEl = document.getElementById('importErr');
+  function showError(msg) { errEl.textContent = msg; errEl.hidden = !msg; }
+
+  function runImport(text) {
+    showError('');
+    try {
+      var r = importStatement(text, []);
+      lastRows = r;
+      renderImport();
+    } catch (e) {
+      showError(e && e.message ? e.message : 'Couldn’t read that file. Make sure it’s a CSV export.');
+    }
+  }
+  function renderImport() {
+    var r = lastRows; if (!r) return;
+    var out = document.getElementById('result');
+    if (!r.rows.length) { out.innerHTML = '<div class="result-empty"><h3>No purchases found</h3><p>Every row was money in, a duplicate or unreadable.</p></div>'; return; }
+    var total = r.rows.reduce(function (s, x) { return s + x.amountRupees; }, 0);
+    var tuples = r.rows.map(function (x) { return [payCard.value, x.category, x.amountRupees]; });
+    var m = missedFor(tuples);
+    var cats = {}; r.rows.forEach(function (x) { cats[x.category] = (cats[x.category] || 0) + x.amountRupees; });
+    var catList = Object.keys(cats).sort(function (a, b) { return cats[b] - cats[a]; });
+    var maxCat = cats[catList[0]];
+    var skipped = r.skipped, notes = [];
+    if (skipped.credits) notes.push(skipped.credits + ' money in');
+    if (skipped.invalid) notes.push(skipped.invalid + ' unreadable');
+    if (skipped.duplicates) notes.push(skipped.duplicates + ' duplicate');
+    if (skipped.overLimit) notes.push(skipped.overLimit + ' over limits');
+    out.innerHTML =
+      '<div class="stats">' +
+        '<div class="stat"><small>Purchases</small><b>' + r.rows.length + '</b></div>' +
+        '<div class="stat"><small>Spent</small><b>' + inr(total) + '</b></div>' +
+        '<div class="stat warn"><small>Missed rewards</small><b>' + inr(m.total, true) + '</b></div>' +
+      '</div>' +
+      '<p class="note">Columns found: ' + esc(r.columns.date) + ' · ' + esc(r.columns.description) + ' · ' + esc(r.columns.amount) +
+        (notes.length ? '. Skipped ' + notes.join(', ') + '.' : '.') + '</p>' +
+      '<div class="catbars">' + catList.map(function (c) {
+        return '<div class="catbar"><div class="top"><span>' + CAT_LABEL[c] + '</span><span>' + inr(cats[c]) + '</span></div>' +
+          '<div class="bar"><i style="width:' + Math.max(3, cats[c] / maxCat * 100) + '%;background:' + CAT_COLOR[c] + '"></i></div></div>';
+      }).join('') + '</div>' +
+      (m.tips.length ? '<div class="tips">' + m.tips.slice(0, 3).map(function (t) {
+        return '<div class="tip">Use <b>' + esc(t.card.name) + '</b> for ' + CAT_LABEL[t.cat] + ': ' + inr(t.extra, true) + ' more on ' + t.count + (t.count === 1 ? ' purchase' : ' purchases') + ', before monthly caps.</div>';
+      }).join('') + '</div>' : '<div class="tip" style="background:var(--green-bg);color:var(--green)">This card was already the best choice for every purchase.</div>') +
+      '<div class="rows">' + r.rows.slice(0, 6).map(function (x) {
+        return '<div><span>' + esc(x.merchant) + '</span><span>' + CAT_LABEL[x.category] + '</span><span class="num">' + inr(x.amountRupees) + '</span></div>';
+      }).join('') + (r.rows.length > 6 ? '<div><span style="color:var(--muted)">and ' + (r.rows.length - 6) + ' more</span><span></span><span></span></div>' : '') + '</div>';
+  }
+  payCard.addEventListener('change', renderImport);
+  document.getElementById('example').addEventListener('click', function () { runImport(EXAMPLE_CSV); });
+  function readFile(f) {
+    if (!f) return;
+    if (f.size > MAX_IMPORT_BYTES) { showError('That file is too large. Export a shorter date range (under 2 MB).'); return; }
+    f.text().then(runImport, function () { showError('Couldn’t open that file. Try exporting it again as CSV.'); });
+  }
+  document.getElementById('file').addEventListener('change', function (e) { readFile(e.target.files && e.target.files[0]); e.target.value = ''; });
+  var drop = document.getElementById('drop');
+  ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { readFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+
+  // ---------- hero tilt (desktop pointer only) ----------
+  var stage = document.getElementById('stage');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    stage.addEventListener('pointermove', function (e) {
+      var b = stage.getBoundingClientRect();
+      var x = (e.clientX - b.left) / b.width - 0.5, y = (e.clientY - b.top) / b.height - 0.5;
+      stage.querySelectorAll('.float-card').forEach(function (el, i) {
+        var k = (i + 1) * 6;
+        el.style.transform = 'rotateY(' + (x * k) + 'deg) rotateX(' + (-y * k) + 'deg) translateZ(' + (i * 10) + 'px)';
+      });
+    });
+    stage.addEventListener('pointerleave', function () { stage.querySelectorAll('.float-card').forEach(function (el) { el.style.transform = ''; }); });
+  }
+
+  // ---------- nav ----------
+  var nav = document.getElementById('nav'), menuBtn = document.getElementById('menuBtn');
+  menuBtn.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.querySelectorAll('#navLinks a').forEach(function (a) { a.addEventListener('click', function () { nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); }); });
+  if ('IntersectionObserver' in window) {
+    var links = {}; document.querySelectorAll('#navLinks a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting && links[en.target.id]) {
+          Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+          links[en.target.id].setAttribute('aria-current', 'true');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    document.querySelectorAll('main section[id]').forEach(function (s) { spy.observe(s); });
+  }
+})();
+</script>

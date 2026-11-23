@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "TAPO",
+    "slug": "tapo",
+    "scheme": "tapo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0E18",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.tapo"
+    },
+    "android": {
+      "package": "com.example.tapo",
+      "adaptiveIcon": {
+        "backgroundColor": "#ECE9E2",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "TAPO reads a harmless demo code from an NFC sticker to start a simulated payment. It never reads bank cards or charges money."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0E18"
+        }
+      ]
+    ]
+  }
+}
