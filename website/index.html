@@ -358,6 +358,71 @@ textarea.input { min-height: 120px; padding: 14px; font: 13px/1.5 var(--mono); r
 @keyframes toast { from { transform: translate(-50%, 20px); opacity: 0; } }
 .empty { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 40px 20px; color: var(--muted); }
 
+/* ---------- intro (dots assemble into the TAPO mark) ---------- */
+.intro { position: fixed; inset: 0; z-index: 100; background: var(--night); display: grid; place-items: center; transition: opacity .55s var(--ease), visibility .55s; cursor: pointer; }
+.intro.out { opacity: 0; visibility: hidden; }
+.intro-inner { display: grid; justify-items: center; }
+.intro-stage { position: relative; width: 160px; height: 160px; }
+.intro-dot { position: absolute; left: 0; top: 0; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--cream); box-shadow: 0 0 8px rgba(236,233,226,.5); }
+.intro-dot.g { background: var(--green); box-shadow: 0 0 8px rgba(111,217,164,.7); }
+.intro-mark { position: absolute; inset: 0; opacity: 0; transition: opacity .45s var(--ease); }
+.intro-mark .ring { stroke-dasharray: 520; stroke-dashoffset: 520; transition: stroke-dashoffset 1s var(--ease); }
+.intro.mark .intro-mark { opacity: 1; }
+.intro.mark .intro-mark .ring { stroke-dashoffset: 0; }
+.intro.mark .intro-dot { opacity: 0 !important; transition: opacity .35s .1s; }
+.intro-word { margin-top: 28px; padding-left: .32em; font-weight: 900; font-size: 34px; letter-spacing: .32em; clip-path: inset(0 100% 0 0); transition: clip-path .7s var(--ease); }
+.intro-tag { margin-top: 8px; color: var(--muted); font-size: 14px; opacity: 0; transform: translateY(6px); transition: opacity .5s .25s, transform .5s .25s var(--ease); }
+.intro.word .intro-word { clip-path: inset(0 0 0 0); }
+.intro.word .intro-tag { opacity: 1; transform: none; }
+.intro-skip { position: absolute; right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; color: var(--muted); font-size: 13px; cursor: pointer; }
+
+/* ---------- hero: tilted phone scrolling your cards ---------- */
+.stage3d { position: relative; height: clamp(500px, 50vw, 640px); perspective: 1700px; display: grid; place-items: center; }
+.phone3d { position: relative; width: min(300px, 72vw); aspect-ratio: 9 / 19; border-radius: 46px; padding: 10px; background: linear-gradient(160deg, #2E354D, #090C15 42%, #1A2034); box-shadow: 50px 70px 110px -30px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.07) inset; transform: rotateX(20deg) rotateY(-24deg) rotateZ(8deg); transform-style: preserve-3d; transition: transform .7s var(--ease); z-index: 2; }
+.phone3d::after { content: ""; position: absolute; left: 50%; top: 20px; width: 80px; height: 22px; transform: translateX(-50%); border-radius: 20px; background: #04060B; z-index: 3; }
+.p3-screen { position: relative; height: 100%; border-radius: 37px; overflow: hidden; background: var(--bg); }
+.p3-screen::before { content: ""; position: absolute; inset: 0 0 auto; height: 64px; z-index: 2; background: linear-gradient(var(--bg) 55%, transparent); pointer-events: none; }
+.p3-feed { animation: feed 26s linear infinite; }
+.p3-feed:hover { animation-play-state: paused; }
+.p3-set { display: grid; gap: 14px; padding: 58px 13px 14px; }
+@keyframes feed { to { transform: translateY(-50%); } }
+.p3-tabs { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; padding: 26px 8px 16px; background: linear-gradient(transparent, var(--bg) 40%); font-size: 9.5px; font-weight: 700; color: var(--subtle); }
+.p3-tabs span { display: grid; justify-items: center; gap: 3px; }
+.p3-tabs .on { color: var(--amber); }
+.cb { display: grid; gap: 8px; }
+.cb-info { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 11px 12px; display: grid; gap: 7px; font-size: 10.5px; }
+.cb-row { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+.cb-row b { color: var(--ink); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.cb-row b.g { color: var(--green); }
+.cb-row b.a { color: var(--amber); }
+.cb-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 2px; }
+.cb-acts span { display: grid; place-items: center; min-height: 28px; border-radius: 999px; font-weight: 700; font-size: 10px; background: var(--surface-2); border: 1px solid var(--line); }
+.cb-acts span.p { background: var(--cream); color: var(--night); border-color: var(--cream); }
+.stage3d .glow { position: absolute; left: 15%; right: 15%; bottom: 2%; height: 18%; background: radial-gradient(closest-side, rgba(111,217,164,.25), transparent); filter: blur(14px); }
+
+/* ---------- wallet: stack view ---------- */
+.stackview { display: grid; gap: 30px; max-width: 520px; margin: 8px auto 34px; perspective: 1000px; }
+.sv-item { display: grid; gap: 12px; transform-origin: 50% 0; transition: transform .7s var(--ease), filter .7s; }
+.sv-item.below { transform: rotateX(18deg) translateY(36px) scale(.96); filter: brightness(.75); }
+.sv-info { padding: 16px 18px; display: grid; gap: 14px; }
+.sv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sv-stats div { display: grid; gap: 2px; min-width: 0; }
+.sv-stats small { color: var(--muted); font-size: 12.5px; }
+.sv-stats b { font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.sv-acts { display: flex; gap: 10px; }
+.sv-acts .btn { flex: 1; }
+.view-toggle { margin-bottom: 4px; }
+
+/* ---------- product: three phones rising ---------- */
+.rise { display: flex; justify-content: center; align-items: flex-end; gap: clamp(14px, 3vw, 40px); padding-block: 30px 10px; }
+.rise .device { width: 250px; flex: none; will-change: transform, filter; }
+.rise .device:nth-child(2) { width: 280px; z-index: 2; }
+.rise .dscreen > .layer { position: static; opacity: 1; transform: none; }
+.rise .dscreen { padding-top: 54px; }
+.rise-cap { display: flex; justify-content: center; gap: clamp(14px, 3vw, 40px); margin-top: 18px; text-align: center; color: var(--muted); font-size: 14px; font-weight: 700; }
+.rise-cap span { width: 250px; }
+.rise-cap span:nth-child(2) { width: 280px; color: var(--ink); }
+
 /* ---------- responsive ---------- */
 @media (max-width: 1000px) {
   .hero .wrap, .scrolly { grid-template-columns: minmax(0, 1fr); }
@@ -390,6 +455,11 @@ textarea.input { min-height: 120px; padding: 14px; font: 13px/1.5 var(--mono); r
   .rule-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .rule-row .field:first-child { grid-column: 1 / -1; }
   .float-chip { display: none; }
+  .stage3d { height: 480px; }
+  .phone3d { width: min(250px, 66vw); transform: rotateX(14deg) rotateY(-16deg) rotateZ(5deg); }
+  .rise { justify-content: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; padding-inline: 4px; scrollbar-width: none; }
+  .rise .device, .rise .device:nth-child(2) { width: 230px; scroll-snap-align: center; }
+  .rise-cap { display: none; }
   .tip { grid-template-columns: 34px minmax(0, 1fr); }
   .tip .btn { grid-column: 2; justify-self: start; }
 }
@@ -850,6 +920,27 @@ function insights(ref) {
   };
 }
 
+/* Per-card numbers for this month: spend, rewards earned (caps applied), and what's left on its main capped rule. */
+function cardStats(c) {
+  var now = new Date(), row = null, ins = insights(now);
+  for (var i = 0; i < ins.cards.length; i++) if (ins.cards[i].card.id === c.id) row = ins.cards[i];
+  var capped = c.rules.filter(function (r) { return r.cap; }).sort(function (a, b) { return b.rate - a.rate; })[0];
+  var top = c.rules.slice().sort(function (a, b) { return b.rate - a.rate; })[0];
+  return {
+    spend: row ? row.spend : 0, reward: row ? row.reward : 0,
+    capCat: capped ? capped.cat : null, capLeft: capped ? Math.max(0, Math.round((capped.cap - earnedThisMonth(c, capped.cat, now)) * 100) / 100) : null,
+    bestCat: top && top.rate > c.base ? top.cat : null
+  };
+}
+/* Decorative card + info block for the hero phone (no controls inside). */
+function phoneBlock(c) {
+  var s = cardStats(c);
+  return '<div class="cb">' + cardFace(c) + '<div class="cb-info"><div class="cb-row"><span>Spent this month</span><b>' + inr(s.spend) + '</b></div>' +
+    '<div class="cb-row"><span>Rewards earned</span><b class="g">+' + inr(s.reward, true) + '</b></div>' +
+    (s.capCat ? '<div class="cb-row"><span>' + CAT[s.capCat].label + ' cap left</span><b class="a">' + inr(s.capLeft) + '</b></div>' : '') +
+    '<div class="cb-acts"><span>View card</span><span class="p">Best for ' + (s.bestCat ? CAT[s.bestCat].label.split(' ')[0] : 'all') + '</span></div></div></div>';
+}
+
 /* =====================================================================================
    Router
    ===================================================================================== */
@@ -857,7 +948,8 @@ var SITE = ['home', 'product', 'security', 'faq'];
 var APPR = ['wallet', 'best', 'insights', 'import', 'cards'];
 var APP_NAV = [['wallet', 'Wallet', 'wallet'], ['best', 'Best card', 'best'], ['insights', 'Insights', 'chart'], ['import', 'Import', 'import'], ['cards', 'Cards', 'cards']];
 var cleanup = [];
-var ui = { cat: 'groceries', amount: 2340, month: 'this', parsed: null, payCard: null };
+var ui = { cat: 'groceries', amount: 2340, month: 'this', parsed: null, payCard: null, view: 'carousel', openCard: null };
+try { if (localStorage.getItem('tapo.web.view') === 'stack') ui.view = 'stack'; } catch (e) {}
 function route() { var h = (location.hash || '').slice(1); return SITE.indexOf(h) >= 0 || APPR.indexOf(h) >= 0 ? h : 'home'; }
 function go(r) { if (location.hash.slice(1) === r) render(); else location.hash = r; }
 function render() {
@@ -902,8 +994,10 @@ PAGES.home = function () {
     '<p class="lede">TAPO knows the reward rules on every card you carry. It tells you which card earns the most before you pay, and shows exactly what the wrong card cost you after.</p>' +
     '<div class="hero-cta"><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a><a class="btn btn-ghost" href="#product">See how it works</a></div>' +
     '<p class="hero-note">Your cards and spending stay in your browser. TAPO never asks for card numbers.</p></div>' +
-    '<div class="stack" id="stack">' + cs.slice(0, 3).map(function (c) { return '<div class="fc"><div class="inner">' + cardFace(c) + '</div></div>'; }).join('') +
-    '<div class="glow"></div>' +
+    '<div class="stage3d" id="stage3d"><div class="glow"></div>' +
+    '<div class="phone3d" id="phone3d" role="img" aria-label="The TAPO app on a phone, scrolling through your cards with this month\'s spending and rewards"><div class="p3-screen" aria-hidden="true"><div class="p3-feed">' +
+      '<div class="p3-set">' + S.cards.map(phoneBlock).join('') + '</div><div class="p3-set">' + S.cards.map(phoneBlock).join('') + '</div></div>' +
+      '<div class="p3-tabs"><span>' + ico('wallet', 15) + 'Wallet</span><span class="on">' + ico('cards', 15) + 'Cards</span><span>' + ico('chart', 15) + 'Insights</span></div></div></div>' +
     '<div class="float-chip glass a"><span class="dot" style="background:var(--green-bg)">' + ico('check', 18, '#6FD9A4', 2.6) + '</span><span><b class="num" id="heroBest">₹117.00</b>back on groceries</span></div>' +
     '<div class="float-chip glass b"><span class="dot" style="background:var(--amber-bg)">' + ico('trend', 18, '#F5C66B') + '</span><span><b class="num" id="heroMissed">₹0</b>missed this month</span></div>' +
     '</div></div></section>' +
@@ -945,7 +1039,10 @@ PAGES.product = function () {
   return '<section class="sec" style="padding-bottom:40px"><div class="wrap"><div class="head"><span class="eyebrow">Product</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">One app. Every card working its hardest.</h1><p class="lede">Here\'s how TAPO turns a wallet full of cards into one clear answer.</p></div></div></section>' +
     '<section style="padding-bottom:80px"><div class="wrap scrolly"><div class="phone-sticky"><div class="device" role="img" aria-label="TAPO app screens"><div class="dscreen">' + layers.map(function (l, i) { return '<div class="layer' + (i === 0 ? ' on' : '') + '" data-layer="' + i + '">' + l + '</div>'; }).join('') + '</div></div></div>' +
     '<div class="chapters">' + ch.map(function (c, i) { return '<div class="chapter' + (i === 0 ? ' on' : '') + '" data-ch="' + i + '"><span class="k">' + c[0] + '</span><h3>' + c[1] + '</h3><p>' + c[2] + '</p></div>'; }).join('') +
-    '<div><a class="btn btn-primary" href="#wallet">Try it now ' + ico('arrow', 18) + '</a></div></div></div></section>';
+    '<div><a class="btn btn-primary" href="#wallet">Try it now ' + ico('arrow', 18) + '</a></div></div></div></section>' +
+    '<section class="sec" id="rise" style="padding-top:20px;overflow:hidden"><div class="wrap"><div class="head center"><span class="eyebrow">Three screens, one answer</span><h2 class="h2">Your cards. Your best pick. Your month.</h2></div>' +
+    '<div class="rise" id="risePhones">' + [0, 1, 3].map(function (i) { return '<div class="device" aria-hidden="true"><div class="dscreen"><div class="layer">' + layers[i] + '</div></div></div>'; }).join('') + '</div>' +
+    '<div class="rise-cap"><span>Wallet</span><span>Best card</span><span>Insights</span></div></div></section>';
 };
 
 PAGES.security = function () {
@@ -999,8 +1096,16 @@ var SCREENS = {};
 SCREENS.wallet = function () {
   var ins = insights(new Date());
   var recent = S.txns.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 6);
-  return head(greeting(), 'Your wallet', '<a class="btn btn-ghost btn-sm" href="#cards">' + ico('plus', 16) + 'Add card</a>') +
-    (S.cards.length ? '<div class="carousel" id="carousel">' + S.cards.map(function (c, i) { return '<div class="slot" data-i="' + i + '">' + cardFace(c) + '</div>'; }).join('') + '<div class="slot"><a class="add-slot" href="#cards">' + ico('plus', 18) + ' Add a card</a></div></div><div class="active-card" id="activeCard"></div>' :
+  var toggle = S.cards.length ? '<div class="seg-switch view-toggle" role="group" aria-label="Card view"><button type="button" data-view="carousel" aria-pressed="' + (ui.view === 'carousel') + '">Carousel</button><button type="button" data-view="stack" aria-pressed="' + (ui.view === 'stack') + '">Stack</button></div>' : '';
+  var stackHtml = '<div class="stackview" id="stackview">' + S.cards.map(function (c) {
+    var s = cardStats(c);
+    return '<article class="sv-item">' + cardFace(c) + '<div class="panel sv-info"><div class="sv-stats"><div><small>Spent this month</small><b>' + inr(s.spend) + '</b></div><div><small>Rewards earned</small><b style="color:var(--green)">+' + inr(s.reward, true) + '</b></div>' +
+      '<div><small>' + (s.capCat ? CAT[s.capCat].label + ' cap left' : 'Monthly cap') + '</small><b style="color:var(--amber)">' + (s.capCat ? inr(s.capLeft) : 'None') + '</b></div></div>' +
+      '<div class="sv-acts"><a class="btn btn-ghost btn-sm" href="#cards" data-viewcard="' + esc(c.id) + '">View card</a>' +
+      (s.bestCat ? '<a class="btn btn-primary btn-sm" href="#best" data-bestcat="' + s.bestCat + '">Best for ' + CAT[s.bestCat].label + '</a>' : '<a class="btn btn-primary btn-sm" href="#best">Compare cards</a>') + '</div></div></article>';
+  }).join('') + '</div>';
+  return head(greeting(), 'Your wallet', '<div style="display:flex;gap:10px;flex-wrap:wrap">' + toggle + '<a class="btn btn-ghost btn-sm" href="#cards">' + ico('plus', 16) + 'Add card</a></div>') +
+    (S.cards.length && ui.view === 'stack' ? stackHtml : S.cards.length ? '<div class="carousel" id="carousel">' + S.cards.map(function (c, i) { return '<div class="slot" data-i="' + i + '">' + cardFace(c) + '</div>'; }).join('') + '<div class="slot"><a class="add-slot" href="#cards">' + ico('plus', 18) + ' Add a card</a></div></div><div class="active-card" id="activeCard"></div>' :
       '<div class="panel empty"><h2 style="color:var(--ink)">No cards yet</h2><p>Add your first card to get recommendations.</p><a class="btn btn-primary" href="#cards">Add a card</a></div>') +
     '<div class="grid3"><div class="panel stat"><small>Spent this month</small><b data-count="' + ins.total + '">' + inr(ins.total) + '</b><span class="hint">' + ins.count + ' purchases</span></div>' +
     '<div class="panel stat good"><small>Rewards earned</small><b data-count="' + ins.earned + '" data-dec="1">' + inr(ins.earned, true) + '</b><span class="hint">' + (ins.total ? pct(Math.round(ins.earned / ins.total * 10000) / 100) + ' back overall' : 'No spending yet') + '</span></div>' +
@@ -1088,11 +1193,11 @@ function mountSite(r) {
     $('#heroMissed').textContent = inr(ins.missed, true);
     $('#bentoMissed').textContent = inr(ins.missed, true);
     $('#heroBest').textContent = inr(rank('groceries', 2340)[0].reward, true);
-    // 3D tilt on the card stack
-    var stack = $('#stack');
+    // The tilted phone leans toward the pointer
+    var stage = $('#stage3d'), phone = $('#phone3d');
     if (!REDUCE && window.matchMedia('(pointer: fine)').matches) {
-      stack.addEventListener('pointermove', function (e) { var b = stack.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; $$('.fc', stack).forEach(function (el, i) { var k = 8 + i * 5; el.style.transform = 'rotateY(' + (x * k) + 'deg) rotateX(' + (-y * k) + 'deg) translateZ(' + (i * 14) + 'px)'; }); });
-      stack.addEventListener('pointerleave', function () { $$('.fc', stack).forEach(function (el) { el.style.transform = ''; }); });
+      stage.addEventListener('pointermove', function (e) { var b = stage.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; phone.style.transform = 'rotateX(' + (20 - y * 14) + 'deg) rotateY(' + (-24 + x * 22) + 'deg) rotateZ(' + (8 - x * 4) + 'deg)'; });
+      stage.addEventListener('pointerleave', function () { phone.style.transform = ''; });
     }
     // live ranking that cycles through purchases
     var demos = [['groceries', 2340], ['travel', 7450], ['online', 1899], ['dining', 1120], ['fuel', 3000]], di = 0;
@@ -1112,12 +1217,43 @@ function mountSite(r) {
       chs.forEach(function (c) { io.observe(c); });
       cleanup.push(function () { io.disconnect(); });
     }
+    // Three phones rise into place as the section scrolls in, blurring with scroll speed
+    var rise = $('#rise'), phones = $$('#risePhones .device');
+    if (rise && !REDUCE) {
+      var lastY = window.scrollY, blurT = null, LAG = [0.12, 0, 0.24], TILT = [-7, 0, 7];
+      var upd = function () {
+        var b = rise.getBoundingClientRect(), vh = window.innerHeight;
+        var p = Math.max(0, Math.min(1, (vh - b.top) / (vh * 0.85)));
+        var dy = window.scrollY - lastY; lastY = window.scrollY;
+        var blur = Math.min(7, Math.abs(dy) * 0.12);
+        phones.forEach(function (ph, i) {
+          var q = Math.max(0, Math.min(1, (p - LAG[i]) / (1 - LAG[i]))), e = 1 - Math.pow(1 - q, 3);
+          ph.style.transform = 'translateY(' + ((1 - e) * 220) + 'px) rotate(' + ((1 - e) * TILT[i]) + 'deg) scale(' + (0.9 + e * 0.1) + ')';
+          ph.style.filter = q < 1 && blur > 0.3 ? 'blur(' + blur.toFixed(1) + 'px)' : 'none';
+        });
+        clearTimeout(blurT); blurT = setTimeout(function () { phones.forEach(function (ph) { ph.style.filter = 'none'; }); }, 140);
+      };
+      window.addEventListener('scroll', upd, { passive: true }); upd();
+      cleanup.push(function () { window.removeEventListener('scroll', upd); clearTimeout(blurT); });
+    }
   }
 }
 
 function mountApp(r) {
   countUps(); shineOn();
   if (r === 'wallet') {
+    $$('[data-view]').forEach(function (b) { b.addEventListener('click', function () { ui.view = b.getAttribute('data-view'); try { localStorage.setItem('tapo.web.view', ui.view); } catch (e) {} render(); }); });
+    $$('[data-bestcat]').forEach(function (a) { a.addEventListener('click', function () { ui.cat = a.getAttribute('data-bestcat'); ui.amount = 1000; }); });
+    $$('[data-viewcard]').forEach(function (a) { a.addEventListener('click', function () { ui.openCard = a.getAttribute('data-viewcard'); }); });
+    // Stack view: cards below the fold sit tilted back and settle flat as they scroll in
+    var sv = $('#stackview');
+    if (sv && !REDUCE && 'IntersectionObserver' in window) {
+      var items = $$('.sv-item', sv);
+      items.forEach(function (el) { if (el.getBoundingClientRect().top > window.innerHeight * 0.9) el.classList.add('below'); });
+      var svo = new IntersectionObserver(function (es) { es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.remove('below'); svo.unobserve(en.target); } }); }, { rootMargin: '0px 0px -12% 0px' });
+      items.forEach(function (el) { svo.observe(el); });
+      cleanup.push(function () { svo.disconnect(); });
+    }
     var car = $('#carousel'), act = $('#activeCard');
     if (car) {
       var slots = $$('.slot', car);
@@ -1211,6 +1347,7 @@ function mountImport() {
 
 function mountCards() {
   $('#newCard').addEventListener('click', function () { openEditor(null); });
+  if (ui.openCard && cardById(ui.openCard)) { var oc = ui.openCard; ui.openCard = null; setTimeout(function () { openEditor(oc); }, 380); }
   $$('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { openEditor(b.getAttribute('data-edit')); }); });
   $$('[data-del]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -1292,6 +1429,43 @@ function openEditor(id) {
   if (!REDUCE) { raf = requestAnimationFrame(loop); document.addEventListener('visibilitychange', function () { if (document.hidden) { cancelAnimationFrame(raf); raf = null; } else if (!raf) raf = requestAnimationFrame(loop); }); }
 })();
 
+/* =====================================================================================
+   Intro: scattered dots fly together into the TAPO mark, then the name sweeps in.
+   Plays once per browser session; skipped with Reduce Motion; click or any key skips it.
+   ===================================================================================== */
+function intro() {
+  if (REDUCE || !document.body.animate) return;
+  try { if (sessionStorage.getItem('tapo.intro')) return; sessionStorage.setItem('tapo.intro', '1'); } catch (e) {}
+  var U = 4, pts = [], x, y, a;                       // mark geometry in 40-unit space, drawn at 4px per unit
+  for (x = 9; x <= 27; x += 2.5) for (y = 14; y <= 20; y += 2.5) pts.push([x, y, 0]);          // crossbar (card)
+  for (x = 16; x <= 20; x += 2.2) for (y = 22.5; y <= 31; y += 2.4) pts.push([x, y, 0]);       // stem
+  for (a = -45; a <= 45; a += 22.5) pts.push([26 + 6 * Math.cos(a * Math.PI / 180), 17 + 6 * Math.sin(a * Math.PI / 180), 1]);       // inner wave
+  for (a = -42; a <= 42; a += 14) pts.push([26.2 + 10.5 * Math.cos(a * Math.PI / 180), 17 + 10.5 * Math.sin(a * Math.PI / 180), 1]); // outer wave
+  var el = document.createElement('div');
+  el.className = 'intro'; el.setAttribute('role', 'presentation');
+  el.innerHTML = '<div class="intro-inner"><div class="intro-stage">' +
+    pts.map(function (p) { return '<i class="intro-dot' + (p[2] ? ' g' : '') + '"></i>'; }).join('') +
+    '<svg class="intro-mark" viewBox="0 0 40 40" aria-hidden="true"><rect class="ring" x="1" y="1" width="38" height="38" rx="10.5" fill="none" stroke="#ECE9E2" stroke-width=".8" pathLength="520"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#ECE9E2"/><rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#ECE9E2"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></div>' +
+    '<div class="intro-word">TAPO</div><div class="intro-tag">The right card, every time.</div></div><button class="intro-skip" type="button">Skip</button>';
+  document.body.appendChild(el);
+  var dots = $$('.intro-dot', el), timers = [];
+  dots.forEach(function (d, i) {
+    var p = pts[i], tx = p[0] * U, ty = p[1] * U, ang = Math.random() * Math.PI * 2, dist = 260 + Math.random() * 420;
+    d.animate([
+      { transform: 'translate(' + (80 + Math.cos(ang) * dist) + 'px,' + (80 + Math.sin(ang) * dist) + 'px) scale(.3)', opacity: 0 },
+      { opacity: 1, offset: .25 },
+      { transform: 'translate(' + tx + 'px,' + ty + 'px) scale(1)', opacity: 1 }
+    ], { duration: 950 + Math.random() * 350, delay: Math.random() * 260, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' });
+  });
+  function done() { timers.forEach(clearTimeout); el.classList.add('out'); setTimeout(function () { el.remove(); }, 600); document.removeEventListener('keydown', done); }
+  timers.push(setTimeout(function () { el.classList.add('mark'); }, 1450));
+  timers.push(setTimeout(function () { el.classList.add('word'); }, 1850));
+  timers.push(setTimeout(done, 3200));
+  el.addEventListener('click', done);
+  document.addEventListener('keydown', done);
+}
+
 render();
+intro();
 })();
 </script>
