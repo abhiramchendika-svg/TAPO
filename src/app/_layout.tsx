@@ -3,6 +3,9 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useState } from 'react';
+
+import { Intro } from '../components/Intro';
 import { LogoMark } from '../components/Logo';
 import { useWallet, WalletProvider } from '../lib/wallet';
 import { useFonts } from 'expo-font';
@@ -12,6 +15,8 @@ import { colors, FONT_FILES, fonts, resolveFont } from '../theme';
 function RootStack() {
   const { ready } = useWallet();
   const [fontsLoaded, fontError] = useFonts(FONT_FILES);
+  // The logo intro plays once each time the app starts.
+  const [showIntro, setShowIntro] = useState(true);
   // If fonts fail to load, carry on with system fonts rather than blocking the app.
   if (!ready || (!fontsLoaded && !fontError)) {
     return (
@@ -23,6 +28,7 @@ function RootStack() {
     );
   }
   return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: colors.bg },
@@ -45,6 +51,8 @@ function RootStack() {
       <Stack.Screen name="developer" options={{ title: 'Developer' }} />
       <Stack.Screen name="import" options={{ title: 'Import statement' }} />
     </Stack>
+    {showIntro ? <Intro onDone={() => setShowIntro(false)} /> : null}
+    </View>
   );
 }
 

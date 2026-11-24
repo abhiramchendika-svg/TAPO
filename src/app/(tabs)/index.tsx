@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '../../components/Text';
+import { CardStack } from '../../components/CardStack';
 import { bestFor, CardList, GalleryWall } from '../../components/Gallery';
 import { Icon } from '../../components/Icon';
 import { Logo } from '../../components/Logo';
@@ -25,7 +26,7 @@ import type { Card } from '../../lib/types';
 import { useWallet } from '../../lib/wallet';
 import { colors, fonts, radius, space, type } from '../../theme';
 
-type Mode = 'gallery' | 'list';
+type Mode = 'gallery' | 'stack' | 'list';
 
 function greeting(d = new Date()) {
   const h = d.getHours();
@@ -100,6 +101,7 @@ export default function HomeScreen() {
               onChange={setMode}
               options={[
                 { value: 'gallery', label: 'Gallery' },
+                { value: 'stack', label: 'Stack' },
                 { value: 'list', label: 'List' },
               ]}
             />
@@ -134,6 +136,8 @@ export default function HomeScreen() {
                 />
               </View>
             </>
+          ) : mode === 'stack' ? (
+            <CardStack cards={data.cards} txns={data.transactions} />
           ) : (
             <View style={{ marginTop: space.md }}>
               <CardList cards={data.cards} onOpen={open} onAdd={add} />
