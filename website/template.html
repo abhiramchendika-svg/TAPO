@@ -1,6 +1,6 @@
 <title>TAPO Rewards Wallet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="TAPO tells you which of your cards earns the most for every purchase, and shows the rewards you missed. Built for India.">
+<meta name="description" content="TAPO tells you which of your cards earns the most for every purchase. Use it free on the web.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
@@ -8,803 +8,983 @@
 <style>
 /*__FONT_FACES__*/
 
-/* Layout: a single 1180px column on a night-navy ground. Hero splits copy | phone; product sections alternate
-   full-width tool panels with quiet copy; everything stacks to one column under 900px. */
+/* Layout: two shells on one page. The SITE shell (Home, Product, Security, FAQ) is a 1200px editorial column
+   over a slow aurora canvas. The APP shell (Wallet, Best card, Insights, Import, Cards) is a sidebar + workspace
+   on desktop and a bottom tab bar on phones. Routes switch with view transitions. */
 :root {
-  --night: #0B0E18;
-  --night-2: #0F1320;
-  --surface: #151A29;
-  --surface-2: #1C2236;
-  --line: #262D42;
-  --line-soft: #1E2435;
+  --night: #080B14;
+  --bg: #0B0E18;
+  --surface: #131828;
+  --surface-2: #1A2034;
+  --surface-3: #222941;
+  --line: #262D44;
+  --line-soft: #1B2132;
   --cream: #ECE9E2;
-  --ink: #F2EFE8;
+  --ink: #F3F0E9;
   --muted: #9AA3B8;
-  --subtle: #6C7590;
+  --subtle: #69728C;
   --green: #6FD9A4;
-  --green-bg: #12291F;
+  --green-bg: #11291E;
   --amber: #F5C66B;
-  --amber-bg: #2C2310;
+  --amber-bg: #2B2210;
   --red: #FF9A8B;
+  --violet: #A99BFF;
   --gold: #D8B96A;
   --font: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --max: 1180px;
-  --r: 20px;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
-body { margin: 0; background: var(--night); color: var(--ink); font: 400 17px/1.6 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--night); }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; background: var(--night); color: var(--ink); font: 400 16.5px/1.6 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 80; background: var(--night); }
 a { color: inherit; }
-img, svg { max-width: 100%; }
 button, input, select { font: inherit; color: inherit; }
+svg { flex: none; }
 :focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; border-radius: 8px; }
-.wrap { max-width: var(--max); margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
-.num { font-variant-numeric: tabular-nums; }
-h1, h2, h3 { margin: 0; text-wrap: balance; font-family: var(--font); }
-h2 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.03; }
-h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
 p { margin: 0; }
-.eyebrow { font-size: 14px; font-weight: 700; color: var(--green); letter-spacing: .02em; }
-.lede { color: var(--muted); font-size: clamp(17px, 1.9vw, 19px); max-width: 60ch; }
+.num { font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
+.subtle { color: var(--subtle); }
 .small { font-size: 14px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#aurora { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .9; }
+#root { position: relative; z-index: 1; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .35s; animation-timing-function: var(--ease); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
-/* buttons + inputs */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent; font-weight: 700; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer; transition: background .2s, border-color .2s, transform .15s; white-space: nowrap; }
-.btn:active { transform: scale(.98); }
-.btn[disabled] { opacity: .55; cursor: default; }
-.btn-primary { background: var(--cream); color: var(--night); }
-.btn-primary:hover:not([disabled]) { background: #fff; }
-.btn-ghost { border-color: var(--line); background: transparent; }
+/* ---------- shared controls ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent; font-weight: 700; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer; white-space: nowrap; transition: transform .2s var(--ease), background .2s, border-color .2s, box-shadow .3s; }
+.btn:active { transform: scale(.97); }
+.btn[disabled] { opacity: .5; cursor: default; }
+.btn-primary { background: var(--cream); color: var(--night); box-shadow: 0 10px 30px -12px rgba(236,233,226,.6); }
+.btn-primary:hover:not([disabled]) { background: #fff; box-shadow: 0 14px 40px -12px rgba(236,233,226,.8); }
+.btn-ghost { background: rgba(255,255,255,.03); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--muted); }
-.btn-sm { min-height: 38px; padding: 0 14px; font-size: 14px; }
-.btn-link { background: none; border: 0; padding: 6px 4px; color: var(--muted); font-weight: 500; cursor: pointer; font-size: 14px; }
-.btn-link:hover { color: var(--ink); }
-.input, .select { width: 100%; min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--night); color: var(--ink); font-size: 16px; }
+.btn-danger { background: transparent; border-color: #5a2b28; color: var(--red); }
+.btn-sm { min-height: 38px; padding: 0 15px; font-size: 14px; }
+.link-btn { background: none; border: 0; padding: 6px 4px; color: var(--muted); font-weight: 500; font-size: 14px; cursor: pointer; }
+.link-btn:hover { color: var(--ink); }
+.input, .select { width: 100%; min-height: 48px; padding: 0 15px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font-size: 16px; }
 .input:focus, .select:focus { outline: none; border-color: var(--cream); }
 .field { display: grid; gap: 6px; min-width: 0; }
 .field label, .lbl { font-size: 13.5px; font-weight: 500; color: var(--muted); }
+.panel { background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--line); border-radius: 22px; }
+.glass { background: color-mix(in srgb, var(--surface) 70%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid color-mix(in srgb, var(--line) 80%, transparent); border-radius: 22px; }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--surface-3); color: var(--muted); vertical-align: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.03); font-size: 13.5px; color: var(--muted); }
+.pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
 
-/* announcement + nav */
-.announce { background: var(--green-bg); color: #BFF0D6; font-size: 14px; text-align: center; padding-block: 9px; }
-.announce a { font-weight: 700; text-underline-offset: 3px; }
-.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--night) 84%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line-soft); }
-.nav .wrap { display: flex; align-items: center; gap: 28px; height: 68px; }
+/* ---------- card face ---------- */
+.cardface { --mx: 30%; --my: 20%; position: relative; aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%; padding: 6.5% 7%; color: #fff; overflow: hidden; isolation: isolate; container-type: inline-size;
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 48%, #000));
+  box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--c) 85%, transparent), 0 0 0 1px rgba(255,255,255,.09) inset; }
+.cardface::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 115% -15%, transparent 28%, rgba(255,255,255,.08) 28.4%, transparent 29%, transparent 38%, rgba(255,255,255,.06) 38.4%, transparent 39%, transparent 48%, rgba(255,255,255,.05) 48.4%, transparent 49%); }
+.cardface::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.28), transparent 45%); mix-blend-mode: overlay; pointer-events: none; }
+.cf-name { font-weight: 700; font-size: 6.2cqw; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 78%; }
+.cf-sub { font-size: 3.6cqw; opacity: .7; letter-spacing: .06em; text-transform: uppercase; margin-top: 1.5cqw; }
+.cf-chip { position: absolute; left: 7%; top: 44%; width: 13%; aspect-ratio: 1.3; border-radius: 14%; background: linear-gradient(135deg, #F3E1A8, var(--gold) 55%, #A28443); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.cf-chip::after { content: ""; position: absolute; inset: 30% 0; border-block: 1px solid rgba(0,0,0,.25); }
+.cf-tap { position: absolute; left: 24%; top: 45.5%; width: 7%; opacity: .85; }
+.cf-num { position: absolute; left: 7%; bottom: 10%; font: 500 5.2cqw/1 var(--mono); letter-spacing: .14em; }
+.cf-logo { position: absolute; right: 7%; bottom: 9%; width: 10%; opacity: .9; }
+.cf-tag { position: absolute; right: 7%; top: 9%; font: 700 3.2cqw/1 var(--mono); letter-spacing: .12em; padding: 1.4cqw 2cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.18); }
+
+/* ---------- SITE shell ---------- */
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.snav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; transition: background .3s, border-color .3s; border-bottom: 1px solid transparent; }
+.snav.scrolled { background: color-mix(in srgb, var(--night) 78%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: var(--line-soft); }
+.snav .wrap { display: flex; align-items: center; gap: 30px; height: 72px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex: none; }
 .brand b { font-weight: 900; font-size: 21px; letter-spacing: .14em; }
-.links { display: flex; gap: 26px; font-size: 15px; font-weight: 500; }
-.links a { color: var(--muted); text-decoration: none; }
-.links a:hover { color: var(--ink); }
-.nav-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-.menu { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: none; cursor: pointer; place-items: center; }
-@media (max-width: 900px) {
-  .links { display: none; }
-  .menu { display: inline-grid; }
-  .nav.open .links { display: flex; flex-direction: column; position: absolute; left: 0; right: 0; top: 68px; gap: 0; background: var(--night); border-bottom: 1px solid var(--line); padding: 8px max(20px, env(safe-area-inset-right, 0px)) 16px max(20px, env(safe-area-inset-left, 0px)); }
-  .nav.open .links a { padding: 13px 0; font-size: 18px; color: var(--ink); border-bottom: 1px solid var(--line-soft); }
+.slinks { display: flex; gap: 6px; }
+.slinks a { padding: 8px 14px; border-radius: 999px; text-decoration: none; color: var(--muted); font-weight: 500; font-size: 15px; transition: color .2s, background .2s; }
+.slinks a:hover { color: var(--ink); }
+.slinks a[aria-current="page"] { color: var(--ink); background: rgba(255,255,255,.06); }
+.snav-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.menu-btn { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: none; cursor: pointer; place-items: center; }
+@media (max-width: 860px) {
+  .slinks { display: none; }
+  .menu-btn { display: inline-grid; }
+  .snav.open { background: var(--night); }
+  .snav.open .slinks { display: flex; flex-direction: column; position: absolute; top: 72px; left: 0; right: 0; background: var(--night); border-bottom: 1px solid var(--line); padding: 8px max(20px, env(safe-area-inset-right, 0px)) 18px max(20px, env(safe-area-inset-left, 0px)); }
+  .snav.open .slinks a { font-size: 19px; padding: 14px 4px; border-radius: 0; border-bottom: 1px solid var(--line-soft); }
 }
-@media (max-width: 420px) { .nav-right .btn { padding: 0 14px; font-size: 14px; min-height: 40px; } }
+@media (max-width: 400px) { .snav-right .btn { padding: 0 14px; } }
+
+.sec { padding-block: clamp(64px, 9vw, 128px); position: relative; }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--green); letter-spacing: .02em; }
+.h2 { font-size: clamp(34px, 5vw, 60px); font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+.lede { color: var(--muted); font-size: clamp(17px, 1.9vw, 20px); max-width: 60ch; }
+.head { display: grid; gap: 16px; max-width: 780px; margin-bottom: clamp(36px, 5vw, 60px); }
+.head.center { margin-inline: auto; text-align: center; justify-items: center; }
 
 /* hero */
-.hero { position: relative; overflow: hidden; padding-block: clamp(44px, 7vw, 96px) clamp(56px, 7vw, 100px); }
-.hero::before { content: ""; position: absolute; width: 900px; height: 900px; right: -260px; top: -300px; background: radial-gradient(closest-side, rgba(236,233,226,.10), transparent 70%); pointer-events: none; }
-.hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(36px, 5vw, 80px); align-items: center; }
-.hero h1 { font-size: clamp(46px, 7.2vw, 94px); font-weight: 900; letter-spacing: -0.048em; line-height: .93; }
-.hero h1 span { color: var(--green); }
+.hero { padding-block: clamp(36px, 6vw, 80px) clamp(60px, 8vw, 110px); }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+.hero h1 { font-size: clamp(50px, 8.4vw, 112px); font-weight: 900; letter-spacing: -0.055em; line-height: .9; margin-top: 22px; }
+.shine-text { background: linear-gradient(100deg, var(--ink) 20%, var(--green) 40%, #BDF5D8 50%, var(--green) 60%, var(--ink) 80%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sweep 7s var(--ease) infinite; }
+@keyframes sweep { 0%, 15% { background-position: 100% 0; } 60%, 100% { background-position: 0 0; } }
 .hero .lede { margin-top: 24px; }
-.trust { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 22px; font-size: 14.5px; color: var(--muted); }
-.trust span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+.hero-note { margin-top: 18px; font-size: 14px; color: var(--subtle); }
+.stack { position: relative; aspect-ratio: 1 / .92; perspective: 1200px; }
+.stack .fc { position: absolute; width: 70%; transform-style: preserve-3d; transition: transform .6s var(--ease); }
+.stack .fc .inner { animation: float 7s ease-in-out infinite; }
+.stack .fc:nth-child(1) { left: 0; top: 4%; --rz: -13deg; z-index: 1; }
+.stack .fc:nth-child(2) { right: 0; top: 26%; --rz: 8deg; z-index: 2; }
+.stack .fc:nth-child(2) .inner { animation-delay: -2.4s; }
+.stack .fc:nth-child(3) { left: 13%; top: 50%; --rz: -3deg; z-index: 3; }
+.stack .fc:nth-child(3) .inner { animation-delay: -4.6s; }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(var(--rz)); } 50% { transform: translateY(-14px) rotate(var(--rz)); } }
+.stack .glow { position: absolute; left: 10%; right: 10%; bottom: -2%; height: 22%; background: radial-gradient(closest-side, rgba(111,217,164,.22), transparent); filter: blur(10px); }
+.float-chip { position: absolute; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 11px 15px; font-size: 13.5px; line-height: 1.3; }
+.float-chip b { display: block; font-size: 17px; font-weight: 900; }
+.float-chip.a { right: -2%; top: 2%; animation: float 8s ease-in-out infinite; --rz: 0deg; }
+.float-chip.b { left: -3%; bottom: 8%; animation: float 9s ease-in-out infinite -3s; --rz: 0deg; }
+.dot { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; }
 
-/* waitlist */
-.waitlist { margin-top: 32px; display: grid; gap: 10px; max-width: 560px; }
-.wl-row { display: flex; gap: 10px; }
-.wl-row .input { flex: 1; min-width: 0; border-radius: 999px; padding: 0 20px; }
-.wl-row .select { width: auto; flex: none; border-radius: 999px; }
-.wl-note { font-size: 13.5px; color: var(--subtle); }
-.wl-msg { font-size: 14.5px; }
-.wl-msg.err { color: var(--red); }
-.wl-done { display: flex; gap: 12px; align-items: center; padding: 14px 18px; border-radius: 16px; background: var(--green-bg); border: 1px solid #1F4A3A; color: #CFF5E1; }
-.wl-done svg { flex: none; }
-@media (max-width: 560px) { .wl-row { flex-wrap: wrap; } .wl-row .input { flex-basis: 100%; } .wl-row .select { flex: 1; } }
+/* marquee */
+.marquee { border-block: 1px solid var(--line-soft); overflow: hidden; padding-block: 18px; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.marquee-track { display: flex; gap: 14px; width: max-content; animation: marquee 40s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.mq { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 14.5px; white-space: nowrap; }
+.mq b { color: var(--green); }
 
-/* phone mockup */
-.device { position: relative; width: min(340px, 100%); margin: 0 auto; aspect-ratio: 9 / 18.6; border-radius: 48px; padding: 11px; background: linear-gradient(160deg, #2A3147, #0A0D16 40%, #1A2033); box-shadow: 0 60px 120px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06) inset; }
-.device::after { content: ""; position: absolute; left: 50%; top: 22px; width: 92px; height: 26px; transform: translateX(-50%); border-radius: 20px; background: #05070D; }
-.screen { height: 100%; border-radius: 38px; overflow: hidden; background: var(--night); padding: 52px 16px 12px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
-.sc-top { display: flex; justify-content: space-between; align-items: center; }
-.sc-greet { color: var(--muted); font-size: 11.5px; }
-.sc-h { font-size: 26px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
-.sc-card { margin: 8px 6px 14px; animation: bob 6s ease-in-out infinite; }
-@keyframes bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(-2deg); } }
-.sc-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sc-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 11px; min-width: 0; }
-.sc-tile small { display: block; color: var(--muted); font-size: 10.5px; }
-.sc-tile b { display: block; font-size: 17px; font-weight: 900; letter-spacing: -0.01em; }
-.sc-missed { border-color: #4a3c1c; }
-.sc-missed small { color: var(--amber); }
-.sc-tabs { margin-top: auto; display: flex; justify-content: space-between; padding: 9px 6px 2px; border-top: 1px solid var(--line); color: var(--subtle); font-size: 10px; }
-.sc-tabs b { color: var(--ink); }
-.device-caption { text-align: center; font-size: 13px; color: var(--subtle); margin-top: 16px; }
+/* bento */
+.bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+.tile { padding: 26px; display: grid; gap: 12px; align-content: start; overflow: hidden; position: relative; min-width: 0; transition: transform .4s var(--ease), border-color .3s; }
+.tile:hover { transform: translateY(-4px); border-color: #39415c; }
+.tile p { color: var(--muted); font-size: 15.5px; }
+.t-a { grid-column: span 4; }
+.t-b { grid-column: span 2; }
+.t-c, .t-d, .t-e { grid-column: span 2; }
+.ficon { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
+.live-rank { display: grid; gap: 8px; margin-top: 6px; }
+.lr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 11px 14px; border-radius: 14px; background: var(--surface-2); transition: background .4s; }
+.lr.top { background: linear-gradient(90deg, var(--green-bg), var(--surface-2)); }
+.lr b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lr span { font-weight: 900; font-variant-numeric: tabular-nums; }
+.lr.top span { color: var(--green); }
+.lr .bar { grid-column: 1 / -1; }
+.bar { height: 6px; border-radius: 4px; background: var(--bg); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; transition: width .7s var(--ease); }
+.big-num { font-size: clamp(40px, 5vw, 56px); font-weight: 900; letter-spacing: -0.04em; line-height: 1; color: var(--amber); }
+.mini-bars { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin-top: 6px; }
+.mini-bars i { flex: 1; border-radius: 6px 6px 3px 3px; background: linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 30%, transparent)); animation: grow 1s var(--ease) both; transform-origin: bottom; }
+@keyframes grow { from { transform: scaleY(.3); } }
 
-/* card face */
-.cardface { position: relative; aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%; padding: 6% 7%; color: #fff; overflow: hidden; isolation: isolate; background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 52%, #000)); box-shadow: 0 24px 40px -18px color-mix(in srgb, var(--c) 80%, transparent), 0 0 0 1px rgba(255,255,255,.08) inset; }
-.cardface::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 110% -10%, transparent 30%, rgba(255,255,255,.07) 30.5%, transparent 31%, transparent 40%, rgba(255,255,255,.06) 40.5%, transparent 41%), linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%); }
-.cf-name { font-weight: 700; font-size: 11px; letter-spacing: .03em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cf-chip { position: absolute; left: 7%; top: 42%; width: 13%; aspect-ratio: 1.3; border-radius: 14%; background: linear-gradient(135deg, #F1DDA0, var(--gold) 55%, #A88A45); }
-.cf-num { position: absolute; left: 7%; bottom: 10%; font: 500 11px/1 var(--mono); letter-spacing: .12em; }
-.cf-net { position: absolute; right: 7%; bottom: 9%; font-weight: 900; font-style: italic; font-size: 12px; }
+/* steps */
+.steps3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: s; }
+.st { padding: 28px; display: grid; gap: 12px; align-content: start; }
+.st .n { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font-weight: 900; }
+.st p { color: var(--muted); }
 
-/* sections */
-section { scroll-margin-top: 84px; }
-.section { padding-block: clamp(64px, 9vw, 120px); }
-.section + .section { border-top: 1px solid var(--line-soft); }
-.head { display: grid; gap: 14px; max-width: 760px; margin-bottom: clamp(32px, 4.5vw, 52px); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.cta-band { padding: clamp(40px, 7vw, 80px); border-radius: 32px; text-align: center; display: grid; justify-items: center; gap: 18px; background: radial-gradient(700px 360px at 50% 0%, rgba(111,217,164,.18), transparent 70%), var(--surface); border: 1px solid var(--line); }
 
-/* features */
-.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.feature { padding: 28px; display: grid; gap: 12px; align-content: start; }
-.ficon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
-.feature p { color: var(--muted); font-size: 16px; }
-
-/* finder */
-.finder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-.box { padding: 24px; display: grid; gap: 18px; align-content: start; min-width: 0; }
-.box-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.cards-list { display: grid; gap: 8px; }
-.crow { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); }
-.crow i { width: 12px; height: 34px; border-radius: 4px; background: var(--c); }
-.crow b { display: block; font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.crow span.rules { display: block; font-size: 13px; color: var(--muted); line-height: 1.4; }
-.crow .acts { display: flex; gap: 2px; }
-.tag { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--night); color: var(--subtle); vertical-align: 2px; }
-.editor { display: grid; gap: 14px; padding: 18px; border-radius: 16px; background: var(--night); border: 1px solid var(--line); }
-.ed-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 10px; }
-.rule-row { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, .8fr) minmax(0, 1fr); gap: 8px; }
-.ed-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 15px; font-weight: 500; cursor: pointer; }
-.chip:hover { border-color: var(--muted); }
-.chip[aria-pressed="true"] { background: var(--cream); color: var(--night); border-color: var(--cream); font-weight: 700; }
-.amount { display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 0 18px; border-radius: 16px; background: var(--night); border: 1px solid var(--line); }
-.amount:focus-within { border-color: var(--cream); }
-.amount span { font: 700 26px "Inter", var(--font); color: var(--muted); }
-.amount input { flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.ranks { display: grid; gap: 8px; }
-.rank { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; }
-.rank.best { border-color: color-mix(in srgb, var(--green) 45%, transparent); background: linear-gradient(180deg, var(--green-bg), var(--surface-2)); }
-.pos { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font: 700 13px var(--mono); background: var(--night); color: var(--muted); }
-.rank.best .pos { background: var(--green); color: var(--night); }
-.rank b { display: block; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.why { font-size: 13px; color: var(--muted); line-height: 1.45; }
-.why.cap { color: var(--amber); }
-.val { font-size: 21px; font-weight: 900; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.rank.best .val { color: var(--green); }
-.verdict { font-size: 15px; color: var(--muted); }
-.verdict b { color: var(--ink); }
-
-/* statement */
-.stmt { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 18px; align-items: start; }
-.drop { border-style: dashed; transition: border-color .2s, background .2s; }
-.drop.over { border-color: var(--cream); background: var(--surface-2); }
-.privacy { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
-.privacy svg { flex: none; margin-top: 3px; }
-.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.stat { padding: 14px; border-radius: 14px; background: var(--surface-2); min-width: 0; }
-.stat small { display: block; font-size: 12.5px; color: var(--muted); }
-.stat b { display: block; font-size: clamp(18px, 2.3vw, 26px); font-weight: 900; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.stat.warn b { color: var(--amber); }
-.catbar .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 500; }
-.catbar .top span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
-.bar { height: 6px; border-radius: 4px; background: var(--night); margin-top: 6px; overflow: hidden; }
-.bar i { display: block; height: 100%; border-radius: 4px; }
-.tip { padding: 12px 14px; border-radius: 12px; background: var(--amber-bg); color: #F8DFA6; font-size: 14.5px; line-height: 1.45; }
-.tip.good { background: var(--green-bg); color: var(--green); }
-.lines { display: grid; gap: 7px; font-size: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
-.lines div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; color: var(--muted); }
-.lines div span:first-child { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.empty { display: grid; gap: 10px; align-content: center; min-height: 240px; color: var(--muted); }
-.err { color: var(--red); font-size: 14.5px; }
-
-/* how */
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.step { padding: 28px; display: grid; gap: 10px; align-content: start; }
-.step .n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font-weight: 900; font-size: 15px; }
-.step p { color: var(--muted); font-size: 16px; }
+/* product scrolly */
+.scrolly { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 96px); }
+.phone-sticky { position: sticky; top: 110px; align-self: start; }
+.chapters { display: grid; gap: 22vh; padding-block: 6vh 20vh; }
+.chapter { display: grid; gap: 14px; opacity: .45; transition: opacity .4s; }
+.chapter.on { opacity: 1; }
+.chapter .k { font: 700 13px var(--mono); color: var(--green); }
+.chapter h3 { font-size: clamp(26px, 3vw, 36px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+.chapter p { color: var(--muted); font-size: 17px; }
+.device { position: relative; width: min(330px, 100%); margin: 0 auto; aspect-ratio: 9 / 18.6; border-radius: 48px; padding: 11px; background: linear-gradient(160deg, #2B3249, #090C15 42%, #1A2034); box-shadow: 0 70px 120px -40px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.06) inset; }
+.device::after { content: ""; position: absolute; left: 50%; top: 22px; width: 90px; height: 26px; transform: translateX(-50%); border-radius: 20px; background: #04060B; }
+.dscreen { height: 100%; border-radius: 38px; overflow: hidden; background: var(--bg); padding: 54px 15px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; position: relative; }
+.dscreen > .layer { position: absolute; inset: 54px 15px 14px; display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(14px) scale(.98); transition: opacity .45s, transform .45s var(--ease); }
+.dscreen > .layer.on { opacity: 1; transform: none; }
+.ds-h { font-size: 24px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+.ds-k { color: var(--muted); font-size: 11px; }
+.ds-t { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 11px; }
+.ds-t b { display: block; font-size: 16px; font-weight: 900; }
+.ds-row { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.ds-row:last-child { border-bottom: 0; }
 
 /* security */
-.sec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
-.never { padding: 28px; display: grid; gap: 16px; align-content: start; }
-.never-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.never-list span { padding: 9px 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--night); font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; }
-.promises { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.promises li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding: 18px 20px; }
-.promises b { display: block; margin-bottom: 2px; }
-.promises span { color: var(--muted); font-size: 15.5px; }
+.never { display: flex; flex-wrap: wrap; gap: 10px; }
+.never span { padding: 11px 15px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 500; color: var(--muted); text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; }
+.flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.flow .panel { padding: 24px; display: grid; gap: 10px; align-content: start; }
+.flow .panel p { color: var(--muted); font-size: 15.5px; }
+.promise-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.promise { padding: 24px; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 14px; }
+.promise p { color: var(--muted); font-size: 15.5px; margin-top: 3px; }
 
 /* faq */
-.faq { display: grid; gap: 10px; max-width: 860px; }
-.faq details { border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
-.faq summary { list-style: none; cursor: pointer; padding: 20px 22px; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.faq { display: grid; gap: 10px; max-width: 880px; }
+.faq details { border-radius: 18px; background: var(--surface); border: 1px solid var(--line); transition: border-color .2s; }
+.faq details[open] { border-color: #3a4260; }
+.faq summary { list-style: none; cursor: pointer; padding: 21px 24px; font-weight: 700; font-size: 17.5px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; font-size: 24px; font-weight: 400; color: var(--muted); line-height: 1; flex: none; }
-.faq details[open] summary::after { content: "–"; }
-.faq details p { padding: 0 22px 20px; color: var(--muted); max-width: 70ch; }
+.faq summary::after { content: "+"; font-size: 26px; font-weight: 400; color: var(--muted); line-height: 1; transition: transform .3s var(--ease); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { padding: 0 24px 22px; color: var(--muted); max-width: 70ch; }
 
-/* cta band */
-.cta { padding: clamp(36px, 6vw, 64px); border-radius: 28px; background: radial-gradient(800px 400px at 85% 0%, rgba(111,217,164,.14), transparent 70%), var(--surface); border: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 32px; align-items: center; }
-.cta .waitlist { margin-top: 0; }
-.stores { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.store { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--night); }
-.store small { display: block; font-size: 11px; color: var(--subtle); line-height: 1.1; }
-.store b { display: block; font-size: 15px; line-height: 1.2; }
-
-/* footer */
-footer { border-top: 1px solid var(--line-soft); padding-block: 56px 40px; font-size: 14.5px; color: var(--muted); }
+footer.sfoot { border-top: 1px solid var(--line-soft); padding-block: 56px 40px; color: var(--muted); font-size: 14.5px; position: relative; z-index: 1; }
 .fgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 32px; }
-.fgrid h4 { margin: 0 0 12px; font-size: 14px; color: var(--ink); }
-.fgrid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fgrid h4 { margin-bottom: 12px; font-size: 14px; color: var(--ink); }
+.fgrid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
 .fgrid a { text-decoration: none; }
 .fgrid a:hover { color: var(--ink); }
-.fine { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line-soft); display: grid; gap: 10px; font-size: 13px; color: var(--subtle); }
+.fine { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line-soft); display: grid; gap: 8px; font-size: 13px; color: var(--subtle); }
 
-@media (max-width: 980px) {
-  .hero .wrap, .finder, .stmt, .sec, .cta { grid-template-columns: minmax(0, 1fr); }
-  .features, .steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .fgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+/* ---------- APP shell ---------- */
+.app { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+.side { position: sticky; top: 0; height: 100vh; padding: 22px 16px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--line-soft); background: color-mix(in srgb, var(--night) 70%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.side .brand { padding: 4px 8px 20px; }
+.navi { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 13px; text-decoration: none; color: var(--muted); font-weight: 500; transition: background .2s, color .2s; }
+.navi:hover { color: var(--ink); background: rgba(255,255,255,.04); }
+.navi[aria-current="page"] { color: var(--ink); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.side-foot { margin-top: auto; display: grid; gap: 10px; font-size: 13px; color: var(--subtle); }
+.workspace { padding: 30px clamp(20px, 3.5vw, 48px) 60px; max-width: 1180px; width: 100%; min-width: 0; }
+.tabs { display: none; }
+.screen-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; }
+.screen-head h1 { font-size: clamp(30px, 4vw, 44px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.05; }
+.screen-head .k { color: var(--muted); font-size: 15px; margin-bottom: 4px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.box { padding: 22px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.box-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.box-h h2 { font-size: 18px; font-weight: 700; }
+.stat { padding: 20px; display: grid; gap: 4px; min-width: 0; transition: transform .3s var(--ease), border-color .2s; text-decoration: none; }
+a.stat:hover { transform: translateY(-3px); border-color: #3a4260; }
+.stat small { color: var(--muted); font-size: 13.5px; font-weight: 500; }
+.stat b { font-size: clamp(24px, 2.8vw, 34px); font-weight: 900; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
+.stat.good b { color: var(--green); }
+.stat.warn b { color: var(--amber); }
+.stat .hint { font-size: 13px; color: var(--subtle); }
+
+/* wallet carousel */
+.carousel { display: flex; gap: 0; overflow-x: auto; scroll-snap-type: x mandatory; padding: 30px 0 40px; margin-inline: calc(-1 * clamp(20px, 3.5vw, 48px)); padding-inline: calc(50% - min(170px, 38vw)); perspective: 1100px; scrollbar-width: none; }
+.carousel::-webkit-scrollbar { display: none; }
+.slot { flex: 0 0 min(340px, 76vw); scroll-snap-align: center; transform-style: preserve-3d; will-change: transform; transition: transform .1s linear; }
+.slot .cardface { cursor: pointer; }
+.add-slot { aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%; border: 1.5px dashed #3a4260; display: grid; place-items: center; text-decoration: none; color: var(--muted); font-weight: 700; background: rgba(255,255,255,.02); }
+.add-slot:hover { color: var(--ink); border-color: var(--muted); }
+.active-card { text-align: center; display: grid; gap: 6px; justify-items: center; margin-top: -8px; margin-bottom: 26px; }
+.active-card h2 { font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips.center { justify-content: center; }
+.chip { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 14px; font-weight: 500; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--cream); color: var(--night); border-color: var(--cream); font-weight: 700; }
+.chip.static { cursor: default; }
+.txn { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line-soft); }
+.txn:last-child { border-bottom: 0; }
+.cico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; }
+.txn b { display: block; font-size: 15.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txn small { color: var(--muted); font-size: 13px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txn .amt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.txn .amt small { text-align: right; }
+
+/* best */
+.cat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.cat { display: grid; gap: 8px; justify-items: start; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; text-align: left; transition: transform .25s var(--ease), border-color .2s, background .2s; }
+.cat:hover { transform: translateY(-2px); border-color: #3a4260; }
+.cat[aria-pressed="true"] { border-color: var(--cream); background: var(--surface-3); box-shadow: 0 0 0 1px var(--cream) inset; }
+.cat span { font-size: 14px; font-weight: 700; }
+.amount { display: flex; align-items: center; gap: 8px; min-height: 66px; padding: 0 20px; border-radius: 18px; background: var(--bg); border: 1px solid var(--line); }
+.amount:focus-within { border-color: var(--cream); }
+.amount span { font: 700 28px "Inter", var(--font); color: var(--muted); }
+.amount input { flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; font-size: 36px; font-weight: 900; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.rank { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 15px 16px; border-radius: 16px; background: var(--surface-2); border: 1px solid transparent; animation: rise .5s var(--ease) both; }
+.rank:nth-child(2) { animation-delay: .05s; } .rank:nth-child(3) { animation-delay: .1s; } .rank:nth-child(4) { animation-delay: .15s; } .rank:nth-child(n+5) { animation-delay: .2s; }
+@keyframes rise { from { transform: translateY(10px); } }
+.rank.best { border-color: color-mix(in srgb, var(--green) 50%, transparent); background: linear-gradient(110deg, var(--green-bg), var(--surface-2) 70%); box-shadow: 0 20px 50px -30px rgba(111,217,164,.5); }
+.pos { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font: 700 13px var(--mono); background: var(--bg); color: var(--muted); }
+.rank.best .pos { background: var(--green); color: var(--night); }
+.rank b { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.why { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.why.cap { color: var(--amber); }
+.val { font-size: 22px; font-weight: 900; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.rank.best .val { color: var(--green); }
+.verdict { padding: 18px 20px; border-radius: 18px; background: var(--green-bg); border: 1px solid #1F4A3A; color: #CFF5E1; font-size: 15.5px; }
+
+/* insights */
+.donut-wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: center; }
+.donut { width: 200px; height: 200px; position: relative; }
+.donut svg circle.seg { animation: draw 1s var(--ease) both; }
+@keyframes draw { from { stroke-dasharray: 0 999; } }
+.donut .mid { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; align-content: center; }
+.donut .mid b { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
+.legend { display: grid; gap: 9px; min-width: 0; }
+.legend div { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; font-size: 14.5px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; }
+.legend span:nth-child(3) { color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend span:nth-child(4) { color: var(--subtle); font-size: 13px; min-width: 36px; text-align: right; }
+.cardbar { display: grid; gap: 6px; }
+.cardbar .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; }
+.cardbar .top b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cardbar .top span { font-variant-numeric: tabular-nums; color: var(--green); font-weight: 700; }
+.tip { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 16px; background: var(--amber-bg); border: 1px solid #4a3c1c; }
+.tip b { color: #FBE3AE; }
+.tip small { color: #D7C08F; display: block; font-size: 13px; }
+.seg-switch { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.seg-switch button { border: 0; background: none; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; color: var(--muted); cursor: pointer; }
+.seg-switch button[aria-pressed="true"] { background: var(--cream); color: var(--night); }
+
+/* import */
+.drop { border: 1.5px dashed #3a4260; border-radius: 22px; padding: clamp(24px, 4vw, 40px); display: grid; gap: 16px; justify-items: center; text-align: center; transition: border-color .2s, background .2s; background: rgba(255,255,255,.015); }
+.drop.over { border-color: var(--cream); background: var(--surface-2); }
+.drop .big-ico { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
+textarea.input { min-height: 120px; padding: 14px; font: 13px/1.5 var(--mono); resize: vertical; }
+.preview-rows { display: grid; }
+.err { color: var(--red); font-size: 14.5px; }
+
+/* cards screen */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.cardtile { padding: 16px; display: grid; gap: 14px; }
+.cardtile .rules { display: flex; flex-wrap: wrap; gap: 6px; }
+.cardtile .acts { display: flex; gap: 8px; }
+.dialog-back { position: fixed; inset: 0; z-index: 90; background: rgba(4,6,12,.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: grid; place-items: center; padding: 20px; animation: fade .25s; }
+@keyframes fade { from { opacity: 0; } }
+.dialog { background: var(--surface); width: min(640px, 100%); max-height: calc(100vh - 40px); overflow: auto; padding: 24px; display: grid; gap: 18px; animation: pop .35s var(--ease); }
+@keyframes pop { from { transform: translateY(16px) scale(.98); } }
+.dlg-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.rule-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .8fr) minmax(0, 1fr); gap: 8px; }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.sw { width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; background: var(--c); }
+.sw[aria-pressed="true"] { border-color: var(--cream); box-shadow: 0 0 0 2px var(--bg) inset; }
+.toast { position: fixed; z-index: 95; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 13px 20px; border-radius: 999px; background: var(--cream); color: var(--night); font-weight: 700; font-size: 15px; box-shadow: 0 20px 40px -10px rgba(0,0,0,.6); animation: toast .35s var(--ease); max-width: calc(100% - 40px); }
+@keyframes toast { from { transform: translate(-50%, 20px); opacity: 0; } }
+.empty { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 40px 20px; color: var(--muted); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1000px) {
+  .hero .wrap, .scrolly { grid-template-columns: minmax(0, 1fr); }
+  .stack { max-width: 520px; margin-inline: auto; width: 100%; }
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .t-a, .t-b, .t-c, .t-d, .t-e { grid-column: span 2; }
+  .phone-sticky { position: relative; top: 0; }
+  .chapters { gap: 48px; padding-block: 24px; }
+  .chapter { opacity: 1; }
+  .fgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fgrid > div:first-child { grid-column: 1 / -1; }
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side { display: none; }
+  .tabs { display: flex; position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; justify-content: space-around; padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--night) 88%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line-soft); }
+  .tabs a { display: grid; justify-items: center; gap: 3px; padding: 6px 8px; min-width: 56px; text-decoration: none; color: var(--subtle); font-size: 11px; font-weight: 700; border-radius: 12px; }
+  .tabs a[aria-current="page"] { color: var(--ink); }
+  .workspace { padding-bottom: 110px; }
+  .app-top { display: flex !important; }
 }
-@media (max-width: 640px) {
-  body { font-size: 16px; }
-  .features, .steps { grid-template-columns: minmax(0, 1fr); }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .stats .stat:last-child { grid-column: 1 / -1; }
+.app-top { display: none; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+@media (max-width: 760px) {
+  .steps3, .flow, .promise-grid, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donut-wrap { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .legend { width: 100%; }
   .rank { grid-template-columns: 30px minmax(0, 1fr); }
-  .rank .val { grid-column: 2; text-align: left; font-size: 19px; }
-  .ed-grid { grid-template-columns: minmax(0, 1fr); }
+  .rank .val { grid-column: 2; text-align: left; font-size: 20px; }
+  .dlg-grid { grid-template-columns: minmax(0, 1fr); }
   .rule-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .rule-row .field:first-child { grid-column: 1 / -1; }
-  .box, .feature, .step, .never { padding: 20px; }
+  .float-chip { display: none; }
+  .tip { grid-template-columns: 34px minmax(0, 1fr); }
+  .tip .btn { grid-column: 2; justify-self: start; }
+}
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .t-a, .t-b, .t-c, .t-d, .t-e { grid-column: auto; }
+  .box, .tile, .st, .dialog { padding: 18px; }
+  .fgrid { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
 
-<div class="announce"><div class="wrap">Early access is opening for card users in India. <a href="#join">Join the waitlist</a></div></div>
-
-<header class="nav" id="nav">
-  <div class="wrap">
-    <a class="brand" href="#top" aria-label="TAPO home">
-      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-        <defs><linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#D9D4C7"/></linearGradient></defs>
-        <rect width="40" height="40" rx="11" fill="url(#lt)"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/>
-        <path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-      </svg>
-      <b>TAPO</b>
-    </a>
-    <nav class="links" id="links" aria-label="Main">
-      <a href="#features">Features</a>
-      <a href="#finder">Card finder</a>
-      <a href="#statement">Statement check</a>
-      <a href="#security">Security</a>
-      <a href="#faq">FAQ</a>
-    </nav>
-    <div class="nav-right">
-      <a class="btn btn-primary btn-sm" href="#join">Get early access</a>
-      <button class="menu" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="links">
-        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-  </div>
-</header>
-
-<main id="top">
-<!-- HERO -->
-<section class="hero">
-  <div class="wrap">
-    <div>
-      <h1>Stop leaving <span>rewards</span> on the table.</h1>
-      <p class="lede">TAPO knows the reward rules on every card you carry. Before you pay, it tells you which card earns the most. After you pay, it shows exactly what the wrong card cost you.</p>
-      <form class="waitlist" data-waitlist novalidate>
-        <div class="wl-row">
-          <label class="sr" for="wl-email-1">Email address</label>
-          <input class="input" id="wl-email-1" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
-          <button class="btn btn-primary" type="submit">Join the waitlist</button>
-        </div>
-        <p class="wl-note">Free during early access. We'll only email you about TAPO's launch.</p>
-        <p class="wl-msg" role="status" hidden></p>
-      </form>
-      <div class="trust">
-        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Never asks for card numbers</span>
-        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Works with any card</span>
-        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Your data stays on your phone</span>
-      </div>
-    </div>
-    <div>
-      <div class="device" role="img" aria-label="The TAPO app on a phone, showing this month's spending, rewards and missed rewards">
-        <div class="screen" aria-hidden="true">
-          <div class="sc-top"><span class="sc-greet">Good evening</span><svg width="22" height="22" viewBox="0 0 40 40"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/></svg></div>
-          <div class="sc-h">Your wallet</div>
-          <div class="sc-card" id="phoneCard"></div>
-          <div class="sc-tiles">
-            <div class="sc-tile"><small>Spent this month</small><b class="num" id="phSpent">₹0</b></div>
-            <div class="sc-tile"><small style="color:var(--green)">Rewards earned</small><b class="num" id="phEarned">₹0</b></div>
-          </div>
-          <div class="sc-tile sc-missed"><small>Missed rewards this month</small><b class="num" id="phMissed">₹0</b><small style="color:var(--muted)" id="phTip">Use your best card per category</small></div>
-          <div class="sc-tile"><small>Best card for groceries</small><b id="phBest" style="font-size:14px">—</b></div>
-          <div class="sc-tabs"><b>Wallet</b><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
-        </div>
-      </div>
-      <p class="device-caption">Illustrative screen, calculated from the example cards and statement below.</p>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="section" id="features">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow">Why TAPO</span>
-      <h2>Every card has a best moment. TAPO knows when.</h2>
-      <p class="lede">Cashback on groceries, miles on travel, a cap that runs out mid-month. Nobody remembers all of it at the checkout counter. TAPO does.</p>
-    </div>
-    <div class="features">
-      <article class="panel feature">
-        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.6L20 9.3l-4.3 3.9 1.2 5.8L12 16l-4.9 3 1.2-5.8L4 9.3l5.6-.7z"/></svg></div>
-        <h3>The best card, in a second</h3>
-        <p>Pick what you're buying and how much. TAPO ranks every card you own, counts monthly caps, and explains why.</p>
-      </article>
-      <article class="panel feature">
-        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F5C66B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg></div>
-        <h3>See what you missed</h3>
-        <p>One number that matters: the rewards your best cards would have earned this month, with the swaps that recover them.</p>
-      </article>
-      <article class="panel feature">
-        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
-        <h3>Import a statement, privately</h3>
-        <p>Load a CSV from your bank or card. TAPO reads it on your device, sorts every purchase and never uploads a thing.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- FINDER -->
-<section class="section" id="finder">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow">Card finder</span>
-      <h2>Which card should you use right now?</h2>
-      <p class="lede">Set up your cards once with their reward rates, then ask. We've added four example cards to start; edit them or add your own. Everything you enter stays in this browser.</p>
-    </div>
-    <div class="finder">
-      <div class="panel box">
-        <div class="box-head"><h3>Your cards</h3><div><button class="btn btn-ghost btn-sm" id="addCard" type="button">Add a card</button></div></div>
-        <div id="editorSlot"></div>
-        <div class="cards-list" id="cardsList"></div>
-        <button class="btn-link" id="resetCards" type="button">Restore example cards</button>
-      </div>
-      <div class="panel box">
-        <div class="field">
-          <span class="lbl" id="catLbl">What are you buying?</span>
-          <div class="chips" id="catChips" role="group" aria-labelledby="catLbl"></div>
-        </div>
-        <div class="field">
-          <label for="amount">Amount</label>
-          <div class="amount"><span aria-hidden="true">₹</span><input id="amount" inputmode="numeric" autocomplete="off" value="2340"></div>
-        </div>
-        <div class="ranks" id="ranks" aria-live="polite"></div>
-        <p class="verdict" id="verdict"></p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STATEMENT -->
-<section class="section" id="statement">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow">Statement check</span>
-      <h2>Find out what last month really cost you.</h2>
-      <p class="lede">Download your statement as CSV from your bank or card app and drop it here. TAPO finds the purchases, skips money coming in, and compares every one against your best card.</p>
-    </div>
-    <div class="stmt">
-      <div class="panel box drop" id="drop">
-        <h3>Drop your CSV statement</h3>
-        <p class="muted small">Works with most Indian bank and card exports: a date column, a description or narration, and an amount or debit column.</p>
-        <div class="ed-actions">
-          <label class="btn btn-primary btn-sm" for="file" style="cursor:pointer">Choose file</label>
-          <input id="file" type="file" accept=".csv,text/csv,text/plain" hidden>
-          <button class="btn btn-ghost btn-sm" id="example" type="button">Use an example statement</button>
-        </div>
-        <div class="field">
-          <label for="payCard">Which card paid for these purchases?</label>
-          <select class="select" id="payCard"></select>
-        </div>
-        <p class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Read in your browser, never uploaded. Only the date, merchant and amount are used. Account, card and UPI numbers are masked.</span></p>
-        <p class="err" id="importErr" role="alert" hidden></p>
-      </div>
-      <div class="panel box" id="result" aria-live="polite">
-        <div class="empty"><h3 style="color:var(--ink)">Your results will appear here</h3><p>No statement handy? Use the example to see how it works.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW -->
-<section class="section" id="how">
-  <div class="wrap">
-    <div class="head"><span class="eyebrow">How it works</span><h2>Set up in five minutes. Save every month.</h2></div>
-    <div class="steps">
-      <div class="panel step"><span class="n">1</span><h3>Add your cards</h3><p>A nickname, the last four digits as a label, and each card's reward rates and monthly caps. No card numbers, ever.</p></div>
-      <div class="panel step"><span class="n">2</span><h3>Import your spending</h3><p>Load a statement and TAPO sorts every purchase into a category, right on your phone.</p></div>
-      <div class="panel step"><span class="n">3</span><h3>Pay with the right card</h3><p>Check before you pay, or review your month: missed rewards, earnings by card, and the swaps that pay off.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- SECURITY -->
-<section class="section" id="security">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow">Security and privacy</span>
-      <h2>We can't leak what we never collect.</h2>
-      <p class="lede">TAPO is built so that sensitive card data has nowhere to go. There's no field for it, no server holding it and no account to break into.</p>
-    </div>
-    <div class="sec">
-      <div class="panel never">
-        <h3>TAPO never asks for</h3>
-        <div class="never-list"><span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Net-banking login</span><span>UPI PIN</span><span>Payment tokens</span></div>
-        <p class="muted small">If someone claiming to be TAPO asks you for any of these, it isn't us.</p>
-      </div>
-      <ul class="promises">
-        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>On your device</b><span>Your cards and spending live in the app's storage on your phone. No account, no cloud copy.</span></div></li>
-        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No tracking</b><span>No ads, no analytics and no selling of data. TAPO makes no network calls with your information.</span></div></li>
-        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>Advice, not payments</b><span>TAPO recommends a card. You still pay the way you always do; TAPO never moves money.</span></div></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="section" id="faq">
-  <div class="wrap">
-    <div class="head"><span class="eyebrow">FAQ</span><h2>Questions, answered.</h2></div>
-    <div class="faq">
-      <details><summary>Is TAPO a bank or a payment app?</summary><p>No. TAPO doesn't issue cards, hold money or process payments. It's a guide that tells you which of your existing cards to use. You keep paying with your cards as usual.</p></details>
-      <details><summary>Which banks and cards does TAPO support?</summary><p>Any credit or debit card. You enter each card's reward rates yourself, so TAPO works with any issuer or network. TAPO isn't affiliated with any bank or card network.</p></details>
-      <details><summary>Will TAPO ask for my card number or OTP?</summary><p>Never. TAPO only stores a nickname and the last four digits as a label. It has no way to accept a full card number, CVV, PIN or OTP.</p></details>
-      <details><summary>Where is my statement data stored?</summary><p>On your phone only. Statements are read on your device; TAPO keeps the date, merchant and amount of each purchase and ignores everything else. Long numbers such as account or UPI references are masked.</p></details>
-      <details><summary>How accurate are the reward estimates?</summary><p>They follow the rates and monthly caps you enter, rounded down to the paisa so TAPO never over-promises. Your issuer's statement is always the final word.</p></details>
-      <details><summary>When can I download the app?</summary><p>TAPO is in early access. Join the waitlist and we'll email you when the iOS and Android apps are ready for you.</p></details>
-      <details><summary>How much does TAPO cost?</summary><p>TAPO is free during early access.</p></details>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="section" id="join">
-  <div class="wrap">
-    <div class="cta">
-      <div>
-        <span class="eyebrow">Early access</span>
-        <h2 style="margin-top:12px">Get TAPO before everyone else.</h2>
-        <p class="lede" style="margin-top:14px">Join the waitlist and we'll let you know as soon as the app is ready for you.</p>
-        <div class="stores" aria-label="App availability">
-          <div class="store"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ECE9E2" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg><span><small>Coming soon</small><b>iPhone</b></span></div>
-          <div class="store"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ECE9E2" aria-hidden="true"><path d="M7 9h10v8a1 1 0 0 1-1 1h-1v3h-2v-3h-2v3H9v-3H8a1 1 0 0 1-1-1zM4.5 9A1.5 1.5 0 0 1 6 10.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 4.5 9zm15 0a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 19.5 9zM7 8a5 5 0 0 1 10 0zm3-2.2a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2zm4 0a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2z"/></svg><span><small>Coming soon</small><b>Android</b></span></div>
-        </div>
-      </div>
-      <form class="waitlist" data-waitlist novalidate>
-        <div class="field"><label for="wl-email-2">Email address</label><input class="input" id="wl-email-2" type="email" name="email" placeholder="you@example.com" autocomplete="email" required></div>
-        <div class="field"><label for="wl-cards">How many cards do you use regularly?</label>
-          <select class="select" id="wl-cards" name="cards"><option value="">Choose one (optional)</option><option value="1">1</option><option value="2-3">2 to 3</option><option value="4+">4 or more</option></select></div>
-        <button class="btn btn-primary" type="submit">Join the waitlist</button>
-        <p class="wl-note">We'll only use your email to tell you about TAPO's launch. Unsubscribe any time.</p>
-        <p class="wl-msg" role="status" hidden></p>
-      </form>
-    </div>
-  </div>
-</section>
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="fgrid">
-      <div>
-        <a class="brand" href="#top" aria-label="Back to top"><svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg><b style="font-size:18px">TAPO</b></a>
-        <p style="margin-top:14px;max-width:36ch">The right card for every purchase. Made in India.</p>
-      </div>
-      <div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#finder">Card finder</a></li><li><a href="#statement">Statement check</a></li><li><a href="#join">Early access</a></li></ul></div>
-      <div><h4>Trust</h4><ul><li><a href="#security">Security</a></li><li><a href="#security">Privacy</a></li><li><a href="#faq">FAQ</a></li></ul></div>
-      <div><h4>Get the app</h4><ul><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div>
-    </div>
-    <div class="fine">
-      <p>TAPO is not a bank, card issuer or payment service and does not process payments. TAPO is not affiliated with, endorsed by or partnered with any bank, card network or payment provider. Example cards on this page are fictional. Merchant names in the example statement appear only to show how purchases are categorised. Reward figures are estimates based on the rates you enter and are not financial advice.</p>
-      <p>© 2026 TAPO. Early access.</p>
-    </div>
-  </div>
-</footer>
+<canvas id="aurora" aria-hidden="true"></canvas>
+<div id="root"></div>
 
 <script>
 /*__CSV_IMPORT__*/
 </script>
 <script>
 (function () {
-  'use strict';
+'use strict';
 
-  /* ---------------- categories + formatting ---------------- */
-  var CATS = [['groceries', 'Groceries'], ['dining', 'Dining'], ['fuel', 'Fuel'], ['travel', 'Travel'], ['online', 'Online shopping'], ['utilities', 'Bills & utilities'], ['entertainment', 'Entertainment'], ['other', 'Everything else']];
-  var CAT_LABEL = {}; CATS.forEach(function (c) { CAT_LABEL[c[0]] = c[1]; });
-  var CAT_COLOR = { dining: '#FFB4A2', groceries: '#8FE0AE', fuel: '#F5C66B', travel: '#9EC2FF', online: '#C7AEFF', utilities: '#F0D86A', entertainment: '#FF9FD0', other: '#C2C9D8' };
-  var COLORS = ['#1E3A8A', '#115E59', '#6B21A8', '#334155', '#9F1239', '#7C2D12', '#0E7490', '#4D7C0F'];
-  var f0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
-  var f2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  function inr(n, d) { return '₹' + (d ? f2 : f0).format(n); }
-  function pct(n) { return (Math.round(n * 100) / 100) + '%'; }
-  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function $(id) { return document.getElementById(id); }
+/* =====================================================================================
+   Helpers
+   ===================================================================================== */
+var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var f0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+var f2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function inr(n, d) { return '₹' + (d ? f2 : f0).format(n); }
+function pct(n) { return (Math.round(n * 100) / 100) + '%'; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function $(sel, el) { return (el || document).querySelector(sel); }
+function $$(sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); }
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function shortDate(iso) { var d = new Date(iso); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+function sameMonth(iso, ref) { var d = new Date(iso); return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth(); }
+function prevMonth(ref) { return new Date(ref.getFullYear(), ref.getMonth() - 1, 15); }
 
-  /* ---------------- cards (kept in this browser) ---------------- */
-  var KEY = 'tapo.site.cards.v1';
-  var EXAMPLES = [
-    { id: 'ex1', name: 'Everyday Cashback', base: 1, color: '#1E3A8A', example: true, rules: [{ cat: 'groceries', rate: 5, cap: 500 }, { cat: 'utilities', rate: 2 }] },
-    { id: 'ex2', name: 'Travel Miles', base: 0.5, color: '#115E59', example: true, rules: [{ cat: 'travel', rate: 6, cap: 1500 }, { cat: 'dining', rate: 3 }] },
-    { id: 'ex3', name: 'Online Saver', base: 1, color: '#6B21A8', example: true, rules: [{ cat: 'online', rate: 7, cap: 300 }, { cat: 'entertainment', rate: 4 }] },
-    { id: 'ex4', name: 'Fuel Debit', base: 0.25, color: '#334155', example: true, rules: [{ cat: 'fuel', rate: 2.5, cap: 200 }] }
+var CATS = [
+  ['groceries', 'Groceries', '#8FE0AE', '#17301F', 'M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 8H6.2M9 20.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z'],
+  ['dining', 'Dining', '#FFB4A2', '#3A2220', 'M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 2-3 5.5S15 13 17 13v8'],
+  ['fuel', 'Fuel', '#F5C66B', '#33270F', 'M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M6 9h6M14 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3'],
+  ['travel', 'Travel', '#9EC2FF', '#172540', 'M22 2 11 13M22 2l-7 20-4-9-9-4z'],
+  ['online', 'Online shopping', '#C7AEFF', '#2A1F45', 'M6 7h12l1 14H5zM9 7a3 3 0 0 1 6 0'],
+  ['utilities', 'Bills & utilities', '#F0D86A', '#2F2A10', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+  ['entertainment', 'Entertainment', '#FF9FD0', '#3A1A2E', 'M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM10 9v6l5-3z'],
+  ['other', 'Everything else', '#C2C9D8', '#232838', 'M5 12h.01M12 12h.01M19 12h.01']
+];
+var CAT = {}; CATS.forEach(function (c) { CAT[c[0]] = { id: c[0], label: c[1], fg: c[2], bg: c[3], path: c[4] }; });
+function catIcon(id, size) { var c = CAT[id]; return '<span class="cico" style="background:' + c.bg + '"><svg width="' + (size || 19) + '" height="' + (size || 19) + '" viewBox="0 0 24 24" fill="none" stroke="' + c.fg + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + c.path + '"/></svg></span>'; }
+var ICON = {
+  wallet: 'M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v2M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h16a1 1 0 0 1 1 1v3m0 5h-4a2.5 2.5 0 0 1 0-5h4z',
+  best: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z',
+  chart: 'M4 19V5M4 19h16M8 15l4-4 3 3 5-6',
+  import: 'M12 3v12M7 10l5 5 5-5M4 19h16',
+  cards: 'M3 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 11h16M21 9v9a2 2 0 0 1-2 2H8',
+  arrow: 'M5 12h14M13 6l6 6-6 6',
+  back: 'M19 12H5M11 6l-6 6 6 6',
+  lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4',
+  check: 'M5 12l4.5 4.5L19 7',
+  plus: 'M12 5v14M5 12h14',
+  file: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
+  shield: 'M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z',
+  phone: 'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+  menu: 'M3 6h18M3 12h18M3 18h18',
+  trend: 'M3 17l6-6 4 4 8-8M15 7h6v6'
+};
+function ico(name, size, color, sw) { return '<svg width="' + (size || 20) + '" height="' + (size || 20) + '" viewBox="0 0 24 24" fill="none" stroke="' + (color || 'currentColor') + '" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + ICON[name] + '"/></svg>'; }
+var LOGO = '<svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>';
+var TAP = '<svg class="cf-tap" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>';
+var MARK = '<svg class="cf-logo" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="rgba(255,255,255,.85)"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="rgba(0,0,0,.55)"/><rect x="15" y="19" width="6" height="13" rx="2" fill="rgba(0,0,0,.55)"/></svg>';
+function cardFace(c) {
+  return '<div class="cardface" style="--c:' + esc(c.color) + '">' +
+    (c.example ? '<span class="cf-tag">EXAMPLE</span>' : '') +
+    '<div class="cf-name">' + esc(c.name) + '</div><div class="cf-sub">' + esc(bestLine(c)) + '</div>' +
+    '<div class="cf-chip"></div>' + TAP + '<div class="cf-num">•••• ' + esc(c.last4 || '••••') + '</div>' + MARK + '</div>';
+}
+var COLORS = ['#1E3A8A', '#115E59', '#6B21A8', '#334155', '#9F1239', '#7C2D12', '#0E7490', '#4D7C0F', '#A16207', '#1F2937'];
+
+/* =====================================================================================
+   Data (stored in this browser only)
+   ===================================================================================== */
+var KEY = 'tapo.web.v2';
+var EXAMPLE_CARDS = [
+  { id: 'ex_everyday', name: 'Everyday Cashback', last4: '0001', base: 1, color: '#1E3A8A', example: true, rules: [{ cat: 'groceries', rate: 5, cap: 500 }, { cat: 'utilities', rate: 2 }] },
+  { id: 'ex_travel', name: 'Travel Miles', last4: '0002', base: 0.5, color: '#115E59', example: true, rules: [{ cat: 'travel', rate: 6, cap: 1500 }, { cat: 'dining', rate: 3 }] },
+  { id: 'ex_online', name: 'Online Saver', last4: '0003', base: 1, color: '#6B21A8', example: true, rules: [{ cat: 'online', rate: 7, cap: 300 }, { cat: 'entertainment', rate: 4 }] },
+  { id: 'ex_debit', name: 'Salary Debit', last4: '0004', base: 0.25, color: '#334155', example: true, rules: [{ cat: 'fuel', rate: 2.5, cap: 200 }] }
+];
+var SEEDS = [
+  ['ex_everyday', 'Fresh Mart', 'groceries', 2340, 0], ['ex_online', 'Online Store', 'online', 1899, 1], ['ex_travel', 'Rail Booking', 'travel', 1265, 2],
+  ['ex_travel', 'Corner Café', 'dining', 640, 3], ['ex_debit', 'Fuel Station', 'fuel', 3000, 4], ['ex_everyday', 'Electricity Bill', 'utilities', 1820, 5],
+  ['ex_online', 'Streaming Plan', 'entertainment', 499, 6], ['ex_everyday', 'Kirana Store', 'groceries', 865, 8], ['ex_travel', 'Airline Ticket', 'travel', 7450, 10],
+  ['ex_debit', 'Pharmacy', 'other', 420, 12], ['ex_online', 'Online Store', 'online', 3150, 14], ['ex_travel', 'Biryani House', 'dining', 1120, 18],
+  ['ex_debit', 'Grocery Market', 'groceries', 1460, 20], ['ex_everyday', 'Mobile Recharge', 'utilities', 399, 22], ['ex_debit', 'Fuel Station', 'fuel', 2500, 27],
+  ['ex_everyday', 'Fresh Mart', 'groceries', 1975, 33], ['ex_online', 'Cinema Tickets', 'entertainment', 760, 38], ['ex_travel', 'Hotel Stay', 'travel', 5200, 41],
+  ['ex_debit', 'Restaurant', 'dining', 1350, 45], ['ex_online', 'Online Store', 'online', 2240, 52]
+];
+function exampleTxns() {
+  var now = new Date();
+  return SEEDS.map(function (s, i) { var d = new Date(now); d.setDate(d.getDate() - s[4]); d.setHours(10 + (i % 9), (i * 7) % 60, 0, 0); return { id: 'ext' + i, cardId: s[0], merchant: s[1], category: s[2], amount: s[3], date: d.toISOString(), example: true }; });
+}
+function fresh() { return { cards: JSON.parse(JSON.stringify(EXAMPLE_CARDS)), txns: exampleTxns() }; }
+function validState(s) {
+  return s && Array.isArray(s.cards) && Array.isArray(s.txns) && s.cards.every(function (c) { return c && typeof c.id === 'string' && typeof c.name === 'string' && typeof c.base === 'number' && Array.isArray(c.rules); }) &&
+    s.txns.every(function (t) { return t && CAT[t.category] && typeof t.amount === 'number' && !isNaN(Date.parse(t.date)); });
+}
+var S;
+try { var stored = localStorage.getItem(KEY); S = stored ? JSON.parse(stored) : null; } catch (e) { S = null; }
+if (!validState(S)) S = fresh();
+function persist() { try { localStorage.setItem(KEY, JSON.stringify({ cards: S.cards, txns: S.txns })); } catch (e) {} }
+function cardById(id) { for (var i = 0; i < S.cards.length; i++) if (S.cards[i].id === id) return S.cards[i]; return null; }
+
+/* =====================================================================================
+   Reward engine (same rules as the TAPO app)
+   ===================================================================================== */
+function rule(card, cat) { for (var i = 0; i < card.rules.length; i++) if (card.rules[i].cat === cat) return { rate: card.rules[i].rate, cap: card.rules[i].cap, source: 'category' }; return { rate: card.base, cap: undefined, source: 'base' }; }
+function raw(amount, rate) { return Math.floor(amount * rate) / 100; }
+function earnedThisMonth(card, cat, ref) {
+  var r = rule(card, cat).rate;
+  return S.txns.filter(function (t) { return t.cardId === card.id && t.category === cat && sameMonth(t.date, ref); }).reduce(function (s, t) { return s + raw(t.amount, r); }, 0);
+}
+function evaluate(card, cat, amount) {
+  var r = rule(card, cat), reward = raw(amount, r.rate), left, limited = false;
+  if (r.cap !== undefined) { left = Math.max(0, Math.round((r.cap - earnedThisMonth(card, cat, new Date())) * 100) / 100); if (reward > left) { reward = left; limited = true; } }
+  return { card: card, rate: r.rate, cap: r.cap, left: left, source: r.source, reward: reward, limited: limited };
+}
+function rank(cat, amount) { return S.cards.map(function (c) { return evaluate(c, cat, amount); }).sort(function (a, b) { return b.reward - a.reward || b.rate - a.rate || a.card.name.localeCompare(b.card.name); }); }
+function bestLine(c) { var top = c.rules.slice().sort(function (a, b) { return b.rate - a.rate; })[0]; return top && top.rate > c.base ? pct(top.rate) + ' on ' + CAT[top.cat].label : pct(c.base) + ' on everything'; }
+function insights(ref) {
+  var tx = S.txns.filter(function (t) { return sameMonth(t.date, ref); });
+  var total = 0, cats = {}, perCard = {}, groups = {}, missed = 0;
+  tx.forEach(function (t) {
+    total += t.amount; cats[t.category] = (cats[t.category] || 0) + t.amount;
+    var used = cardById(t.cardId);
+    if (!used) return;
+    var pc = perCard[used.id] = perCard[used.id] || { card: used, spend: 0, byCat: {} };
+    pc.spend += t.amount; pc.byCat[t.category] = (pc.byCat[t.category] || 0) + raw(t.amount, rule(used, t.category).rate);
+    var u = raw(t.amount, rule(used, t.category).rate);
+    var best = S.cards.reduce(function (m, c) { var r = raw(t.amount, rule(c, t.category).rate); return r > m.r ? { r: r, c: c } : m; }, { r: -1, c: null });
+    if (best.r - u > 0.0001) { missed += best.r - u; var k = t.category + '|' + best.c.id; var g = groups[k] = groups[k] || { cat: t.category, card: best.c, extra: 0, count: 0, sum: 0 }; g.extra += best.r - u; g.count++; g.sum += t.amount; }
+  });
+  var cards = Object.keys(perCard).map(function (k) {
+    var pc = perCard[k], reward = 0;
+    Object.keys(pc.byCat).forEach(function (cat) { var cap = rule(pc.card, cat).cap; reward += cap !== undefined ? Math.min(pc.byCat[cat], cap) : pc.byCat[cat]; });
+    return { card: pc.card, spend: pc.spend, reward: Math.round(reward * 100) / 100 };
+  }).sort(function (a, b) { return b.reward - a.reward; });
+  var earned = cards.reduce(function (s, c) { return s + c.reward; }, 0);
+  return {
+    count: tx.length, total: total, earned: Math.round(earned * 100) / 100, missed: Math.round(missed * 100) / 100,
+    cats: Object.keys(cats).map(function (k) { return { cat: k, spend: cats[k] }; }).sort(function (a, b) { return b.spend - a.spend; }),
+    cards: cards, tips: Object.keys(groups).map(function (k) { return groups[k]; }).sort(function (a, b) { return b.extra - a.extra; })
+  };
+}
+
+/* =====================================================================================
+   Router
+   ===================================================================================== */
+var SITE = ['home', 'product', 'security', 'faq'];
+var APPR = ['wallet', 'best', 'insights', 'import', 'cards'];
+var APP_NAV = [['wallet', 'Wallet', 'wallet'], ['best', 'Best card', 'best'], ['insights', 'Insights', 'chart'], ['import', 'Import', 'import'], ['cards', 'Cards', 'cards']];
+var cleanup = [];
+var ui = { cat: 'groceries', amount: 2340, month: 'this', parsed: null, payCard: null };
+function route() { var h = (location.hash || '').slice(1); return SITE.indexOf(h) >= 0 || APPR.indexOf(h) >= 0 ? h : 'home'; }
+function go(r) { if (location.hash.slice(1) === r) render(); else location.hash = r; }
+function render() {
+  cleanup.forEach(function (fn) { try { fn(); } catch (e) {} }); cleanup = [];
+  var r = route();
+  var html = APPR.indexOf(r) >= 0 ? appShell(r) : siteShell(r);
+  var root = $('#root');
+  var swap = function () { root.innerHTML = html; window.scrollTo(0, 0); mount(r); var h1 = $('h1', root); if (h1 && document.activeElement !== document.body) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); } };
+  if (document.startViewTransition && !REDUCE && root.childElementCount) document.startViewTransition(swap); else swap();
+  document.title = (TITLES[r] ? TITLES[r] + ' · ' : '') + 'TAPO';
+}
+var TITLES = { home: '', product: 'Product', security: 'Security', faq: 'FAQ', wallet: 'Wallet', best: 'Best card', insights: 'Insights', import: 'Import', cards: 'Cards' };
+window.addEventListener('hashchange', render);
+
+/* =====================================================================================
+   SITE shell + pages
+   ===================================================================================== */
+function siteShell(r) {
+  var nav = [['home', 'Home'], ['product', 'Product'], ['security', 'Security'], ['faq', 'FAQ']];
+  return '<header class="snav" id="snav"><div class="wrap"><a class="brand" href="#home" aria-label="TAPO home">' + LOGO + '<b>TAPO</b></a>' +
+    '<nav class="slinks" id="slinks" aria-label="Site">' + nav.map(function (n) { return '<a href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + n[1] + '</a>'; }).join('') + '</nav>' +
+    '<div class="snav-right"><a class="btn btn-primary btn-sm" href="#wallet">Open TAPO ' + ico('arrow', 16) + '</a><button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="slinks">' + ico('menu', 20) + '</button></div></div></header>' +
+    '<main>' + PAGES[r]() + '</main>' + siteFooter();
+}
+function siteFooter() {
+  return '<footer class="sfoot"><div class="wrap"><div class="fgrid">' +
+    '<div><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a><p style="margin-top:14px;max-width:34ch">The right card for every purchase. Made for India.</p></div>' +
+    '<div><h4>Product</h4><ul><li><a href="#product">How it works</a></li><li><a href="#wallet">Open the web app</a></li><li><a href="#best">Card finder</a></li><li><a href="#import">Statement import</a></li></ul></div>' +
+    '<div><h4>Trust</h4><ul><li><a href="#security">Security</a></li><li><a href="#security">Privacy</a></li><li><a href="#faq">FAQ</a></li></ul></div>' +
+    '<div><h4>Apps</h4><ul><li>Web · available now</li><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div></div>' +
+    '<div class="fine"><p>TAPO is not a bank, card issuer or payment service and does not process payments. TAPO is not affiliated with, endorsed by or partnered with any bank, card network or payment provider. Example cards and example activity are fictional. Reward figures are estimates based on the rates you enter and are not financial advice.</p><p>© 2026 TAPO</p></div></div></footer>';
+}
+
+var PAGES = {};
+PAGES.home = function () {
+  var cs = EXAMPLE_CARDS;
+  var mq = [['groceries', '5%'], ['travel', '6%'], ['online', '7%'], ['dining', '3%'], ['fuel', '2.5%'], ['entertainment', '4%'], ['utilities', '2%'], ['other', '1%']];
+  var mqHtml = mq.concat(mq).map(function (m) { return '<span class="mq">' + catIcon(m[0], 15).replace('cico', 'cico" style="width:28px;height:28px;border-radius:9px;background:' + CAT[m[0]].bg) + CAT[m[0]].label + ' <b>up to ' + m[1] + '</b></span>'; }).join('');
+  return '<section class="hero"><div class="wrap"><div>' +
+    '<span class="pill"><i></i>Free on the web · No sign-up</span>' +
+    '<h1>Every card.<br><span class="shine-text">The right one.</span><br>Every time.</h1>' +
+    '<p class="lede">TAPO knows the reward rules on every card you carry. It tells you which card earns the most before you pay, and shows exactly what the wrong card cost you after.</p>' +
+    '<div class="hero-cta"><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a><a class="btn btn-ghost" href="#product">See how it works</a></div>' +
+    '<p class="hero-note">Your cards and spending stay in your browser. TAPO never asks for card numbers.</p></div>' +
+    '<div class="stack" id="stack">' + cs.slice(0, 3).map(function (c) { return '<div class="fc"><div class="inner">' + cardFace(c) + '</div></div>'; }).join('') +
+    '<div class="glow"></div>' +
+    '<div class="float-chip glass a"><span class="dot" style="background:var(--green-bg)">' + ico('check', 18, '#6FD9A4', 2.6) + '</span><span><b class="num" id="heroBest">₹117.00</b>back on groceries</span></div>' +
+    '<div class="float-chip glass b"><span class="dot" style="background:var(--amber-bg)">' + ico('trend', 18, '#F5C66B') + '</span><span><b class="num" id="heroMissed">₹0</b>missed this month</span></div>' +
+    '</div></div></section>' +
+    '<div class="marquee" aria-hidden="true"><div class="marquee-track">' + mqHtml + '</div></div>' +
+
+    '<section class="sec"><div class="wrap"><div class="head"><span class="eyebrow">Why TAPO</span><h2 class="h2">Your wallet, finally doing the maths.</h2><p class="lede">Cashback on groceries, miles on travel, a cap that runs out mid-month. Nobody remembers all of it at the counter. TAPO does, instantly.</p></div>' +
+    '<div class="bento">' +
+      '<article class="panel tile t-a"><div class="box-h"><h3 style="font-size:22px">The best card, ranked live</h3><span class="tag" id="liveCat">Groceries · ₹2,340</span></div><p>Pick what you\'re buying. TAPO ranks every card you own, counts monthly caps, and explains its answer.</p><div class="live-rank" id="liveRank"></div></article>' +
+      '<article class="panel tile t-b"><div class="ficon">' + ico('trend', 22, '#F5C66B') + '</div><h3>Missed rewards</h3><p>One number that matters: what your best cards would have earned this month.</p><div class="big-num num" id="bentoMissed">₹0</div></article>' +
+      '<article class="panel tile t-c"><div class="ficon">' + ico('file', 22, '#6FD9A4') + '</div><h3>Private statement import</h3><p>Drop a bank CSV. It\'s read in your browser, sorted into categories, and never uploaded.</p></article>' +
+      '<article class="panel tile t-d"><div class="ficon">' + ico('chart', 22, '#A99BFF') + '</div><h3>Insights that act</h3><p>Where your money went, what each card earned, and the swaps that pay off.</p><div class="mini-bars" aria-hidden="true">' + [62, 40, 88, 30, 54, 72, 46].map(function (h, i) { return '<i style="height:' + h + '%;--c:' + CATS[i][2] + ';animation-delay:' + (i * 0.07) + 's"></i>'; }).join('') + '</div></article>' +
+      '<article class="panel tile t-e"><div class="ficon">' + ico('shield', 22, '#ECE9E2') + '</div><h3>Nothing to steal</h3><p>No card numbers, no CVV, no OTP, no account. There\'s simply nothing sensitive to leak.</p></article>' +
+    '</div></div></section>' +
+
+    '<section class="sec"><div class="wrap"><div class="head center"><span class="eyebrow">Three steps</span><h2 class="h2">Set up in five minutes.</h2></div><div class="steps3">' +
+      '<div class="panel st"><span class="n">1</span><h3>Add your cards</h3><p>A nickname, the last four digits as a label, and each card\'s reward rates and caps.</p></div>' +
+      '<div class="panel st"><span class="n">2</span><h3>Import your spending</h3><p>Load a statement CSV. TAPO categorises every purchase on your device.</p></div>' +
+      '<div class="panel st"><span class="n">3</span><h3>Pay with the right card</h3><p>Ask before you pay, or review your month and recover what you missed.</p></div>' +
+    '</div></div></section>' +
+
+    '<section class="sec" style="padding-top:0"><div class="wrap"><div class="cta-band"><h2 class="h2">Stop leaving rewards on the table.</h2><p class="lede">TAPO runs right here in your browser. No download, no sign-up, nothing to pay.</p><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a></div></div></section>';
+};
+
+PAGES.product = function () {
+  var ch = [
+    ['01', 'Your cards, in one place', 'Add each card with its reward rates and monthly caps. TAPO keeps a nickname and the last four digits as a label, and nothing else.'],
+    ['02', 'Ask before you pay', 'Choose a category and amount. TAPO ranks every card, checks how much of each cap is left this month, and tells you which to tap.'],
+    ['03', 'See what you missed', 'Import a statement and TAPO compares every purchase against your best card. The difference is your missed rewards.'],
+    ['04', 'Insights that pay off', 'Spending by category, rewards by card, and specific swaps to make next month. All of it calculated on your device.']
   ];
-  function clone(x) { return JSON.parse(JSON.stringify(x)); }
-  function validCard(c) {
-    return c && typeof c.name === 'string' && c.name.trim() && typeof c.base === 'number' && c.base >= 0 && c.base <= 20 && Array.isArray(c.rules);
-  }
-  function load() {
-    try { var raw = localStorage.getItem(KEY); if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length && arr.every(validCard)) return arr.slice(0, 8); } } catch (e) {}
-    return clone(EXAMPLES);
-  }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(cards)); } catch (e) {} }
-  var cards = load();
-  function byId(id) { for (var i = 0; i < cards.length; i++) if (cards[i].id === id) return cards[i]; return null; }
+  var ex = insights(new Date());
+  var r = rank('groceries', 2340);
+  var layers = [
+    '<span class="ds-k">Good evening</span><div class="ds-h">Your wallet</div><div style="margin:6px 4px 8px">' + cardFace(S.cards[0] || EXAMPLE_CARDS[0]) + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="ds-t"><span class="ds-k">Spent</span><b>' + inr(ex.total) + '</b></div><div class="ds-t"><span class="ds-k" style="color:var(--green)">Earned</span><b>' + inr(ex.earned) + '</b></div></div>',
+    '<span class="ds-k">Best card</span><div class="ds-h">Groceries · ₹2,340</div>' + r.slice(0, 4).map(function (e, i) { return '<div class="ds-t" style="' + (i === 0 ? 'border-color:#1F4A3A;background:var(--green-bg)' : '') + '"><div style="display:flex;justify-content:space-between;gap:8px"><span>' + esc(e.card.name) + '</span><b style="font-size:13px;' + (i === 0 ? 'color:var(--green)' : '') + '">' + inr(e.reward, true) + '</b></div></div>'; }).join(''),
+    '<span class="ds-k">This month</span><div class="ds-h">Missed rewards</div><div class="ds-t" style="border-color:#4a3c1c"><span class="ds-k" style="color:var(--amber)">Could have earned</span><b style="font-size:28px;color:var(--amber)">' + inr(ex.missed, true) + '</b></div>' + ex.tips.slice(0, 3).map(function (t) { return '<div class="ds-t" style="background:var(--amber-bg);border-color:#4a3c1c;color:#F8DFA6">Use ' + esc(t.card.name) + ' for ' + CAT[t.cat].label + '</div>'; }).join(''),
+    '<span class="ds-k">Insights</span><div class="ds-h">' + MONTHS_LONG[new Date().getMonth()] + '</div><div class="ds-t">' + ex.cats.slice(0, 5).map(function (c) { return '<div class="ds-row" style="display:block"><div style="display:flex;justify-content:space-between"><span>' + CAT[c.cat].label + '</span><span>' + inr(c.spend) + '</span></div><div class="bar" style="margin-top:5px;height:5px"><i style="width:' + Math.max(4, c.spend / ex.cats[0].spend * 100) + '%;background:' + CAT[c.cat].fg + '"></i></div></div>'; }).join('') + '</div>'
+  ];
+  return '<section class="sec" style="padding-bottom:40px"><div class="wrap"><div class="head"><span class="eyebrow">Product</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">One app. Every card working its hardest.</h1><p class="lede">Here\'s how TAPO turns a wallet full of cards into one clear answer.</p></div></div></section>' +
+    '<section style="padding-bottom:80px"><div class="wrap scrolly"><div class="phone-sticky"><div class="device" role="img" aria-label="TAPO app screens"><div class="dscreen">' + layers.map(function (l, i) { return '<div class="layer' + (i === 0 ? ' on' : '') + '" data-layer="' + i + '">' + l + '</div>'; }).join('') + '</div></div></div>' +
+    '<div class="chapters">' + ch.map(function (c, i) { return '<div class="chapter' + (i === 0 ? ' on' : '') + '" data-ch="' + i + '"><span class="k">' + c[0] + '</span><h3>' + c[1] + '</h3><p>' + c[2] + '</p></div>'; }).join('') +
+    '<div><a class="btn btn-primary" href="#wallet">Try it now ' + ico('arrow', 18) + '</a></div></div></div></section>';
+};
 
-  /* ---------------- reward maths (same rules as the app) ---------------- */
-  function rule(card, cat) {
-    for (var i = 0; i < card.rules.length; i++) if (card.rules[i].cat === cat) return { rate: card.rules[i].rate, cap: card.rules[i].cap, source: 'category' };
-    return { rate: card.base, cap: undefined, source: 'base' };
+PAGES.security = function () {
+  return '<section class="sec"><div class="wrap"><div class="head"><span class="eyebrow">Security & privacy</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">We can\'t leak what we never collect.</h1><p class="lede">TAPO is designed so that sensitive card data has nowhere to go. There\'s no field for it, no server holding it and no account to break into.</p></div>' +
+    '<div class="panel box" style="margin-bottom:16px"><h2 style="font-size:20px">TAPO never asks for</h2><div class="never"><span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Net-banking login</span><span>UPI PIN</span><span>Payment tokens</span></div><p class="muted small">If anyone claiming to be TAPO asks you for one of these, it isn\'t us.</p></div>' +
+    '<div class="flow">' +
+      '<div class="panel">' + ico('phone', 26, '#6FD9A4') + '<h3>Stays on your device</h3><p>Cards and spending are saved in your browser\'s storage, or on your phone in the app. There\'s no TAPO account and no cloud copy.</p></div>' +
+      '<div class="panel">' + ico('file', 26, '#6FD9A4') + '<h3>Statements read locally</h3><p>Imports are parsed on your device. TAPO keeps the date, merchant and amount; card, account and UPI numbers are masked to the last four digits.</p></div>' +
+      '<div class="panel">' + ico('lock', 26, '#6FD9A4') + '<h3>No tracking</h3><p>No ads, no analytics, no selling of data. Clearing your browser data removes everything TAPO stored.</p></div>' +
+    '</div></div></section>' +
+    '<section class="sec" style="padding-top:0"><div class="wrap"><div class="head"><span class="eyebrow">Our promises</span><h2 class="h2">Advice, not access.</h2></div><div class="promise-grid">' +
+      ['TAPO never moves money|It recommends a card. You pay the way you always do.', 'No bank logins, ever|TAPO doesn\'t connect to your bank and never asks for credentials.', 'Estimates you can check|Rewards follow the rates you enter, rounded down so we never over-promise.', 'You can delete everything|Remove cards, imports or all data at any time from the app.'].map(function (p) { var x = p.split('|'); return '<div class="panel promise">' + ico('check', 22, '#6FD9A4', 2.4) + '<div><h3>' + x[0] + '</h3><p>' + x[1] + '</p></div></div>'; }).join('') +
+    '</div></div></section>';
+};
+
+PAGES.faq = function () {
+  var q = [
+    ['Is TAPO a bank or a payment app?', 'No. TAPO doesn\'t issue cards, hold money or process payments. It tells you which of your existing cards to use; you keep paying with your cards as usual.'],
+    ['Which banks and cards work with TAPO?', 'Any credit or debit card. You enter each card\'s reward rates yourself, so TAPO works with any issuer or network. TAPO isn\'t affiliated with any bank or card network.'],
+    ['Will TAPO ask for my card number or OTP?', 'Never. TAPO stores a nickname and, if you like, the last four digits as a label. It has no way to accept a full card number, CVV, PIN or OTP.'],
+    ['Where is my data stored?', 'In your browser\'s local storage on this device. Nothing is sent to a server. Clearing site data, or using "Reset everything" in Cards, removes it.'],
+    ['How do I import a statement?', 'In your bank or card app, download a statement as CSV (Excel files can be saved as CSV). Open Import in TAPO and drop the file. TAPO finds the date, description and amount columns automatically.'],
+    ['How accurate are the reward estimates?', 'They follow the rates and monthly caps you enter, rounded down to the paisa. Your issuer\'s statement is always the final word.'],
+    ['What are the example cards?', 'Four fictional cards with example activity, so you can explore TAPO straight away. Edit them, remove them, or clear the example activity from the Cards screen.'],
+    ['Is there a phone app?', 'TAPO works in any modern browser today, on phone or desktop. Native iPhone and Android apps are coming soon.'],
+    ['How much does TAPO cost?', 'Nothing. TAPO is free.']
+  ];
+  return '<section class="sec"><div class="wrap"><div class="head"><span class="eyebrow">FAQ</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">Questions, answered.</h1><p class="lede">Everything you need to know about how TAPO works and what it does with your data.</p></div>' +
+    '<div class="faq">' + q.map(function (x, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary>' + x[0] + '</summary><p>' + x[1] + '</p></details>'; }).join('') + '</div></div></section>' +
+    '<section class="sec" style="padding-top:0"><div class="wrap"><div class="cta-band"><h2 class="h2">Ready when you are.</h2><p class="lede">Open TAPO and see your best card in seconds.</p><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a></div></div></section>';
+};
+
+/* =====================================================================================
+   APP shell + screens
+   ===================================================================================== */
+function appShell(r) {
+  return '<div class="app"><aside class="side" aria-label="App"><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a>' +
+    APP_NAV.map(function (n) { return '<a class="navi" href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + ico(n[2], 20) + n[1] + '</a>'; }).join('') +
+    '<div class="side-foot"><p>' + ico('lock', 14) + ' Saved in this browser only</p><a class="link-btn" href="#home" style="text-align:left;padding-left:0">' + ico('back', 14) + ' Back to website</a></div></aside>' +
+    '<main class="workspace"><div class="app-top"><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a><a class="link-btn" href="#home">Website</a></div>' + SCREENS[r]() + '</main>' +
+    '<nav class="tabs" aria-label="App">' + APP_NAV.map(function (n) { return '<a href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + ico(n[2], 22) + n[1].split(' ')[0] + '</a>'; }).join('') + '</nav></div>';
+}
+function head(k, title, right) { return '<div class="screen-head"><div><p class="k">' + k + '</p><h1>' + title + '</h1></div>' + (right || '') + '</div>'; }
+function greeting() { var h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
+function txnRow(t) {
+  var c = cardById(t.cardId);
+  return '<div class="txn">' + catIcon(t.category) + '<div style="min-width:0"><b>' + esc(t.merchant) + '</b><small>' + CAT[t.category].label + ' · ' + (c ? esc(c.name) : 'Removed card') + (t.example ? ' · Example' : t.imported ? ' · Imported' : '') + '</small></div><div class="amt">' + inr(t.amount) + '<small>' + shortDate(t.date) + '</small></div></div>';
+}
+
+var SCREENS = {};
+SCREENS.wallet = function () {
+  var ins = insights(new Date());
+  var recent = S.txns.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 6);
+  return head(greeting(), 'Your wallet', '<a class="btn btn-ghost btn-sm" href="#cards">' + ico('plus', 16) + 'Add card</a>') +
+    (S.cards.length ? '<div class="carousel" id="carousel">' + S.cards.map(function (c, i) { return '<div class="slot" data-i="' + i + '">' + cardFace(c) + '</div>'; }).join('') + '<div class="slot"><a class="add-slot" href="#cards">' + ico('plus', 18) + ' Add a card</a></div></div><div class="active-card" id="activeCard"></div>' :
+      '<div class="panel empty"><h2 style="color:var(--ink)">No cards yet</h2><p>Add your first card to get recommendations.</p><a class="btn btn-primary" href="#cards">Add a card</a></div>') +
+    '<div class="grid3"><div class="panel stat"><small>Spent this month</small><b data-count="' + ins.total + '">' + inr(ins.total) + '</b><span class="hint">' + ins.count + ' purchases</span></div>' +
+    '<div class="panel stat good"><small>Rewards earned</small><b data-count="' + ins.earned + '" data-dec="1">' + inr(ins.earned, true) + '</b><span class="hint">' + (ins.total ? pct(Math.round(ins.earned / ins.total * 10000) / 100) + ' back overall' : 'No spending yet') + '</span></div>' +
+    '<a class="panel stat warn" href="#insights"><small>Missed rewards</small><b data-count="' + ins.missed + '" data-dec="1">' + inr(ins.missed, true) + '</b><span class="hint">' + (ins.tips[0] ? 'Use ' + esc(ins.tips[0].card.name) + ' for ' + CAT[ins.tips[0].cat].label + ' →' : 'You used your best cards') + '</span></a></div>' +
+    '<div class="grid2" style="margin-top:16px"><div class="panel box"><div class="box-h"><h2>Recent activity</h2><a class="link-btn" href="#insights">Insights →</a></div><div>' + (recent.length ? recent.map(txnRow).join('') : '<p class="muted">No activity yet. <a href="#import">Import a statement</a>.</p>') + '</div></div>' +
+    '<div class="panel box"><div class="box-h"><h2>Quick check</h2><a class="link-btn" href="#best">Best card →</a></div><p class="muted small">Tap a category to see which card to use for a ₹1,000 purchase.</p><div class="chips" id="quickCats">' + CATS.map(function (c) { return '<button class="chip" type="button" data-cat="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div><div id="quickAns" class="verdict" style="display:none"></div></div></div>';
+};
+SCREENS.best = function () {
+  return head('Best card', 'Which card should I use?') +
+    '<div class="grid2" style="align-items:start"><div class="panel box"><span class="lbl">What are you buying?</span><div class="cat-grid" id="catGrid">' + CATS.map(function (c) { return '<button class="cat" type="button" data-cat="' + c[0] + '" aria-pressed="' + (ui.cat === c[0]) + '">' + catIcon(c[0], 18) + '<span>' + c[1] + '</span></button>'; }).join('') + '</div>' +
+    '<label class="lbl" for="amt">How much?</label><div class="amount"><span aria-hidden="true">₹</span><input id="amt" inputmode="numeric" autocomplete="off" value="' + ui.amount + '"></div>' +
+    '<div class="chips">' + [250, 1000, 2340, 5000, 15000].map(function (v) { return '<button class="chip" type="button" data-amt="' + v + '">' + inr(v) + '</button>'; }).join('') + '</div>' +
+    '<p class="subtle small">Monthly caps count what each card has already earned this month in your activity.</p></div>' +
+    '<div class="box" style="padding:0;gap:10px"><div id="ranks" style="display:grid;gap:10px" aria-live="polite"></div><div id="verdict"></div></div></div>';
+};
+SCREENS.insights = function () {
+  var ref = ui.month === 'this' ? new Date() : prevMonth(new Date());
+  var ins = insights(ref);
+  var sw = '<div class="seg-switch" role="group" aria-label="Month"><button type="button" data-m="this" aria-pressed="' + (ui.month === 'this') + '">This month</button><button type="button" data-m="last" aria-pressed="' + (ui.month === 'last') + '">Last month</button></div>';
+  if (!ins.count) return head('Insights', MONTHS_LONG[ref.getMonth()] + ' ' + ref.getFullYear(), sw) + '<div class="panel empty"><h2 style="color:var(--ink)">No spending in this month</h2><p>Import a statement to see where your money went.</p><a class="btn btn-primary" href="#import">Import a statement</a></div>';
+  var C = 2 * Math.PI * 80, off = 0;
+  var segs = ins.cats.map(function (c) { var len = c.spend / ins.total * C; var s = '<circle class="seg" cx="100" cy="100" r="80" fill="none" stroke="' + CAT[c.cat].fg + '" stroke-width="22" stroke-dasharray="' + Math.max(0, len - 2) + ' ' + C + '" stroke-dashoffset="' + (-off) + '" transform="rotate(-90 100 100)"/>'; off += len; return s; }).join('');
+  var maxR = ins.cards[0] ? ins.cards[0].reward || 1 : 1;
+  return head('Insights', MONTHS_LONG[ref.getMonth()] + ' ' + ref.getFullYear(), sw) +
+    '<div class="grid3"><div class="panel stat"><small>Spent</small><b data-count="' + ins.total + '">' + inr(ins.total) + '</b><span class="hint">' + ins.count + ' purchases</span></div>' +
+    '<div class="panel stat good"><small>Rewards earned</small><b data-count="' + ins.earned + '" data-dec="1">' + inr(ins.earned, true) + '</b><span class="hint">' + pct(Math.round(ins.earned / ins.total * 10000) / 100) + ' back overall</span></div>' +
+    '<div class="panel stat warn"><small>Missed rewards</small><b data-count="' + ins.missed + '" data-dec="1">' + inr(ins.missed, true) + '</b><span class="hint">Before monthly caps</span></div></div>' +
+    '<div class="grid2" style="margin-top:16px;align-items:start"><div class="panel box"><h2 style="font-size:18px">Where your money went</h2><div class="donut-wrap"><div class="donut"><svg width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="Spending by category"><circle cx="100" cy="100" r="80" fill="none" stroke="#1A2034" stroke-width="22"/>' + segs + '</svg><div class="mid"><span class="muted small">Total</span><b>' + inr(ins.total) + '</b></div></div>' +
+    '<div class="legend">' + ins.cats.map(function (c) { return '<div><i style="background:' + CAT[c.cat].fg + '"></i><span>' + CAT[c.cat].label + '</span><span>' + inr(c.spend) + '</span><span>' + Math.round(c.spend / ins.total * 100) + '%</span></div>'; }).join('') + '</div></div></div>' +
+    '<div class="panel box"><h2 style="font-size:18px">Rewards by card</h2>' + ins.cards.map(function (r) { return '<div class="cardbar"><div class="top"><b>' + esc(r.card.name) + '</b><span>+' + inr(r.reward, true) + '</span></div><div class="bar"><i style="width:' + Math.max(3, r.reward / maxR * 100) + '%;background:' + esc(r.card.color) + ';filter:brightness(1.6)"></i></div><span class="subtle small">' + inr(r.spend) + ' spent</span></div>'; }).join('') + '</div></div>' +
+    '<div class="panel box" style="margin-top:16px"><div class="box-h"><h2>Ways to earn more</h2></div>' + (ins.tips.length ? ins.tips.slice(0, 4).map(function (t) { return '<div class="tip">' + catIcon(t.cat, 17) + '<div style="min-width:0"><b>Use ' + esc(t.card.name) + ' for ' + CAT[t.cat].label + '</b><small>' + inr(t.extra, true) + ' more on ' + t.count + (t.count === 1 ? ' purchase' : ' purchases') + ' this month, before caps.</small></div><button class="btn btn-ghost btn-sm" type="button" data-compare="' + t.cat + '" data-avg="' + Math.round(t.sum / t.count) + '">Compare</button></div>'; }).join('') : '<p class="muted">Every purchase used your best card. Nice.</p>') + '</div>';
+};
+SCREENS.import = function () {
+  var imported = S.txns.filter(function (t) { return t.imported; }).length;
+  var examples = S.txns.filter(function (t) { return t.example; }).length;
+  return head('Import', 'Bring in your real spending') +
+    '<div class="grid2" style="align-items:start"><div style="display:grid;gap:16px"><div class="drop" id="drop"><span class="big-ico">' + ico('file', 28, '#ECE9E2', 1.8) + '</span><h2 style="font-size:20px">Drop a CSV statement here</h2><p class="muted small">Download a statement from your bank or card app as CSV. TAPO finds the date, description and amount columns.</p>' +
+    '<div class="chips center"><label class="btn btn-primary btn-sm" for="file" style="cursor:pointer">Choose file</label><input id="file" type="file" accept=".csv,text/csv,text/plain" hidden><button class="btn btn-ghost btn-sm" type="button" id="useExample">Use an example</button></div></div>' +
+    '<details class="panel" style="padding:4px 18px"><summary style="cursor:pointer;padding:12px 0;font-weight:700">Or paste CSV text</summary><div style="display:grid;gap:10px;padding-bottom:16px"><label class="sr" for="paste">CSV text</label><textarea class="input" id="paste" placeholder="Date,Description,Debit,Credit"></textarea><button class="btn btn-ghost btn-sm" type="button" id="parsePaste" style="justify-self:start">Preview</button></div></details>' +
+    '<p class="err" id="impErr" role="alert" hidden></p>' +
+    '<div class="panel box"><p style="display:flex;gap:10px;align-items:flex-start" class="muted small">' + ico('lock', 16, '#6FD9A4') + '<span>Read in your browser and never uploaded. Only the date, merchant and amount are kept. Card, account and UPI numbers are masked.</span></p>' +
+    (imported ? '<button class="btn btn-danger btn-sm" type="button" id="rmImported" style="justify-self:start">Remove ' + imported + ' imported purchases</button>' : '') +
+    (examples ? '<button class="btn btn-ghost btn-sm" type="button" id="rmExamples" style="justify-self:start">Clear ' + examples + ' example purchases</button>' : '') + '</div></div>' +
+    '<div class="panel box" id="preview" aria-live="polite"></div></div>';
+};
+SCREENS.cards = function () {
+  return head('Cards', 'Your cards', '<button class="btn btn-primary btn-sm" type="button" id="newCard">' + ico('plus', 16) + 'Add card</button>') +
+    (S.cards.length ? '<div class="card-grid">' + S.cards.map(function (c) {
+      return '<article class="panel cardtile">' + cardFace(c) + '<div class="rules"><span class="chip static">' + pct(c.base) + ' base</span>' + c.rules.map(function (r) { return '<span class="chip static">' + pct(r.rate) + ' ' + CAT[r.cat].label + (r.cap ? ' · cap ' + inr(r.cap) : '') + '</span>'; }).join('') + '</div>' +
+        '<div class="acts"><button class="btn btn-ghost btn-sm" type="button" data-edit="' + esc(c.id) + '">Edit</button><button class="btn btn-danger btn-sm" type="button" data-del="' + esc(c.id) + '">Remove</button></div></article>';
+    }).join('') + '</div>' : '<div class="panel empty"><h2 style="color:var(--ink)">No cards yet</h2><p>Add a card with its reward rates to start.</p></div>') +
+    '<div class="panel box" style="margin-top:20px"><h2 style="font-size:18px">Data on this device</h2><p class="muted small">Everything TAPO knows is stored in this browser. Resetting brings back the example cards and activity.</p><div class="chips"><button class="btn btn-danger btn-sm" type="button" id="resetAll">Reset everything</button></div><p id="resetConfirm" hidden></p></div>';
+};
+
+/* =====================================================================================
+   Mount (events, dynamic bits)
+   ===================================================================================== */
+function mount(r) {
+  if (SITE.indexOf(r) >= 0) mountSite(r); else mountApp(r);
+}
+function countUps() {
+  $$('[data-count]').forEach(function (el) {
+    var v = Number(el.getAttribute('data-count')), dec = el.hasAttribute('data-dec');
+    if (REDUCE || !v) { el.textContent = inr(v, dec); return; }
+    var t0 = performance.now(), dur = 700;
+    (function step(t) { var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = inr(dec ? Math.round(v * e * 100) / 100 : Math.round(v * e), dec); if (p < 1) requestAnimationFrame(step); })(t0);
+  });
+}
+function toast(msg) { var old = $('.toast'); if (old) old.remove(); var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2600); }
+function shineOn(scope) {
+  $$('.cardface', scope).forEach(function (el) {
+    el.addEventListener('pointermove', function (e) { var b = el.getBoundingClientRect(); el.style.setProperty('--mx', ((e.clientX - b.left) / b.width * 100) + '%'); el.style.setProperty('--my', ((e.clientY - b.top) / b.height * 100) + '%'); });
+  });
+}
+
+function mountSite(r) {
+  var nav = $('#snav'), btn = $('#menuBtn');
+  btn.addEventListener('click', function () { var o = nav.classList.toggle('open'); btn.setAttribute('aria-expanded', String(o)); });
+  var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  cleanup.push(function () { window.removeEventListener('scroll', onScroll); });
+  shineOn();
+  if (r === 'home') {
+    var ins = insights(new Date());
+    $('#heroMissed').textContent = inr(ins.missed, true);
+    $('#bentoMissed').textContent = inr(ins.missed, true);
+    $('#heroBest').textContent = inr(rank('groceries', 2340)[0].reward, true);
+    // 3D tilt on the card stack
+    var stack = $('#stack');
+    if (!REDUCE && window.matchMedia('(pointer: fine)').matches) {
+      stack.addEventListener('pointermove', function (e) { var b = stack.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; $$('.fc', stack).forEach(function (el, i) { var k = 8 + i * 5; el.style.transform = 'rotateY(' + (x * k) + 'deg) rotateX(' + (-y * k) + 'deg) translateZ(' + (i * 14) + 'px)'; }); });
+      stack.addEventListener('pointerleave', function () { $$('.fc', stack).forEach(function (el) { el.style.transform = ''; }); });
+    }
+    // live ranking that cycles through purchases
+    var demos = [['groceries', 2340], ['travel', 7450], ['online', 1899], ['dining', 1120], ['fuel', 3000]], di = 0;
+    var paint = function () {
+      var d = demos[di % demos.length], list = rank(d[0], d[1]).slice(0, 3), top = list[0].reward || 1;
+      $('#liveCat').textContent = CAT[d[0]].label + ' · ' + inr(d[1]);
+      $('#liveRank').innerHTML = list.map(function (e, i) { return '<div class="lr' + (i === 0 ? ' top' : '') + '"><b>' + esc(e.card.name) + '</b><span>' + inr(e.reward, true) + '</span><div class="bar"><i style="width:' + Math.max(4, e.reward / top * 100) + '%;background:' + (i === 0 ? 'var(--green)' : esc(e.card.color)) + '"></i></div></div>'; }).join('');
+      di++;
+    };
+    paint();
+    if (!REDUCE) { var iv = setInterval(paint, 2800); cleanup.push(function () { clearInterval(iv); }); }
   }
-  function raw(amount, rate) { return Math.floor(amount * rate) / 100; }
-  function evaluate(card, cat, amount) {
-    var r = rule(card, cat), reward = raw(amount, r.rate), limited = false;
-    if (r.cap !== undefined && reward > r.cap) { reward = r.cap; limited = true; }
-    return { card: card, rate: r.rate, cap: r.cap, source: r.source, reward: reward, limited: limited };
+  if (r === 'product') {
+    var layers = $$('.layer'), chs = $$('.chapter');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting) { var i = Number(en.target.getAttribute('data-ch')); chs.forEach(function (c, j) { c.classList.toggle('on', j === i); }); layers.forEach(function (l, j) { l.classList.toggle('on', j === i); }); } }); }, { rootMargin: '-45% 0px -45% 0px' });
+      chs.forEach(function (c) { io.observe(c); });
+      cleanup.push(function () { io.disconnect(); });
+    }
   }
-  function rank(cat, amount) {
-    return cards.map(function (c) { return evaluate(c, cat, amount); }).sort(function (a, b) { return b.reward - a.reward || b.rate - a.rate || a.card.name.localeCompare(b.card.name); });
-  }
-  function bestFor(cat, amount) { return rank(cat, amount)[0]; }
-  function missedFor(rows, payId) {
-    var used = byId(payId) || cards[0], total = 0, earned = 0, groups = {};
-    rows.forEach(function (x) {
-      var u = raw(x.amountRupees, rule(used, x.category).rate); earned += u;
-      var best = cards.reduce(function (m, c) { var r = raw(x.amountRupees, rule(c, x.category).rate); return r > m.r ? { r: r, c: c } : m; }, { r: -1, c: null });
-      var extra = best.r - u;
-      if (extra > 0.0001) { total += extra; var k = x.category + '|' + best.c.id; groups[k] = groups[k] || { cat: x.category, card: best.c, extra: 0, count: 0 }; groups[k].extra += extra; groups[k].count++; }
+}
+
+function mountApp(r) {
+  countUps(); shineOn();
+  if (r === 'wallet') {
+    var car = $('#carousel'), act = $('#activeCard');
+    if (car) {
+      var slots = $$('.slot', car);
+      var paintActive = function (i) {
+        var c = S.cards[i];
+        if (!c) { act.innerHTML = '<h2>Add another card</h2><p class="muted small">More cards, better recommendations.</p>'; return; }
+        act.innerHTML = '<h2>' + esc(c.name) + (c.example ? ' <span class="tag">Example</span>' : '') + '</h2><div class="chips center"><span class="chip static">' + pct(c.base) + ' base</span>' + c.rules.map(function (x) { return '<span class="chip static">' + pct(x.rate) + ' ' + CAT[x.cat].label + '</span>'; }).join('') + '</div>';
+      };
+      var current = -1;
+      var onScroll = function () {
+        var cb = car.getBoundingClientRect(), mid = cb.left + cb.width / 2, best = 0, bd = 1e9;
+        slots.forEach(function (s, i) { var b = s.getBoundingClientRect(), d = (b.left + b.width / 2 - mid) / b.width; if (Math.abs(d) < bd) { bd = Math.abs(d); best = i; } var a = Math.max(-1.4, Math.min(1.4, d)); s.style.transform = REDUCE ? '' : 'rotateY(' + (-a * 32) + 'deg) scale(' + (1 - Math.min(Math.abs(a), 1) * .16) + ') translateZ(' + (-Math.abs(a) * 60) + 'px)'; s.style.opacity = String(1 - Math.min(Math.abs(a), 1) * .35); });
+        if (best !== current) { current = best; paintActive(best); }
+      };
+      car.scrollLeft = 0;
+      car.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+      slots.forEach(function (s, i) { s.addEventListener('click', function (e) { if (i !== current && !e.target.closest('a')) { e.preventDefault(); s.scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth', inline: 'center', block: 'nearest' }); } }); });
+      window.addEventListener('resize', onScroll); cleanup.push(function () { window.removeEventListener('resize', onScroll); });
+    }
+    $('#quickCats').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-cat]'); if (!b) return;
+      $$('#quickCats .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      var cat = b.getAttribute('data-cat'), best = rank(cat, 1000)[0], ans = $('#quickAns');
+      ans.style.display = '';
+      ans.innerHTML = 'For ' + CAT[cat].label + ', use <b>' + esc(best.card.name) + '</b>: about ' + inr(best.reward, true) + ' back on ₹1,000. <a href="#best" data-goto="' + cat + '">Compare all →</a>';
     });
-    return { total: Math.round(total * 100) / 100, earned: Math.round(earned * 100) / 100, tips: Object.keys(groups).map(function (k) { return groups[k]; }).sort(function (a, b) { return b.extra - a.extra; }) };
+    $('#quickAns').addEventListener('click', function (e) { var a = e.target.closest('[data-goto]'); if (a) { ui.cat = a.getAttribute('data-goto'); ui.amount = 1000; } });
   }
-  function rulesText(c) {
-    var parts = [pct(c.base) + ' base'];
-    c.rules.forEach(function (r) { parts.push(pct(r.rate) + ' ' + CAT_LABEL[r.cat] + (r.cap ? ' (cap ' + inr(r.cap) + '/mo)' : '')); });
-    return parts.join(' · ');
+  if (r === 'best') {
+    var paint = function () {
+      var list = rank(ui.cat, ui.amount), top = list[0] ? list[0].reward || 1 : 1, L = CAT[ui.cat].label;
+      $('#ranks').innerHTML = list.map(function (e, i) {
+        var why = e.source === 'category' ? pct(e.rate) + ' back on ' + L : 'No ' + L + ' rate · ' + pct(e.rate) + ' base';
+        var cap = e.cap !== undefined ? (e.limited ? (e.left === 0 ? 'Monthly cap of ' + inr(e.cap) + ' already used' : 'Only ' + inr(e.left, true) + ' of the ' + inr(e.cap) + ' cap left') : inr(e.left, true) + ' of the ' + inr(e.cap) + ' cap left') : '';
+        return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '"><span class="pos">' + (i + 1) + '</span><div style="min-width:0"><b>' + esc(e.card.name) + '</b><div class="why">' + why + '</div>' + (cap ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + cap + '</div>' : '') + '<div class="bar" style="margin-top:8px"><i style="width:' + (ui.amount ? Math.max(3, e.reward / top * 100) : 3) + '%;background:' + (i === 0 ? 'var(--green)' : esc(e.card.color)) + '"></i></div></div><span class="val">' + inr(e.reward, true) + '</span></div>';
+      }).join('') || '<div class="panel empty"><p>Add a card to compare.</p><a class="btn btn-primary btn-sm" href="#cards">Add a card</a></div>';
+      var b = list[0], n = list[1];
+      $('#verdict').innerHTML = b && ui.amount ? '<div class="verdict">Use <b>' + esc(b.card.name) + '</b>. It earns about <b>' + inr(b.reward, true) + '</b> on this ' + inr(ui.amount) + ' purchase' + (n && b.reward - n.reward > 0 ? ', ' + inr(Math.round((b.reward - n.reward) * 100) / 100, true) + ' more than ' + esc(n.card.name) + '.' : '.') + '</div>' : '';
+    };
+    $('#catGrid').addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (!b) return; ui.cat = b.getAttribute('data-cat'); $$('#catGrid .cat').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); paint(); });
+    $('#amt').addEventListener('input', function (e) { var d = e.target.value.replace(/\D/g, '').slice(0, 7); if (d !== e.target.value) e.target.value = d; ui.amount = Math.min(1000000, Number(d) || 0); paint(); });
+    $$('[data-amt]').forEach(function (b) { b.addEventListener('click', function () { ui.amount = Number(b.getAttribute('data-amt')); $('#amt').value = ui.amount; paint(); }); });
+    paint();
   }
+  if (r === 'insights') {
+    $$('[data-m]').forEach(function (b) { b.addEventListener('click', function () { ui.month = b.getAttribute('data-m'); render(); }); });
+    $$('[data-compare]').forEach(function (b) { b.addEventListener('click', function () { ui.cat = b.getAttribute('data-compare'); ui.amount = Number(b.getAttribute('data-avg')); go('best'); }); });
+  }
+  if (r === 'import') mountImport();
+  if (r === 'cards') mountCards();
+}
 
-  /* ---------------- card list + editor ---------------- */
-  var editing = null; // card id, 'new', or null
-  function renderCards() {
-    $('cardsList').innerHTML = cards.map(function (c) {
-      return '<div class="crow" style="--c:' + esc(c.color) + '"><i></i><div style="min-width:0"><b>' + esc(c.name) + (c.example ? '<span class="tag">Example</span>' : '') + '</b><span class="rules">' + esc(rulesText(c)) + '</span></div>' +
-        '<div class="acts"><button class="btn-link" type="button" data-edit="' + esc(c.id) + '">Edit</button>' + (cards.length > 1 ? '<button class="btn-link" type="button" data-del="' + esc(c.id) + '" aria-label="Remove ' + esc(c.name) + '">Remove</button>' : '') + '</div></div>';
-    }).join('');
-    $('addCard').disabled = cards.length >= 8;
-    var pay = $('payCard'), cur = pay.value;
-    pay.innerHTML = cards.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
-    if (byId(cur)) pay.value = cur; else pay.value = cards[cards.length - 1].id;
+function mountImport() {
+  var err = $('#impErr');
+  function fail(m) { err.textContent = m; err.hidden = !m; }
+  function parse(text) {
+    fail('');
+    try { ui.parsed = importStatement(text, S.txns.map(function (t) { return { date: t.date, amountRupees: t.amount, merchant: t.merchant }; })); paintPreview(); }
+    catch (e) { ui.parsed = null; paintPreview(); fail(e && e.message ? e.message : 'We couldn’t read that file.'); }
   }
-  function catOptions(sel) { return '<option value="">No rule</option>' + CATS.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === sel ? ' selected' : '') + '>' + c[1] + '</option>'; }).join(''); }
-  function openEditor(id) {
-    editing = id;
-    var c = id === 'new' ? { name: '', base: 1, rules: [] } : byId(id);
-    var rows = '';
-    for (var i = 0; i < 3; i++) {
-      var r = c.rules[i] || {};
-      rows += '<div class="rule-row"><div class="field"><label for="rc' + i + '">Category ' + (i + 1) + '</label><select class="select" id="rc' + i + '">' + catOptions(r.cat) + '</select></div>' +
-        '<div class="field"><label for="rr' + i + '">Rate %</label><input class="input" id="rr' + i + '" inputmode="decimal" value="' + (r.rate != null ? r.rate : '') + '"></div>' +
-        '<div class="field"><label for="rp' + i + '">Monthly cap ₹</label><input class="input" id="rp' + i + '" inputmode="numeric" placeholder="None" value="' + (r.cap != null ? r.cap : '') + '"></div></div>';
-    }
-    $('editorSlot').innerHTML = '<form class="editor" id="editor" novalidate>' +
-      '<div class="ed-grid"><div class="field"><label for="edName">Card nickname</label><input class="input" id="edName" maxlength="24" autocomplete="off" placeholder="e.g. Grocery card" value="' + esc(c.name) + '"></div>' +
-      '<div class="field"><label for="edBase">Base reward %</label><input class="input" id="edBase" inputmode="decimal" value="' + c.base + '"></div></div>' +
-      '<p class="muted small">Add up to three categories where this card earns more.</p>' + rows +
-      '<p class="err" id="edErr" role="alert" hidden></p>' +
-      '<div class="ed-actions"><button class="btn btn-primary btn-sm" type="submit">' + (id === 'new' ? 'Add card' : 'Save changes') + '</button><button class="btn btn-ghost btn-sm" type="button" id="edCancel">Cancel</button></div></form>';
-    $('edName').focus();
-    $('edCancel').addEventListener('click', closeEditor);
-    $('editor').addEventListener('submit', function (e) { e.preventDefault(); saveEditor(); });
+  function paintPreview() {
+    var p = $('#preview'), r = ui.parsed;
+    if (!r) { p.innerHTML = '<div class="empty"><span class="big-ico" style="width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:var(--surface-2)">' + ico('import', 24) + '</span><h2 style="color:var(--ink);font-size:20px">Preview appears here</h2><p>Choose a file or use the example to see what TAPO finds.</p></div>'; return; }
+    if (!r.rows.length) { p.innerHTML = '<div class="empty"><h2 style="color:var(--ink);font-size:20px">Nothing new to import</h2><p>Every row was money in, already imported, or unreadable.</p></div>'; return; }
+    if (!ui.payCard || !cardById(ui.payCard)) ui.payCard = S.cards[0] ? S.cards[0].id : null;
+    var total = r.rows.reduce(function (s, x) { return s + x.amountRupees; }, 0), sk = r.skipped, notes = [];
+    if (sk.credits) notes.push(sk.credits + ' money in'); if (sk.duplicates) notes.push(sk.duplicates + ' already imported'); if (sk.invalid) notes.push(sk.invalid + ' unreadable'); if (sk.overLimit) notes.push(sk.overLimit + ' over limits');
+    p.innerHTML = '<div class="box-h"><h2>' + r.rows.length + ' purchases found</h2><b class="num" style="font-size:20px">' + inr(total) + '</b></div>' +
+      '<p class="subtle small">Columns: ' + esc(r.columns.date) + ' · ' + esc(r.columns.description) + ' · ' + esc(r.columns.amount) + (notes.length ? '. Skipped ' + notes.join(', ') + '.' : '') + '</p>' +
+      '<div class="preview-rows">' + r.rows.slice(0, 8).map(function (x) { return '<div class="txn">' + catIcon(x.category) + '<div style="min-width:0"><b>' + esc(x.merchant) + '</b><small>' + CAT[x.category].label + '</small></div><div class="amt">' + inr(x.amountRupees) + '<small>' + shortDate(x.date) + '</small></div></div>'; }).join('') + (r.rows.length > 8 ? '<p class="subtle small" style="padding-top:8px">and ' + (r.rows.length - 8) + ' more</p>' : '') + '</div>' +
+      (S.cards.length ? '<div class="field"><label for="payCard">Which card paid for these?</label><select class="select" id="payCard">' + S.cards.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === ui.payCard ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div><button class="btn btn-primary" type="button" id="doImport">' + ico('check', 18) + ' Import ' + r.rows.length + ' purchases</button>' : '<p class="muted">Add a card first.</p><a class="btn btn-primary btn-sm" href="#cards">Add a card</a>');
+    var sel = $('#payCard'); if (sel) sel.addEventListener('change', function () { ui.payCard = sel.value; });
+    var b = $('#doImport'); if (b) b.addEventListener('click', function () {
+      var cardId = $('#payCard').value;
+      r.rows.forEach(function (x, i) { S.txns.push({ id: 'imp' + Date.now().toString(36) + i, cardId: cardId, merchant: x.merchant, category: x.category, amount: x.amountRupees, date: x.date, imported: true }); });
+      S.txns = S.txns.slice(-3000); persist(); ui.parsed = null; toast(r.rows.length + ' purchases imported'); go('insights');
+    });
   }
-  function closeEditor() { editing = null; $('editorSlot').innerHTML = ''; }
-  function num(v) { v = String(v).replace(/,/g, '').trim(); return v === '' ? NaN : Number(v); }
-  function saveEditor() {
-    var err = $('edErr'), name = $('edName').value.replace(/\s+/g, ' ').trim(), base = num($('edBase').value);
-    function fail(m) { err.textContent = m; err.hidden = false; }
-    if (!name) return fail('Give the card a nickname.');
-    if ((name.replace(/\D/g, '')).length >= 8) return fail('Use a nickname, not a card number. TAPO never stores card numbers.');
-    if (!(base >= 0 && base <= 20)) return fail('Base reward must be between 0% and 20%.');
-    var rules = [], seen = {};
-    for (var i = 0; i < 3; i++) {
-      var cat = $('rc' + i).value; if (!cat) continue;
-      var rate = num($('rr' + i).value), capRaw = $('rp' + i).value.trim(), cap = capRaw === '' ? undefined : num(capRaw);
-      if (seen[cat]) return fail(CAT_LABEL[cat] + ' is listed twice.');
-      if (!(rate >= 0 && rate <= 20)) return fail('Rate for ' + CAT_LABEL[cat] + ' must be between 0% and 20%.');
-      if (cap !== undefined && !(cap > 0 && cap <= 100000)) return fail('Cap for ' + CAT_LABEL[cat] + ' must be a positive amount, or leave it empty.');
-      seen[cat] = true; rules.push(cap === undefined ? { cat: cat, rate: rate } : { cat: cat, rate: rate, cap: cap });
-    }
-    if (editing === 'new') {
-      cards.push({ id: 'c' + Date.now().toString(36), name: name, base: base, rules: rules, color: COLORS[cards.length % COLORS.length] });
-    } else {
-      var c = byId(editing); c.name = name; c.base = base; c.rules = rules; delete c.example;
-    }
-    save(); closeEditor(); refresh();
-  }
-  $('addCard').addEventListener('click', function () { openEditor('new'); });
-  $('cardsList').addEventListener('click', function (e) {
-    var t = e.target.closest('button'); if (!t) return;
-    if (t.dataset.edit) openEditor(t.dataset.edit);
-    if (t.dataset.del) { cards = cards.filter(function (c) { return c.id !== t.dataset.del; }); if (editing === t.dataset.del) closeEditor(); save(); refresh(); }
-  });
-  $('resetCards').addEventListener('click', function () { cards = clone(EXAMPLES); save(); closeEditor(); refresh(); });
-
-  /* ---------------- finder ---------------- */
-  var state = { cat: 'groceries', amount: 2340 };
-  CATS.forEach(function (c) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = c[1];
-    b.setAttribute('aria-pressed', String(c[0] === state.cat));
-    b.addEventListener('click', function () { state.cat = c[0]; document.querySelectorAll('#catChips .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); renderRanks(); });
-    $('catChips').appendChild(b);
-  });
-  $('amount').addEventListener('input', function (e) {
-    var d = e.target.value.replace(/\D/g, '').slice(0, 7); if (d !== e.target.value) e.target.value = d;
-    state.amount = Math.min(1000000, Number(d) || 0); renderRanks();
-  });
-  function renderRanks() {
-    var list = rank(state.cat, state.amount), top = list[0].reward || 1, label = CAT_LABEL[state.cat];
-    $('ranks').innerHTML = list.map(function (e, i) {
-      var why = e.source === 'category' ? pct(e.rate) + ' back on ' + label : 'No ' + label + ' rate, so the ' + pct(e.rate) + ' base rate applies';
-      var cap = e.cap ? (e.limited ? 'Limited by the ' + inr(e.cap) + ' monthly cap' : 'Within the ' + inr(e.cap) + ' monthly cap') : '';
-      return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '"><span class="pos">' + (i + 1) + '</span><div style="min-width:0"><b>' + esc(e.card.name) + '</b><div class="why">' + esc(why) + '</div>' +
-        (cap ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + cap + '</div>' : '') +
-        '<div class="bar"><i style="width:' + (state.amount ? Math.max(2, e.reward / top * 100) : 2) + '%;background:' + esc(e.card.color) + '"></i></div></div><span class="val">' + inr(e.reward, true) + '</span></div>';
-    }).join('');
-    var v = $('verdict');
-    if (!state.amount) { v.textContent = 'Enter an amount to compare your cards.'; return; }
-    var b = list[0], n = list[1];
-    var diff = n ? Math.round((b.reward - n.reward) * 100) / 100 : 0;
-    v.innerHTML = 'Use <b>' + esc(b.card.name) + '</b>. It earns about <b>' + inr(b.reward, true) + '</b> on this ' + inr(state.amount) + ' purchase' +
-      (n && diff > 0 ? ', ' + inr(diff, true) + ' more than ' + esc(n.card.name) + '.' : '.');
-  }
-
-  /* ---------------- statement check ---------------- */
-  var lastResult = null;
-  function showErr(m) { $('importErr').textContent = m; $('importErr').hidden = !m; }
-  function runImport(text) {
-    showErr('');
-    try { lastResult = importStatement(text, []); renderResult(); }
-    catch (e) { showErr(e && e.message ? e.message : 'We couldn’t read that file. Make sure it’s a CSV export.'); }
-  }
-  function renderResult() {
-    var r = lastResult; if (!r) return;
-    var out = $('result');
-    if (!r.rows.length) { out.innerHTML = '<div class="empty"><h3 style="color:var(--ink)">No purchases found</h3><p>Every row was money in, a duplicate, or unreadable.</p></div>'; return; }
-    var total = r.rows.reduce(function (s, x) { return s + x.amountRupees; }, 0);
-    var m = missedFor(r.rows, $('payCard').value);
-    var cats = {}; r.rows.forEach(function (x) { cats[x.category] = (cats[x.category] || 0) + x.amountRupees; });
-    var order = Object.keys(cats).sort(function (a, b) { return cats[b] - cats[a]; }), max = cats[order[0]];
-    var sk = r.skipped, notes = [];
-    if (sk.credits) notes.push(sk.credits + ' money in'); if (sk.invalid) notes.push(sk.invalid + ' unreadable'); if (sk.duplicates) notes.push(sk.duplicates + ' duplicate'); if (sk.overLimit) notes.push(sk.overLimit + ' over limits');
-    out.innerHTML =
-      '<div class="stats"><div class="stat"><small>Purchases</small><b>' + r.rows.length + '</b></div><div class="stat"><small>Spent</small><b>' + inr(total) + '</b></div><div class="stat warn"><small>Missed rewards</small><b>' + inr(m.total, true) + '</b></div></div>' +
-      '<p class="muted small">Read columns ' + esc(r.columns.date) + ', ' + esc(r.columns.description) + ' and ' + esc(r.columns.amount) + (notes.length ? '. Skipped ' + notes.join(', ') + '.' : '.') + '</p>' +
-      '<div style="display:grid;gap:12px">' + order.map(function (c) { return '<div class="catbar"><div class="top"><span>' + CAT_LABEL[c] + '</span><span>' + inr(cats[c]) + '</span></div><div class="bar"><i style="width:' + Math.max(3, cats[c] / max * 100) + '%;background:' + CAT_COLOR[c] + '"></i></div></div>'; }).join('') + '</div>' +
-      '<div style="display:grid;gap:8px">' + (m.tips.length ? m.tips.slice(0, 3).map(function (t) { return '<div class="tip">Use <b>' + esc(t.card.name) + '</b> for ' + CAT_LABEL[t.cat] + ': ' + inr(t.extra, true) + ' more on ' + t.count + (t.count === 1 ? ' purchase' : ' purchases') + ', before monthly caps.</div>'; }).join('') : '<div class="tip good">You already used your best card for every purchase.</div>') + '</div>' +
-      '<div class="lines">' + r.rows.slice(0, 6).map(function (x) { return '<div><span>' + esc(x.merchant) + '</span><span>' + CAT_LABEL[x.category] + '</span><span class="num">' + inr(x.amountRupees) + '</span></div>'; }).join('') +
-      (r.rows.length > 6 ? '<div><span style="color:var(--muted)">and ' + (r.rows.length - 6) + ' more</span><span></span><span></span></div>' : '') + '</div>';
-  }
-  $('payCard').addEventListener('change', function () { renderResult(); renderPhone(); });
-  $('example').addEventListener('click', function () { runImport(EXAMPLE_CSV); });
-  function readFile(f) {
-    if (!f) return;
-    if (f.size > MAX_IMPORT_BYTES) { showErr('That file is too large. Export a shorter date range (under 2 MB).'); return; }
-    f.text().then(runImport, function () { showErr('We couldn’t open that file. Try exporting it again as CSV.'); });
-  }
-  $('file').addEventListener('change', function (e) { readFile(e.target.files && e.target.files[0]); e.target.value = ''; });
-  var drop = $('drop');
+  paintPreview();
+  $('#useExample').addEventListener('click', function () { parse(EXAMPLE_CSV); });
+  $('#parsePaste').addEventListener('click', function () { var v = $('#paste').value; if (v.trim()) parse(v); else fail('Paste some CSV text first.'); });
+  $('#file').addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ''; readFile(f); });
+  function readFile(f) { if (!f) return; if (f.size > MAX_IMPORT_BYTES) { fail('That file is too large. Export a shorter date range (under 2 MB).'); return; } f.text().then(parse, function () { fail('We couldn’t open that file.'); }); }
+  var drop = $('#drop');
   ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
   drop.addEventListener('drop', function (e) { readFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+  var rmI = $('#rmImported'); if (rmI) rmI.addEventListener('click', function () { S.txns = S.txns.filter(function (t) { return !t.imported; }); persist(); toast('Imported purchases removed'); render(); });
+  var rmE = $('#rmExamples'); if (rmE) rmE.addEventListener('click', function () { S.txns = S.txns.filter(function (t) { return !t.example; }); persist(); toast('Example activity cleared'); render(); });
+}
 
-  /* ---------------- phone mockup (live from the example statement + your cards) ---------------- */
-  var exampleRows = importStatement(EXAMPLE_CSV, []).rows;
-  function renderPhone() {
-    var pay = byId($('payCard').value) || cards[cards.length - 1];
-    var spent = exampleRows.reduce(function (s, x) { return s + x.amountRupees; }, 0);
-    var m = missedFor(exampleRows, pay.id);
-    $('phSpent').textContent = inr(spent);
-    $('phEarned').textContent = inr(m.earned, true);
-    $('phMissed').textContent = inr(m.total, true);
-    $('phTip').textContent = m.tips[0] ? 'Use ' + m.tips[0].card.name + ' for ' + CAT_LABEL[m.tips[0].cat] : 'You used your best cards';
-    $('phBest').textContent = bestFor('groceries', 2340).card.name;
-    var c = bestFor('groceries', 2340).card;
-    $('phoneCard').innerHTML = '<div class="cardface" style="--c:' + esc(c.color) + '"><div class="cf-name">' + esc(c.name) + '</div><div class="cf-chip"></div><div class="cf-num">•••• ••••</div></div>';
-  }
-
-  function refresh() { renderCards(); renderRanks(); renderResult(); renderPhone(); }
-  refresh();
-
-  /* ---------------- nav ---------------- */
-  var nav = $('nav'), menu = $('menu');
-  menu.addEventListener('click', function () { var o = nav.classList.toggle('open'); menu.setAttribute('aria-expanded', String(o)); });
-  document.querySelectorAll('#links a').forEach(function (a) { a.addEventListener('click', function () { nav.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); }); });
-
-  /* ---------------- waitlist (saved to the page's database) ---------------- */
-  var forms = Array.prototype.slice.call(document.querySelectorAll('[data-waitlist]'));
-  var EMAIL = /^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/i;
-  var waitDb = null, myId = null, canWrite = null, joined = false;
-  function setMsg(form, text, isErr) { var p = form.querySelector('.wl-msg'); p.textContent = text; p.hidden = !text; p.classList.toggle('err', !!isErr); }
-  function markJoined() {
-    joined = true;
-    forms.forEach(function (f) {
-      f.innerHTML = '<div class="wl-done" role="status"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><span><b>You’re on the list.</b> We’ll email you when TAPO is ready for you.</span></div>';
-    });
-  }
-  function closed(msg) {
-    forms.forEach(function (f) {
-      f.querySelectorAll('input, select, button').forEach(function (el) { el.disabled = true; });
-      setMsg(f, msg, false);
-    });
-  }
-  forms.forEach(function (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (joined) return;
-      var email = form.querySelector('input[type=email]').value.trim();
-      var cardsSel = form.querySelector('select[name=cards]');
-      if (!EMAIL.test(email)) { setMsg(form, 'Enter a valid email address, like name@example.com.', true); return; }
-      if (!waitDb || !myId) { setMsg(form, 'Sign-ups aren’t open on this page right now. Please try again later.', true); return; }
-      var btn = form.querySelector('button[type=submit]'); btn.disabled = true; setMsg(form, 'Joining…', false);
-      waitDb.collection('waitlist').doc(myId).set({ email: email, cards: cardsSel ? cardsSel.value : '', joinedAt: new Date().toISOString() })
-        .then(markJoined)
-        .catch(function (err) {
-          btn.disabled = false;
-          var code = err && err.code;
-          if (code === 'invalid_argument') closed('Early access sign-ups are by invitation right now.');
-          else if (code === 'quota_exceeded') setMsg(form, 'The waitlist is full for now. Please check back soon.', true);
-          else setMsg(form, 'We couldn’t save that. Check your connection and try again.', true);
-        });
+function mountCards() {
+  $('#newCard').addEventListener('click', function () { openEditor(null); });
+  $$('[data-edit]').forEach(function (b) { b.addEventListener('click', function () { openEditor(b.getAttribute('data-edit')); }); });
+  $$('[data-del]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.getAttribute('data-armed')) { var id = b.getAttribute('data-del'); S.cards = S.cards.filter(function (c) { return c.id !== id; }); S.txns = S.txns.filter(function (t) { return t.cardId !== id; }); persist(); toast('Card removed'); render(); return; }
+      b.setAttribute('data-armed', '1'); b.textContent = 'Tap again to remove';
     });
   });
-  (async function () {
-    try {
-      var c = window.claude;
-      if (!c || !c.use) return;
-      var results = await Promise.all([c.use('db'), c.use('user')]);
-      waitDb = results[0]; var user = results[1];
-      if (!waitDb || !user) return;
-      myId = await user.id();
-      if (!myId) { waitDb = null; return; }
-      canWrite = await user.can('data.write');
-      if (canWrite === false) { closed('Early access sign-ups are by invitation right now.'); return; }
-      var snap = await waitDb.collection('waitlist').doc(myId).get();
-      if (snap && snap.exists) markJoined();
-    } catch (e) { /* keep the form; submit explains if saving isn't possible */ }
-  })();
+  var reset = $('#resetAll');
+  reset.addEventListener('click', function () {
+    if (reset.getAttribute('data-armed')) { S = fresh(); persist(); toast('Reset to example data'); render(); return; }
+    reset.setAttribute('data-armed', '1'); reset.textContent = 'Tap again to erase your cards and imports';
+  });
+}
+function openEditor(id) {
+  var c = id ? cardById(id) : { name: '', last4: '', base: 1, color: COLORS[S.cards.length % COLORS.length], rules: [] };
+  var draft = JSON.parse(JSON.stringify(c));
+  var back = document.createElement('div'); back.className = 'dialog-back';
+  var rows = ''; for (var i = 0; i < 3; i++) { var r = draft.rules[i] || {}; rows += '<div class="rule-row"><div class="field"><label for="rc' + i + '">Category ' + (i + 1) + '</label><select class="select" id="rc' + i + '"><option value="">No rule</option>' + CATS.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === r.cat ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></div><div class="field"><label for="rr' + i + '">Rate %</label><input class="input" id="rr' + i + '" inputmode="decimal" value="' + (r.rate != null ? r.rate : '') + '"></div><div class="field"><label for="rp' + i + '">Monthly cap ₹</label><input class="input" id="rp' + i + '" inputmode="numeric" placeholder="None" value="' + (r.cap != null ? r.cap : '') + '"></div></div>'; }
+  back.innerHTML = '<form class="panel dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT" novalidate><div class="box-h"><h2 id="dlgT" style="font-size:22px">' + (id ? 'Edit card' : 'Add a card') + '</h2><button class="link-btn" type="button" data-close aria-label="Close">Close</button></div>' +
+    '<div id="dlgPrev" style="max-width:320px;width:100%;justify-self:center"></div>' +
+    '<div class="dlg-grid"><div class="field"><label for="dName">Nickname</label><input class="input" id="dName" maxlength="24" autocomplete="off" placeholder="e.g. Grocery card" value="' + esc(draft.name) + '"></div><div class="field"><label for="dLast">Last 4 digits (optional)</label><input class="input" id="dLast" inputmode="numeric" maxlength="4" autocomplete="off" value="' + esc(draft.last4 || '') + '"></div>' +
+    '<div class="field"><label for="dBase">Base reward %</label><input class="input" id="dBase" inputmode="decimal" value="' + draft.base + '"></div><div class="field"><span class="lbl">Colour</span><div class="swatches" role="group" aria-label="Card colour">' + COLORS.map(function (col) { return '<button class="sw" type="button" style="--c:' + col + '" data-col="' + col + '" aria-label="Colour ' + col + '" aria-pressed="' + (col === draft.color) + '"></button>'; }).join('') + '</div></div></div>' +
+    '<p class="subtle small">Categories where this card earns more (up to three).</p>' + rows +
+    '<p class="err" id="dErr" role="alert" hidden></p><div class="chips"><button class="btn btn-primary" type="submit">' + (id ? 'Save changes' : 'Add card') + '</button><button class="btn btn-ghost" type="button" data-close>Cancel</button></div></form>';
+  document.body.appendChild(back);
+  var form = $('form', back), prev = $('#dlgPrev', back);
+  function paintPrev() { draft.name = $('#dName', back).value.trim() || 'Your card'; draft.last4 = $('#dLast', back).value; prev.innerHTML = cardFace({ name: draft.name, last4: /^\d{4}$/.test(draft.last4) ? draft.last4 : '', color: draft.color, base: Number($('#dBase', back).value) || 0, rules: [] }); }
+  paintPrev();
+  $('#dName', back).focus();
+  form.addEventListener('input', paintPrev);
+  $$('.sw', back).forEach(function (s) { s.addEventListener('click', function () { draft.color = s.getAttribute('data-col'); $$('.sw', back).forEach(function (x) { x.setAttribute('aria-pressed', String(x === s)); }); paintPrev(); }); });
+  function close() { back.remove(); document.removeEventListener('keydown', onKey); }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  document.addEventListener('keydown', onKey);
+  $$('[data-close]', back).forEach(function (b) { b.addEventListener('click', close); });
+  back.addEventListener('click', function (e) { if (e.target === back) close(); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var errEl = $('#dErr', back); function bad(m) { errEl.textContent = m; errEl.hidden = false; }
+    var name = $('#dName', back).value.replace(/\s+/g, ' ').trim(), last4 = $('#dLast', back).value.trim(), base = Number(String($('#dBase', back).value).replace(',', '.'));
+    if (!name) return bad('Give the card a nickname.');
+    if (name.replace(/\D/g, '').length >= 8) return bad('Use a nickname, not a card number. TAPO never stores card numbers.');
+    if (last4 && !/^\d{4}$/.test(last4)) return bad('Last 4 digits must be exactly four numbers, or leave it empty.');
+    if (!(base >= 0 && base <= 20)) return bad('Base reward must be between 0% and 20%.');
+    var rules = [], seen = {};
+    for (var i = 0; i < 3; i++) {
+      var cat = $('#rc' + i, back).value; if (!cat) continue;
+      var rate = Number(String($('#rr' + i, back).value).replace(',', '.')), capS = $('#rp' + i, back).value.replace(/,/g, '').trim(), cap = capS === '' ? undefined : Number(capS);
+      if (seen[cat]) return bad(CAT[cat].label + ' is listed twice.');
+      if (!(rate >= 0 && rate <= 20) || $('#rr' + i, back).value.trim() === '') return bad('Enter a rate between 0% and 20% for ' + CAT[cat].label + '.');
+      if (cap !== undefined && !(cap > 0 && cap <= 100000)) return bad('The cap for ' + CAT[cat].label + ' must be a positive amount, or leave it empty.');
+      seen[cat] = 1; rules.push(cap === undefined ? { cat: cat, rate: rate } : { cat: cat, rate: rate, cap: cap });
+    }
+    var out = { id: id || 'c' + Date.now().toString(36), name: name, last4: last4, base: base, color: draft.color, rules: rules };
+    if (id) S.cards = S.cards.map(function (x) { return x.id === id ? out : x; }); else S.cards.push(out);
+    persist(); close(); toast(id ? 'Card updated' : 'Card added'); render();
+  });
+}
+
+/* =====================================================================================
+   Aurora background (canvas)
+   ===================================================================================== */
+(function aurora() {
+  var cv = $('#aurora'), ctx = cv.getContext('2d'), w, h, dpr = Math.min(2, window.devicePixelRatio || 1), t = 0, raf = null;
+  var blobs = [{ x: .78, y: .12, r: .55, c: '111,217,164', a: .10, s: .7 }, { x: .15, y: .3, r: .5, c: '169,155,255', a: .08, s: .5 }, { x: .55, y: .85, r: .6, c: '236,233,226', a: .05, s: .4 }];
+  function size() { w = cv.clientWidth; h = cv.clientHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    blobs.forEach(function (b, i) {
+      var x = (b.x + Math.sin(t * b.s * .2 + i) * .06) * w, y = (b.y + Math.cos(t * b.s * .17 + i * 2) * .05) * h, r = b.r * Math.max(w, h);
+      var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(' + b.c + ',' + b.a + ')'); g.addColorStop(1, 'rgba(' + b.c + ',0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    });
+  }
+  var last = 0;
+  function loop(ts) { if (ts - last > 50) { t = ts / 1000; draw(); last = ts; } raf = requestAnimationFrame(loop); }
+  size(); draw();
+  window.addEventListener('resize', function () { size(); draw(); });
+  if (!REDUCE) { raf = requestAnimationFrame(loop); document.addEventListener('visibilitychange', function () { if (document.hidden) { cancelAnimationFrame(raf); raf = null; } else if (!raf) raf = requestAnimationFrame(loop); }); }
+})();
+
+render();
 })();
 </script>
