@@ -1,21 +1,22 @@
 <title>TAPO Rewards Wallet</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="TAPO: an India-first multi-card rewards wallet prototype. Capstone project, Product Engineering.">
+<meta name="description" content="TAPO tells you which of your cards earns the most for every purchase, and shows the rewards you missed. Built for India.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&text=%E2%82%B9&display=swap">
 <style>
 /*__FONT_FACES__*/
 
-/* Layout: a dark "gallery at night" — cards float under spotlights, content sits in one 1160px column
-   that breaks into split hero / grids on wide screens and stacks to a single column on phones. */
+/* Layout: a single 1180px column on a night-navy ground. Hero splits copy | phone; product sections alternate
+   full-width tool panels with quiet copy; everything stacks to one column under 900px. */
 :root {
   --night: #0B0E18;
-  --night-2: #10142200;
+  --night-2: #0F1320;
   --surface: #151A29;
   --surface-2: #1C2236;
   --line: #262D42;
+  --line-soft: #1E2435;
   --cream: #ECE9E2;
   --ink: #F2EFE8;
   --muted: #9AA3B8;
@@ -26,720 +27,484 @@
   --amber-bg: #2C2310;
   --red: #FF9A8B;
   --gold: #D8B96A;
-  --font-display: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-body: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --max: 1160px;
-  --radius: 22px;
+  --font: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --max: 1180px;
+  --r: 20px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body {
-  margin: 0;
-  background: var(--night);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-body::before {
-  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60;
-  background: var(--night);
-}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--night); color: var(--ink); font: 400 17px/1.6 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--night); }
 a { color: inherit; }
 img, svg { max-width: 100%; }
+button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; border-radius: 8px; }
-.wrap {
-  max-width: var(--max); margin: 0 auto;
-  padding-left: max(20px, env(safe-area-inset-left, 0px));
-  padding-right: max(20px, env(safe-area-inset-right, 0px));
-}
-.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
 .num { font-variant-numeric: tabular-nums; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
-h2 { font-size: clamp(32px, 5vw, 54px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.02; }
-h3 { font-size: 21px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-family: var(--font); }
+h2 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.03; }
+h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
 p { margin: 0; }
-.kicker {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0.01em;
-}
-.kicker::before { content: ""; width: 26px; height: 1px; background: var(--subtle); }
-.lede { color: var(--muted); font-size: clamp(17px, 2vw, 19px); max-width: 62ch; }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--green); letter-spacing: .02em; }
+.lede { color: var(--muted); font-size: clamp(17px, 1.9vw, 19px); max-width: 60ch; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ------------------------------------------------------------------ nav */
-.nav {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
-  background: color-mix(in srgb, var(--night) 82%, transparent);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-}
-.nav .wrap { display: flex; align-items: center; gap: 24px; height: 66px; }
-.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
-.brand b { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: 0.14em; }
-.nav-links { display: flex; gap: 26px; margin-left: auto; font-size: 15px; font-weight: 500; }
-.nav-links a { text-decoration: none; color: var(--muted); transition: color .2s; }
-.nav-links a:hover, .nav-links a[aria-current="true"] { color: var(--ink); }
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-  min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent;
-  font: 700 16px/1 var(--font-body); text-decoration: none; cursor: pointer;
-  transition: transform .2s, background .2s, border-color .2s;
-}
+/* buttons + inputs */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid transparent; font-weight: 700; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer; transition: background .2s, border-color .2s, transform .15s; white-space: nowrap; }
 .btn:active { transform: scale(.98); }
+.btn[disabled] { opacity: .55; cursor: default; }
 .btn-primary { background: var(--cream); color: var(--night); }
-.btn-primary:hover { background: #fff; }
-.btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+.btn-primary:hover:not([disabled]) { background: #fff; }
+.btn-ghost { border-color: var(--line); background: transparent; }
 .btn-ghost:hover { border-color: var(--muted); }
-.btn-sm { min-height: 40px; padding: 0 16px; font-size: 14px; }
-.menu-btn { display: none; margin-left: auto; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
-@media (max-width: 860px) {
-  .nav-links { display: none; }
-  .nav .nav-cta { display: none; }
-  .menu-btn { display: inline-grid; place-items: center; }
-  .nav.open .nav-links {
-    display: flex; flex-direction: column; gap: 4px; position: absolute; left: 0; right: 0; top: 66px;
-    background: var(--night); border-bottom: 1px solid var(--line);
-    padding: 12px max(20px, env(safe-area-inset-right, 0px)) 20px max(20px, env(safe-area-inset-left, 0px));
-  }
-  .nav.open .nav-links a { padding: 12px 0; font-size: 18px; color: var(--ink); }
-}
+.btn-sm { min-height: 38px; padding: 0 14px; font-size: 14px; }
+.btn-link { background: none; border: 0; padding: 6px 4px; color: var(--muted); font-weight: 500; cursor: pointer; font-size: 14px; }
+.btn-link:hover { color: var(--ink); }
+.input, .select { width: 100%; min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--night); color: var(--ink); font-size: 16px; }
+.input:focus, .select:focus { outline: none; border-color: var(--cream); }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label, .lbl { font-size: 13.5px; font-weight: 500; color: var(--muted); }
 
-/* ------------------------------------------------------------------ hero */
-.hero { position: relative; padding-block: clamp(40px, 7vw, 88px) clamp(48px, 7vw, 96px); overflow: hidden; }
-.hero::before {
-  content: ""; position: absolute; inset: -20% -10% auto 35%; height: 120%;
-  background: radial-gradient(closest-side, rgba(236,233,226,.10), transparent 70%);
-  pointer-events: none;
+/* announcement + nav */
+.announce { background: var(--green-bg); color: #BFF0D6; font-size: 14px; text-align: center; padding-block: 9px; }
+.announce a { font-weight: 700; text-underline-offset: 3px; }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--night) 84%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line-soft); }
+.nav .wrap { display: flex; align-items: center; gap: 28px; height: 68px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex: none; }
+.brand b { font-weight: 900; font-size: 21px; letter-spacing: .14em; }
+.links { display: flex; gap: 26px; font-size: 15px; font-weight: 500; }
+.links a { color: var(--muted); text-decoration: none; }
+.links a:hover { color: var(--ink); }
+.nav-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.menu { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: none; cursor: pointer; place-items: center; }
+@media (max-width: 900px) {
+  .links { display: none; }
+  .menu { display: inline-grid; }
+  .nav.open .links { display: flex; flex-direction: column; position: absolute; left: 0; right: 0; top: 68px; gap: 0; background: var(--night); border-bottom: 1px solid var(--line); padding: 8px max(20px, env(safe-area-inset-right, 0px)) 16px max(20px, env(safe-area-inset-left, 0px)); }
+  .nav.open .links a { padding: 13px 0; font-size: 18px; color: var(--ink); border-bottom: 1px solid var(--line-soft); }
 }
-.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; position: relative; }
-.badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
-.pill {
-  display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
-  font-size: 13px; font-weight: 500; line-height: 1.2;
-}
-.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
-.hero h1 { font-size: clamp(44px, 7.4vw, 92px); font-weight: 900; letter-spacing: -0.045em; line-height: .94; }
-.hero h1 em { font-style: normal; color: var(--green); }
+@media (max-width: 420px) { .nav-right .btn { padding: 0 14px; font-size: 14px; min-height: 40px; } }
+
+/* hero */
+.hero { position: relative; overflow: hidden; padding-block: clamp(44px, 7vw, 96px) clamp(56px, 7vw, 100px); }
+.hero::before { content: ""; position: absolute; width: 900px; height: 900px; right: -260px; top: -300px; background: radial-gradient(closest-side, rgba(236,233,226,.10), transparent 70%); pointer-events: none; }
+.hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(36px, 5vw, 80px); align-items: center; }
+.hero h1 { font-size: clamp(46px, 7.2vw, 94px); font-weight: 900; letter-spacing: -0.048em; line-height: .93; }
+.hero h1 span { color: var(--green); }
 .hero .lede { margin-top: 24px; }
-.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
-.hero-proof { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 44px; padding-top: 26px; border-top: 1px solid var(--line); }
-.hero-proof div { min-width: 0; }
-.hero-proof strong { display: block; font-family: var(--font-display); font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
-.hero-proof span { font-size: 14px; color: var(--muted); }
+.trust { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 22px; font-size: 14.5px; color: var(--muted); }
+.trust span { display: inline-flex; align-items: center; gap: 8px; }
 
-/* floating card stage */
-.stage { position: relative; aspect-ratio: 1 / 0.95; max-width: 100%; perspective: 1400px; }
-.stage .floor {
-  position: absolute; left: 12%; right: 12%; bottom: 2%; height: 16%;
-  background: radial-gradient(closest-side, rgba(236,233,226,.16), transparent);
-  filter: blur(6px);
-}
-.float-card { position: absolute; width: 68%; transform-style: preserve-3d; will-change: transform; }
-.float-card:nth-child(1) { left: 2%; top: 8%; --r: -14deg; --d: 0s; z-index: 1; }
-.float-card:nth-child(2) { right: 0; top: 30%; --r: 9deg; --d: -1.6s; z-index: 2; }
-.float-card:nth-child(3) { left: 14%; top: 52%; --r: -4deg; --d: -3.1s; z-index: 3; }
-.float-card .inner { animation: bob 6s ease-in-out infinite; animation-delay: var(--d); transform: rotate(var(--r)); }
-@keyframes bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -12px; } }
-@media (prefers-reduced-motion: reduce) { .float-card .inner { animation: none; } }
-.stage-note {
-  position: absolute; right: 2%; bottom: 0; z-index: 5;
-  display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 16px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); max-width: 78%;
-}
-.stage-note b { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--amber); }
-.stage-note small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+/* waitlist */
+.waitlist { margin-top: 32px; display: grid; gap: 10px; max-width: 560px; }
+.wl-row { display: flex; gap: 10px; }
+.wl-row .input { flex: 1; min-width: 0; border-radius: 999px; padding: 0 20px; }
+.wl-row .select { width: auto; flex: none; border-radius: 999px; }
+.wl-note { font-size: 13.5px; color: var(--subtle); }
+.wl-msg { font-size: 14.5px; }
+.wl-msg.err { color: var(--red); }
+.wl-done { display: flex; gap: 12px; align-items: center; padding: 14px 18px; border-radius: 16px; background: var(--green-bg); border: 1px solid #1F4A3A; color: #CFF5E1; }
+.wl-done svg { flex: none; }
+@media (max-width: 560px) { .wl-row { flex-wrap: wrap; } .wl-row .input { flex-basis: 100%; } .wl-row .select { flex: 1; } }
 
-/* card face (matches the app's CardTile) */
-.cardface {
-  position: relative; aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%;
-  padding: 6% 7%; color: #fff; overflow: hidden; isolation: isolate;
-  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000));
-  box-shadow: 0 30px 60px -20px color-mix(in srgb, var(--c) 70%, transparent), 0 0 0 1px rgba(255,255,255,.08) inset;
-  font-family: var(--font-body);
-}
-.cardface::before {
-  content: ""; position: absolute; inset: 0; z-index: -1;
-  background:
-    radial-gradient(circle at 110% -10%, transparent 30%, rgba(255,255,255,.07) 30.5%, transparent 31%, transparent 40%, rgba(255,255,255,.06) 40.5%, transparent 41%, transparent 50%, rgba(255,255,255,.05) 50.5%, transparent 51%),
-    linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%);
-}
-.cf-top { display: flex; justify-content: space-between; align-items: flex-start; }
-.cf-name { font-weight: 700; font-size: clamp(11px, 1.55vw, 17px); letter-spacing: .02em; text-transform: uppercase; }
-.cf-issuer { font-size: clamp(8px, 1vw, 11px); opacity: .72; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
-.cf-sample { font: 700 clamp(7px, .9vw, 10px)/1 var(--font-mono); letter-spacing: .12em; padding: 4px 6px; border-radius: 4px; background: rgba(255,255,255,.18); }
-.cf-chip {
-  position: absolute; left: 7%; top: 40%; width: 13%; aspect-ratio: 1.3; border-radius: 14%;
-  background: linear-gradient(135deg, #F1DDA0, var(--gold) 55%, #A88A45);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.18);
-}
-.cf-chip::after { content: ""; position: absolute; inset: 28% 0; border-block: 1px solid rgba(0,0,0,.25); }
-.cf-tap { position: absolute; left: 24%; top: 41%; width: 7%; opacity: .85; }
-.cf-num { position: absolute; left: 7%; bottom: 22%; font: 500 clamp(10px, 1.5vw, 16px)/1 var(--font-mono); letter-spacing: .14em; }
-.cf-bottom { position: absolute; left: 7%; right: 7%; bottom: 8%; display: flex; justify-content: space-between; align-items: flex-end; }
-.cf-holder { font-size: clamp(7px, .9vw, 10px); letter-spacing: .1em; opacity: .8; text-transform: uppercase; }
-.cf-net { font-weight: 900; font-size: clamp(10px, 1.5vw, 16px); font-style: italic; letter-spacing: .02em; }
+/* phone mockup */
+.device { position: relative; width: min(340px, 100%); margin: 0 auto; aspect-ratio: 9 / 18.6; border-radius: 48px; padding: 11px; background: linear-gradient(160deg, #2A3147, #0A0D16 40%, #1A2033); box-shadow: 0 60px 120px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06) inset; }
+.device::after { content: ""; position: absolute; left: 50%; top: 22px; width: 92px; height: 26px; transform: translateX(-50%); border-radius: 20px; background: #05070D; }
+.screen { height: 100%; border-radius: 38px; overflow: hidden; background: var(--night); padding: 52px 16px 12px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+.sc-top { display: flex; justify-content: space-between; align-items: center; }
+.sc-greet { color: var(--muted); font-size: 11.5px; }
+.sc-h { font-size: 26px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
+.sc-card { margin: 8px 6px 14px; animation: bob 6s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(-2deg); } }
+.sc-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sc-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 11px; min-width: 0; }
+.sc-tile small { display: block; color: var(--muted); font-size: 10.5px; }
+.sc-tile b { display: block; font-size: 17px; font-weight: 900; letter-spacing: -0.01em; }
+.sc-missed { border-color: #4a3c1c; }
+.sc-missed small { color: var(--amber); }
+.sc-tabs { margin-top: auto; display: flex; justify-content: space-between; padding: 9px 6px 2px; border-top: 1px solid var(--line); color: var(--subtle); font-size: 10px; }
+.sc-tabs b { color: var(--ink); }
+.device-caption { text-align: center; font-size: 13px; color: var(--subtle); margin-top: 16px; }
 
-/* ------------------------------------------------------------------ sections */
-section { scroll-margin-top: 80px; }
-.section { padding-block: clamp(64px, 9vw, 120px); border-top: 1px solid var(--line); }
-.section-head { display: grid; gap: 18px; margin-bottom: clamp(32px, 5vw, 56px); max-width: 760px; }
+/* card face */
+.cardface { position: relative; aspect-ratio: 85.6 / 53.98; width: 100%; border-radius: 6% / 9.5%; padding: 6% 7%; color: #fff; overflow: hidden; isolation: isolate; background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 52%, #000)); box-shadow: 0 24px 40px -18px color-mix(in srgb, var(--c) 80%, transparent), 0 0 0 1px rgba(255,255,255,.08) inset; }
+.cardface::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 110% -10%, transparent 30%, rgba(255,255,255,.07) 30.5%, transparent 31%, transparent 40%, rgba(255,255,255,.06) 40.5%, transparent 41%), linear-gradient(115deg, transparent 35%, rgba(255,255,255,.14) 50%, transparent 65%); }
+.cf-name { font-weight: 700; font-size: 11px; letter-spacing: .03em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf-chip { position: absolute; left: 7%; top: 42%; width: 13%; aspect-ratio: 1.3; border-radius: 14%; background: linear-gradient(135deg, #F1DDA0, var(--gold) 55%, #A88A45); }
+.cf-num { position: absolute; left: 7%; bottom: 10%; font: 500 11px/1 var(--mono); letter-spacing: .12em; }
+.cf-net { position: absolute; right: 7%; bottom: 9%; font-weight: 900; font-style: italic; font-size: 12px; }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+/* sections */
+section { scroll-margin-top: 84px; }
+.section { padding-block: clamp(64px, 9vw, 120px); }
+.section + .section { border-top: 1px solid var(--line-soft); }
+.head { display: grid; gap: 14px; max-width: 760px; margin-bottom: clamp(32px, 4.5vw, 52px); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 
-/* recommender */
-.reco { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
-.reco-controls { padding: 26px; display: grid; gap: 22px; }
-.label { font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 10px; display: block; }
+/* features */
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.feature { padding: 28px; display: grid; gap: 12px; align-content: start; }
+.ficon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
+.feature p { color: var(--muted); font-size: 16px; }
+
+/* finder */
+.finder { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.box { padding: 24px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.box-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cards-list { display: grid; gap: 8px; }
+.crow { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); }
+.crow i { width: 12px; height: 34px; border-radius: 4px; background: var(--c); }
+.crow b { display: block; font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crow span.rules { display: block; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.crow .acts { display: flex; gap: 2px; }
+.tag { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--night); color: var(--subtle); vertical-align: 2px; }
+.editor { display: grid; gap: 14px; padding: 18px; border-radius: 16px; background: var(--night); border: 1px solid var(--line); }
+.ed-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 10px; }
+.rule-row { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, .8fr) minmax(0, 1fr); gap: 8px; }
+.ed-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line);
-  background: var(--surface-2); color: var(--ink); font: 500 15px/1 var(--font-body); cursor: pointer;
-  transition: background .15s, border-color .15s, color .15s;
-}
+.chip { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 15px; font-weight: 500; cursor: pointer; }
 .chip:hover { border-color: var(--muted); }
 .chip[aria-pressed="true"] { background: var(--cream); color: var(--night); border-color: var(--cream); font-weight: 700; }
-.amount {
-  display: flex; align-items: center; gap: 8px; padding: 0 18px; min-height: 60px; border-radius: 16px;
-  background: var(--night); border: 1px solid var(--line);
-}
+.amount { display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 0 18px; border-radius: 16px; background: var(--night); border: 1px solid var(--line); }
 .amount:focus-within { border-color: var(--cream); }
-.amount span { font-family: "Inter", var(--font-body); font-size: 26px; font-weight: 700; color: var(--muted); }
-.reco-controls > *, .drop > *, .result > * { min-width: 0; }
-.amount input {
-  flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; color: var(--ink);
-  font: 900 32px/1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
-}
-.presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-.note { font-size: 13.5px; color: var(--subtle); line-height: 1.5; }
-.reco-results { padding: 10px; display: grid; gap: 10px; }
-.rank {
-  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center;
-  padding: 16px 18px; border-radius: 16px; background: var(--surface-2); border: 1px solid transparent;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s;
-}
+.amount span { font: 700 26px "Inter", var(--font); color: var(--muted); }
+.amount input { flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; font-size: 32px; font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ranks { display: grid; gap: 8px; }
+.rank { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; }
 .rank.best { border-color: color-mix(in srgb, var(--green) 45%, transparent); background: linear-gradient(180deg, var(--green-bg), var(--surface-2)); }
-.rank .pos { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font: 700 14px/1 var(--font-mono); background: var(--night); color: var(--muted); }
+.pos { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font: 700 13px var(--mono); background: var(--night); color: var(--muted); }
 .rank.best .pos { background: var(--green); color: var(--night); }
-.rank .who { min-width: 0; }
-.rank .who b { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16.5px; }
-.rank .who b i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
-.rank .why { font-size: 13.5px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
-.rank .why.cap { color: var(--amber); }
-.rank .val { text-align: right; font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rank b { display: block; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.why { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.why.cap { color: var(--amber); }
+.val { font-size: 21px; font-weight: 900; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rank.best .val { color: var(--green); }
-.bar { height: 4px; border-radius: 4px; background: var(--night); margin-top: 10px; overflow: hidden; }
-.bar i { display: block; height: 100%; border-radius: 4px; background: var(--c); transition: width .5s cubic-bezier(.2,.8,.2,1); }
-.verdict { padding: 14px 18px 8px; font-size: 15px; color: var(--muted); }
+.verdict { font-size: 15px; color: var(--muted); }
 .verdict b { color: var(--ink); }
 
-/* statement import demo */
-.import { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.drop {
-  padding: 30px; display: grid; gap: 18px; text-align: left;
-  border: 1.5px dashed var(--line); background: repeating-linear-gradient(135deg, transparent 0 14px, rgba(255,255,255,.012) 14px 28px), var(--surface);
-  transition: border-color .2s, background .2s;
-}
+/* statement */
+.stmt { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 18px; align-items: start; }
+.drop { border-style: dashed; transition: border-color .2s, background .2s; }
 .drop.over { border-color: var(--cream); background: var(--surface-2); }
-.drop .icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); }
-.drop-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.select {
-  min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line);
-  background: var(--night); color: var(--ink); font: 500 15px var(--font-body); max-width: 100%;
-}
 .privacy { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); }
 .privacy svg { flex: none; margin-top: 3px; }
-.result { padding: 26px; display: grid; gap: 20px; }
-.result-empty { color: var(--muted); display: grid; gap: 14px; align-content: center; min-height: 260px; }
-.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .stat { padding: 14px; border-radius: 14px; background: var(--surface-2); min-width: 0; }
 .stat small { display: block; font-size: 12.5px; color: var(--muted); }
-.stat b { display: block; font-family: var(--font-display); font-size: clamp(18px, 2.4vw, 26px); font-weight: 900; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat b { display: block; font-size: clamp(18px, 2.3vw, 26px); font-weight: 900; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .stat.warn b { color: var(--amber); }
-.catbars { display: grid; gap: 12px; }
 .catbar .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; font-weight: 500; }
-.catbar .top span:last-child { font-variant-numeric: tabular-nums; color: var(--muted); }
-.tips { display: grid; gap: 8px; }
+.catbar .top span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 4px; background: var(--night); margin-top: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; }
 .tip { padding: 12px 14px; border-radius: 12px; background: var(--amber-bg); color: #F8DFA6; font-size: 14.5px; line-height: 1.45; }
-.rows { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; font-size: 14px; }
-.rows div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; color: var(--muted); }
-.rows div span:first-child { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tip.good { background: var(--green-bg); color: var(--green); }
+.lines { display: grid; gap: 7px; font-size: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.lines div { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; color: var(--muted); }
+.lines div span:first-child { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty { display: grid; gap: 10px; align-content: center; min-height: 240px; color: var(--muted); }
 .err { color: var(--red); font-size: 14.5px; }
 
-/* phones */
-.phones {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 22px;
-  overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 24px; scrollbar-width: thin;
-}
-.phone { scroll-snap-align: start; display: grid; gap: 14px; }
-.screen {
-  aspect-ratio: 9 / 18.5; border-radius: 34px; padding: 10px; background: #05070D;
-  border: 1px solid #2A3147; box-shadow: 0 40px 60px -30px rgba(0,0,0,.8);
-}
-.screen-in { height: 100%; border-radius: 26px; background: var(--night); overflow: hidden; padding: 18px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; }
-.s-bar { display: flex; justify-content: space-between; align-items: center; }
-.s-h { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.02em; line-height: 1.05; }
-.s-k { color: var(--muted); font-size: 10.5px; }
-.s-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
-.s-tile b { font-family: var(--font-display); font-weight: 900; font-size: 17px; display: block; }
-.s-row { display: flex; gap: 8px; }
-.s-row > * { flex: 1; min-width: 0; }
-.s-li { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
-.s-li:last-child { border-bottom: 0; }
-.s-bar-track { height: 5px; border-radius: 3px; background: var(--surface-2); margin-top: 5px; overflow: hidden; }
-.s-bar-track i { display: block; height: 100%; }
-.s-tabs { margin-top: auto; display: flex; justify-content: space-between; padding: 8px 4px 0; border-top: 1px solid var(--line); color: var(--subtle); font-size: 9.5px; }
-.s-tabs .on { color: var(--ink); font-weight: 700; }
-.phone h3 { font-size: 18px; }
-.phone p { color: var(--muted); font-size: 15px; }
-
-/* steps */
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; counter-reset: s; }
-.step { padding: 28px; display: grid; gap: 12px; align-content: start; }
-.step .n { font: 700 13px/1 var(--font-mono); color: var(--subtle); }
+/* how */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.step { padding: 28px; display: grid; gap: 10px; align-content: start; }
+.step .n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font-weight: 900; font-size: 15px; }
 .step p { color: var(--muted); font-size: 16px; }
 
-/* safety */
-.safety { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 24px; }
-.never { padding: 28px; display: grid; gap: 18px; align-content: start; }
-.never-list { display: flex; flex-wrap: wrap; gap: 10px; }
-.never-list span {
-  padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--night);
-  font-weight: 500; font-size: 15px; text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; color: var(--muted);
-}
-.checks { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; }
-.checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding: 18px 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: 15.5px; }
-.checks li b { display: block; font-size: 16.5px; margin-bottom: 2px; }
-.checks li span { color: var(--muted); }
+/* security */
+.sec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.never { padding: 28px; display: grid; gap: 16px; align-content: start; }
+.never-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.never-list span { padding: 9px 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--night); font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; }
+.promises { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.promises li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding: 18px 20px; }
+.promises b { display: block; margin-bottom: 2px; }
+.promises span { color: var(--muted); font-size: 15.5px; }
 
-/* engineering */
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
-.metric { padding: 26px; border-right: 1px solid var(--line); min-width: 0; }
-.metric:last-child { border-right: 0; }
-.metric b { display: block; font-family: var(--font-display); font-weight: 900; font-size: clamp(34px, 4.6vw, 52px); letter-spacing: -0.04em; line-height: 1; }
-.metric span { display: block; margin-top: 10px; font-size: 14.5px; color: var(--muted); }
-.arch { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
-.arch-diagram { padding: 26px; display: grid; gap: 10px; font-size: 14.5px; }
-.layer { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--night); }
-.layer b { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
-.layer .mods { display: flex; flex-wrap: wrap; gap: 6px; }
-.layer .mods code { font: 500 12.5px var(--font-mono); padding: 4px 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink); }
-.arrow { text-align: center; color: var(--subtle); font-family: var(--font-mono); font-size: 12px; }
-.stack { padding: 26px; display: grid; gap: 16px; align-content: start; }
-.stack dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 12px 18px; font-size: 15px; }
-.stack dt { color: var(--muted); }
-.stack dd { margin: 0; }
+/* faq */
+.faq { display: grid; gap: 10px; max-width: 860px; }
+.faq details { border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; padding: 20px 22px; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-size: 24px; font-weight: 400; color: var(--muted); line-height: 1; flex: none; }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { padding: 0 22px 20px; color: var(--muted); max-width: 70ch; }
 
-/* validation + roadmap */
-.hyp { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 620px; }
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.hyp th, .hyp td { text-align: left; padding: 16px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.hyp tr:last-child td { border-bottom: 0; }
-.hyp th { font-size: 13px; font-weight: 500; color: var(--muted); }
-.hyp td:first-child { font-family: var(--font-mono); color: var(--subtle); }
-.status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--amber-bg); color: var(--amber); white-space: nowrap; }
-.road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
-.road .panel { padding: 26px; display: grid; gap: 12px; align-content: start; }
-.road ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; font-size: 15.5px; }
-.road .when { font: 700 12.5px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
-.road .now .when { color: var(--green); }
-.road .next .when { color: var(--amber); }
-.road .later .when { color: var(--muted); }
-
-/* team */
-.team { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-.member { padding: 22px; display: grid; gap: 14px; justify-items: start; }
-.avatar { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font: 900 18px var(--font-display); }
-.member small { color: var(--muted); font-size: 14px; display: block; }
-.placeholder { color: var(--subtle); font-style: italic; }
+/* cta band */
+.cta { padding: clamp(36px, 6vw, 64px); border-radius: 28px; background: radial-gradient(800px 400px at 85% 0%, rgba(111,217,164,.14), transparent 70%), var(--surface); border: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 32px; align-items: center; }
+.cta .waitlist { margin-top: 0; }
+.stores { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.store { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--night); }
+.store small { display: block; font-size: 11px; color: var(--subtle); line-height: 1.1; }
+.store b { display: block; font-size: 15px; line-height: 1.2; }
 
 /* footer */
-footer { border-top: 1px solid var(--line); padding-block: 40px 56px; color: var(--muted); font-size: 14px; }
-footer .wrap { display: grid; gap: 18px; }
-footer .row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; }
+footer { border-top: 1px solid var(--line-soft); padding-block: 56px 40px; font-size: 14.5px; color: var(--muted); }
+.fgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 32px; }
+.fgrid h4 { margin: 0 0 12px; font-size: 14px; color: var(--ink); }
+.fgrid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.fgrid a { text-decoration: none; }
+.fgrid a:hover { color: var(--ink); }
+.fine { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line-soft); display: grid; gap: 10px; font-size: 13px; color: var(--subtle); }
 
-
-/* ------------------------------------------------------------------ responsive */
 @media (max-width: 980px) {
-  .hero .wrap, .reco, .import, .safety, .arch { grid-template-columns: minmax(0, 1fr); }
-  .stage { max-width: 560px; width: 100%; margin: 0 auto; }
-  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .metric:nth-child(2) { border-right: 0; }
-  .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
-  .team { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero .wrap, .finder, .stmt, .sec, .cta { grid-template-columns: minmax(0, 1fr); }
+  .features, .steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .fgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .fgrid > div:first-child { grid-column: 1 / -1; }
 }
-@media (max-width: 720px) {
-  .steps, .road { grid-template-columns: minmax(0, 1fr); }
-  .stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .stats .stat:last-child { grid-column: 1 / -1; }
-  .hero-proof { gap: 20px; }
-  .rank { grid-template-columns: 30px minmax(0, 1fr); }
-  .rank .val { grid-column: 2; text-align: left; font-size: 20px; }
-}
-@media (max-width: 460px) {
+@media (max-width: 640px) {
   body { font-size: 16px; }
-  .team { grid-template-columns: minmax(0, 1fr); }
-  .metric { padding: 20px; }
-  .reco-controls, .drop, .result, .never, .step, .stack, .arch-diagram { padding: 20px; }
-  .stage-note { right: 0; max-width: 92%; }
+  .features, .steps { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stats .stat:last-child { grid-column: 1 / -1; }
+  .rank { grid-template-columns: 30px minmax(0, 1fr); }
+  .rank .val { grid-column: 2; text-align: left; font-size: 19px; }
+  .ed-grid { grid-template-columns: minmax(0, 1fr); }
+  .rule-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .rule-row .field:first-child { grid-column: 1 / -1; }
+  .box, .feature, .step, .never { padding: 20px; }
 }
 </style>
 
-<!-- ============================================================ NAV -->
+<div class="announce"><div class="wrap">Early access is opening for card users in India. <a href="#join">Join the waitlist</a></div></div>
+
 <header class="nav" id="nav">
   <div class="wrap">
     <a class="brand" href="#top" aria-label="TAPO home">
       <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
         <defs><linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#D9D4C7"/></linearGradient></defs>
-        <rect width="40" height="40" rx="11" fill="url(#lt)"/>
-        <rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/>
-        <rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/>
-        <rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/>
-        <path d="M30 12.5a6 6 0 0 1 0 9" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-        <path d="M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <rect width="40" height="40" rx="11" fill="url(#lt)"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="10.5" y="15.2" width="4" height="3.2" rx=".8" fill="#D8B96A"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/>
+        <path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
       </svg>
       <b>TAPO</b>
     </a>
-    <nav class="nav-links" id="navLinks" aria-label="Sections">
-      <a href="#try">Try it</a>
-      <a href="#import">Your statement</a>
-      <a href="#product">Product</a>
-      <a href="#safety">Safety</a>
-      <a href="#engineering">Engineering</a>
-      <a href="#validation">Validation</a>
-      <a href="#team">Team</a>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#finder">Card finder</a>
+      <a href="#statement">Statement check</a>
+      <a href="#security">Security</a>
+      <a href="#faq">FAQ</a>
     </nav>
-    <a class="btn btn-primary btn-sm nav-cta" href="#try">Find my best card</a>
-    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
-      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
+    <div class="nav-right">
+      <a class="btn btn-primary btn-sm" href="#join">Get early access</a>
+      <button class="menu" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="links">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
 <main id="top">
-<!-- ============================================================ HERO -->
+<!-- HERO -->
 <section class="hero">
   <div class="wrap">
     <div>
-      <div class="badge-row">
-        <span class="pill"><span class="dot" aria-hidden="true"></span>Capstone · Product Engineering, Year 2</span>
-        <span class="pill">iOS · Android · Web</span>
-      </div>
-      <h1>Every card you own.<br>The <em>right one</em> for every purchase.</h1>
-      <p class="lede">TAPO is an India-first rewards wallet. It compares the reward rules on all your cards, tells you which one to use before you pay, and shows how much you left on the table by using the wrong one.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#try">Find my best card
-          <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-        <a class="btn btn-ghost" href="#import">Check a statement</a>
-      </div>
-      <div class="hero-proof">
-        <div><strong class="num">0</strong><span>Card numbers stored</span></div>
-        <div><strong class="num" id="testCount">51</strong><span>Automated tests</span></div>
-        <div><strong class="num">3</strong><span>Platforms, one codebase</span></div>
+      <h1>Stop leaving <span>rewards</span> on the table.</h1>
+      <p class="lede">TAPO knows the reward rules on every card you carry. Before you pay, it tells you which card earns the most. After you pay, it shows exactly what the wrong card cost you.</p>
+      <form class="waitlist" data-waitlist novalidate>
+        <div class="wl-row">
+          <label class="sr" for="wl-email-1">Email address</label>
+          <input class="input" id="wl-email-1" type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          <button class="btn btn-primary" type="submit">Join the waitlist</button>
+        </div>
+        <p class="wl-note">Free during early access. We'll only email you about TAPO's launch.</p>
+        <p class="wl-msg" role="status" hidden></p>
+      </form>
+      <div class="trust">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Never asks for card numbers</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Works with any card</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg>Your data stays on your phone</span>
       </div>
     </div>
-
-    <div class="stage" id="stage" aria-label="Three sample cards floating in the air">
-      <div class="floor" aria-hidden="true"></div>
-      <div class="float-card" data-card="online"><div class="inner"></div></div>
-      <div class="float-card" data-card="travel"><div class="inner"></div></div>
-      <div class="float-card" data-card="everyday"><div class="inner"></div></div>
-      <div class="stage-note">
-        <b class="num" id="heroMissed">₹0</b>
-        <span><strong>Missed rewards this month</strong><small>Sample wallet: what the wrong card cost</small></span>
+    <div>
+      <div class="device" role="img" aria-label="The TAPO app on a phone, showing this month's spending, rewards and missed rewards">
+        <div class="screen" aria-hidden="true">
+          <div class="sc-top"><span class="sc-greet">Good evening</span><svg width="22" height="22" viewBox="0 0 40 40"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/></svg></div>
+          <div class="sc-h">Your wallet</div>
+          <div class="sc-card" id="phoneCard"></div>
+          <div class="sc-tiles">
+            <div class="sc-tile"><small>Spent this month</small><b class="num" id="phSpent">₹0</b></div>
+            <div class="sc-tile"><small style="color:var(--green)">Rewards earned</small><b class="num" id="phEarned">₹0</b></div>
+          </div>
+          <div class="sc-tile sc-missed"><small>Missed rewards this month</small><b class="num" id="phMissed">₹0</b><small style="color:var(--muted)" id="phTip">Use your best card per category</small></div>
+          <div class="sc-tile"><small>Best card for groceries</small><b id="phBest" style="font-size:14px">—</b></div>
+          <div class="sc-tabs"><b>Wallet</b><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
+        </div>
       </div>
+      <p class="device-caption">Illustrative screen, calculated from the example cards and statement below.</p>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ RECOMMENDER -->
-<section class="section" id="try">
+<!-- FEATURES -->
+<section class="section" id="features">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">The core question</span>
-      <h2>Four cards. One checkout.<br>Which one do you tap?</h2>
-      <p class="lede">Reward rules are scattered across cards, categories and monthly caps. TAPO does the maths in a second. This is the app's real ranking logic running on four fictional sample cards. Change the purchase and watch the ranking move.</p>
+    <div class="head">
+      <span class="eyebrow">Why TAPO</span>
+      <h2>Every card has a best moment. TAPO knows when.</h2>
+      <p class="lede">Cashback on groceries, miles on travel, a cap that runs out mid-month. Nobody remembers all of it at the checkout counter. TAPO does.</p>
     </div>
+    <div class="features">
+      <article class="panel feature">
+        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.6L20 9.3l-4.3 3.9 1.2 5.8L12 16l-4.9 3 1.2-5.8L4 9.3l5.6-.7z"/></svg></div>
+        <h3>The best card, in a second</h3>
+        <p>Pick what you're buying and how much. TAPO ranks every card you own, counts monthly caps, and explains why.</p>
+      </article>
+      <article class="panel feature">
+        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F5C66B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg></div>
+        <h3>See what you missed</h3>
+        <p>One number that matters: the rewards your best cards would have earned this month, with the swaps that recover them.</p>
+      </article>
+      <article class="panel feature">
+        <div class="ficon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
+        <h3>Import a statement, privately</h3>
+        <p>Load a CSV from your bank or card. TAPO reads it on your device, sorts every purchase and never uploads a thing.</p>
+      </article>
+    </div>
+  </div>
+</section>
 
-    <div class="reco reveal">
-      <div class="panel reco-controls">
-        <div>
-          <span class="label" id="catLabel">What are you buying?</span>
-          <div class="chips" id="catChips" role="group" aria-labelledby="catLabel"></div>
-        </div>
-        <div>
-          <label class="label" for="amount">How much?</label>
-          <div class="amount"><span aria-hidden="true">₹</span><input id="amount" inputmode="numeric" autocomplete="off" value="2340" aria-describedby="amountNote"></div>
-          <div class="presets" id="presets"></div>
-        </div>
-        <p class="note" id="amountNote">Caps count rewards already earned this month in the sample wallet. Notice that Online Saver has already used up its online cap this month, so it drops down the list.</p>
+<!-- FINDER -->
+<section class="section" id="finder">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow">Card finder</span>
+      <h2>Which card should you use right now?</h2>
+      <p class="lede">Set up your cards once with their reward rates, then ask. We've added four example cards to start; edit them or add your own. Everything you enter stays in this browser.</p>
+    </div>
+    <div class="finder">
+      <div class="panel box">
+        <div class="box-head"><h3>Your cards</h3><div><button class="btn btn-ghost btn-sm" id="addCard" type="button">Add a card</button></div></div>
+        <div id="editorSlot"></div>
+        <div class="cards-list" id="cardsList"></div>
+        <button class="btn-link" id="resetCards" type="button">Restore example cards</button>
       </div>
-      <div class="panel">
-        <div class="reco-results" id="ranks" aria-live="polite"></div>
+      <div class="panel box">
+        <div class="field">
+          <span class="lbl" id="catLbl">What are you buying?</span>
+          <div class="chips" id="catChips" role="group" aria-labelledby="catLbl"></div>
+        </div>
+        <div class="field">
+          <label for="amount">Amount</label>
+          <div class="amount"><span aria-hidden="true">₹</span><input id="amount" inputmode="numeric" autocomplete="off" value="2340"></div>
+        </div>
+        <div class="ranks" id="ranks" aria-live="polite"></div>
         <p class="verdict" id="verdict"></p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ IMPORT -->
-<section class="section" id="import">
+<!-- STATEMENT -->
+<section class="section" id="statement">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Real spending, not sample data</span>
-      <h2>Drop in a statement.<br>See what it cost you.</h2>
-      <p class="lede">Export a bank or card statement as CSV and TAPO reads it on your device. It finds the date, merchant and amount columns, skips money coming in, sorts each purchase into a category and works out how much more your best card would have earned. This page uses the same parser as the app.</p>
+    <div class="head">
+      <span class="eyebrow">Statement check</span>
+      <h2>Find out what last month really cost you.</h2>
+      <p class="lede">Download your statement as CSV from your bank or card app and drop it here. TAPO finds the purchases, skips money coming in, and compares every one against your best card.</p>
     </div>
-
-    <div class="import reveal">
-      <div class="panel drop" id="drop">
-        <div class="icon" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
-        </div>
-        <div>
-          <h3>Drop a CSV statement here</h3>
-          <p class="note" style="margin-top:6px">Or choose a file, or try the example. Works with most Indian bank and card exports (Date, Narration, Debit or Amount columns).</p>
-        </div>
-        <div class="drop-actions">
-          <label class="btn btn-primary btn-sm" for="file" style="cursor:pointer">Choose CSV file</label>
+    <div class="stmt">
+      <div class="panel box drop" id="drop">
+        <h3>Drop your CSV statement</h3>
+        <p class="muted small">Works with most Indian bank and card exports: a date column, a description or narration, and an amount or debit column.</p>
+        <div class="ed-actions">
+          <label class="btn btn-primary btn-sm" for="file" style="cursor:pointer">Choose file</label>
           <input id="file" type="file" accept=".csv,text/csv,text/plain" hidden>
-          <button class="btn btn-ghost btn-sm" id="example" type="button">Try the example</button>
+          <button class="btn btn-ghost btn-sm" id="example" type="button">Use an example statement</button>
         </div>
-        <div>
-          <label class="label" for="payCard">Which card paid for these?</label>
+        <div class="field">
+          <label for="payCard">Which card paid for these purchases?</label>
           <select class="select" id="payCard"></select>
         </div>
-        <p class="privacy">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-          <span>Read in your browser and never uploaded. Only date, merchant and amount are used. Account numbers, card numbers and UPI references are masked.</span>
-        </p>
+        <p class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Read in your browser, never uploaded. Only the date, merchant and amount are used. Account, card and UPI numbers are masked.</span></p>
         <p class="err" id="importErr" role="alert" hidden></p>
       </div>
-
-      <div class="panel result" id="result" aria-live="polite">
-        <div class="result-empty">
-          <h3>Your results appear here</h3>
-          <p>Try the example statement: nine lines from a typical month, including a salary credit that TAPO correctly ignores and a card number it masks.</p>
-        </div>
+      <div class="panel box" id="result" aria-live="polite">
+        <div class="empty"><h3 style="color:var(--ink)">Your results will appear here</h3><p>No statement handy? Use the example to see how it works.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ PRODUCT -->
-<section class="section" id="product">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Inside the app</span>
-      <h2>Built like a product, not a demo.</h2>
-      <p class="lede">A dark "gallery at night" interface where cards float under spotlights. Every screen works on phones, tablets and the web, with screen-reader labels, Reduce Motion support and keyboard focus throughout.</p>
-    </div>
-
-    <div class="phones reveal" tabindex="0" aria-label="App screens, scroll sideways">
-      <article class="phone">
-        <div class="screen" aria-hidden="true"><div class="screen-in">
-          <div class="s-bar"><span class="s-k">Good evening</span><span class="s-k">•••</span></div>
-          <div class="s-h">Your wallet</div>
-          <div id="miniCard" style="margin:6px 4px 4px"></div>
-          <div class="s-row">
-            <div class="s-tile"><span class="s-k">Spent · month</span><b class="num">₹24,468</b></div>
-            <div class="s-tile"><span class="s-k" style="color:var(--green)">Est. rewards</span><b class="num">₹1,168</b></div>
-          </div>
-          <div class="s-tile" style="border-color:#4a3c1c"><span class="s-k" style="color:var(--amber)">Missed rewards · month</span><b class="num" id="miniMissed">₹0</b><span class="s-k">Use your best card per category</span></div>
-          <div class="s-tabs"><span class="on">Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
-        </div></div>
-        <h3>Wallet</h3>
-        <p>A floating gallery of your cards, this month's spend and rewards, and the headline number: rewards you missed.</p>
-      </article>
-
-      <article class="phone">
-        <div class="screen" aria-hidden="true"><div class="screen-in">
-          <span class="s-k">Best card</span>
-          <div class="s-h">Groceries · ₹2,340</div>
-          <div class="s-tile" style="border-color:#1F4A3A;background:var(--green-bg)"><span class="s-k" style="color:var(--green)">Best choice</span><b>Everyday Cashback</b><span class="s-k">5% back on Groceries · within cap</span></div>
-          <div class="s-tile"><div class="s-li"><span>Online Saver</span><span class="num">₹23.40</span></div><div class="s-li"><span>Travel Miles</span><span class="num">₹11.70</span></div><div class="s-li"><span>Salary Debit</span><span class="num">₹5.85</span></div></div>
-          <span class="s-k">Why: category rule beats base rates; monthly cap still has room.</span>
-          <div class="s-tabs"><span>Wallet</span><span class="on">Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
-        </div></div>
-        <h3>Best card</h3>
-        <p>Pick a category and amount. TAPO ranks every card, respects monthly caps and explains its answer in plain language.</p>
-      </article>
-
-      <article class="phone">
-        <div class="screen" aria-hidden="true"><div class="screen-in">
-          <span class="s-k">Insights</span>
-          <div class="s-h">November 2026</div>
-          <div class="s-tile">
-            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Travel</span><span class="num">₹8,715</span></div><div class="s-bar-track"><i style="width:36%;background:#9EC2FF"></i></div></div>
-            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Online</span><span class="num">₹5,049</span></div><div class="s-bar-track"><i style="width:21%;background:#C7AEFF"></i></div></div>
-            <div class="s-li" style="display:block"><div style="display:flex;justify-content:space-between"><span>Groceries</span><span class="num">₹3,205</span></div><div class="s-bar-track"><i style="width:13%;background:#8FE0AE"></i></div></div>
-          </div>
-          <div class="s-tile" style="background:var(--amber-bg);border-color:#4a3c1c;color:#F8DFA6">Use Everyday Cashback for Everything else</div>
-          <div class="s-tabs"><span>Wallet</span><span>Best</span><span>Activity</span><span class="on">Insights</span><span>Settings</span></div>
-        </div></div>
-        <h3>Insights</h3>
-        <p>Where the money went, what each card earned, and specific swaps that would have earned more.</p>
-      </article>
-
-      <article class="phone">
-        <div class="screen" aria-hidden="true"><div class="screen-in">
-          <span class="s-k">Import statement</span>
-          <div class="s-h">8 purchases found</div>
-          <div class="s-tile" style="border-color:#1F4A3A"><span class="s-k" style="color:var(--green)">Stays on this device</span><span class="s-k">Only date, merchant and amount are kept</span></div>
-          <div class="s-tile"><div class="s-li"><span>SWIGGY</span><span class="num">₹486</span></div><div class="s-li"><span>POS ••1234 DMART</span><span class="num">₹2,310</span></div><div class="s-li"><span>IOCL PETROL PUMP</span><span class="num">₹3,000</span></div></div>
-          <div class="s-tile" style="background:var(--cream);color:var(--night);text-align:center;font-weight:700">Import to Everyday Cashback</div>
-          <div class="s-tabs"><span>Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
-        </div></div>
-        <h3>Statement import</h3>
-        <p>Real spending from a CSV, parsed on the device. Duplicates are skipped, credits ignored, long numbers masked.</p>
-      </article>
-
-      <article class="phone">
-        <div class="screen" aria-hidden="true"><div class="screen-in">
-          <span class="s-k" style="color:var(--amber)">Demo mode · no real money is charged</span>
-          <div class="s-h">Tap-to-pay demo</div>
-          <div class="s-tile" style="display:grid;place-items:center;padding:22px 10px;gap:8px">
-            <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#ECE9E2" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>
-            <span class="s-k">Hold a demo NFC tag near the phone</span>
-          </div>
-          <div class="s-tile"><div class="s-li"><span>Merchant (dummy)</span><span>Sample Chai Stall</span></div><div class="s-li"><span>Result</span><span>Simulated</span></div></div>
-          <div class="s-tabs"><span class="on">Wallet</span><span>Best</span><span>Activity</span><span>Insights</span><span>Settings</span></div>
-        </div></div>
-        <h3>NFC demo, honestly labelled</h3>
-        <p>An NFC sticker only triggers a simulated checkout. TAPO never reads bank cards, emulates a card or moves money.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ HOW -->
+<!-- HOW -->
 <section class="section" id="how">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">How it works</span>
-      <h2>Three steps to the right card.</h2>
-    </div>
-    <div class="steps reveal">
-      <div class="panel step"><span class="n">STEP 1</span><h3>Add your cards</h3><p>A nickname, the last four digits as a label, and the reward rules: a base rate plus category rates and monthly caps.</p></div>
-      <div class="panel step"><span class="n">STEP 2</span><h3>Import your spending</h3><p>Load a statement CSV. TAPO reads it on the device, categorises each purchase and ignores money coming in.</p></div>
-      <div class="panel step"><span class="n">STEP 3</span><h3>Pay with the best card</h3><p>Ask before you pay, or review afterwards: missed rewards, per-card earnings and the swaps that would earn more.</p></div>
+    <div class="head"><span class="eyebrow">How it works</span><h2>Set up in five minutes. Save every month.</h2></div>
+    <div class="steps">
+      <div class="panel step"><span class="n">1</span><h3>Add your cards</h3><p>A nickname, the last four digits as a label, and each card's reward rates and monthly caps. No card numbers, ever.</p></div>
+      <div class="panel step"><span class="n">2</span><h3>Import your spending</h3><p>Load a statement and TAPO sorts every purchase into a category, right on your phone.</p></div>
+      <div class="panel step"><span class="n">3</span><h3>Pay with the right card</h3><p>Check before you pay, or review your month: missed rewards, earnings by card, and the swaps that pay off.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ SAFETY -->
-<section class="section" id="safety">
+<!-- SECURITY -->
+<section class="section" id="security">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Safety by design</span>
-      <h2>What TAPO can't leak, it never stores.</h2>
-      <p class="lede">Security here is structural. The data model has no fields for sensitive card data, so there is nothing to protect, encrypt or lose.</p>
+    <div class="head">
+      <span class="eyebrow">Security and privacy</span>
+      <h2>We can't leak what we never collect.</h2>
+      <p class="lede">TAPO is built so that sensitive card data has nowhere to go. There's no field for it, no server holding it and no account to break into.</p>
     </div>
-    <div class="safety reveal">
+    <div class="sec">
       <div class="panel never">
-        <h3>Never asked for. Never stored.</h3>
-        <div class="never-list">
-          <span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Bank login</span><span>Payment token</span><span>UPI PIN</span>
-        </div>
-        <p class="note">Nicknames that look like card numbers are rejected. Stored data is re-checked every time the app starts, and anything unexpected is dropped.</p>
+        <h3>TAPO never asks for</h3>
+        <div class="never-list"><span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Net-banking login</span><span>UPI PIN</span><span>Payment tokens</span></div>
+        <p class="muted small">If someone claiming to be TAPO asks you for any of these, it isn't us.</p>
       </div>
-      <ul class="checks">
-        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>On the device only</b><span>No server, no account, no analytics, no tracking. Data lives in the phone's local storage.</span></div></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>Statements stay private</b><span>Parsed locally. Only date, merchant and amount are kept; long numbers are masked to the last four digits.</span></div></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No fake payments</b><span>The NFC demo is labelled as a simulation on every screen. No payment provider, card network or provisioning code exists.</span></div></li>
-        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No borrowed credibility</b><span>Issuers are fictional, rules are illustrative, and TAPO claims no partnership with any bank or network.</span></div></li>
+      <ul class="promises">
+        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>On your device</b><span>Your cards and spending live in the app's storage on your phone. No account, no cloud copy.</span></div></li>
+        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>No tracking</b><span>No ads, no analytics and no selling of data. TAPO makes no network calls with your information.</span></div></li>
+        <li class="panel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><div><b>Advice, not payments</b><span>TAPO recommends a card. You still pay the way you always do; TAPO never moves money.</span></div></li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ ENGINEERING -->
-<section class="section" id="engineering">
+<!-- FAQ -->
+<section class="section" id="faq">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Engineering</span>
-      <h2>One codebase. Tested on every push.</h2>
-      <p class="lede">Pure logic is kept apart from the interface, so the reward maths, insights, statement parser and NFC checks are unit-tested in isolation. Continuous integration runs type checks, lint, tests and a web build on every push.</p>
-    </div>
-    <div class="metrics reveal">
-      <div class="metric"><b class="num" id="testCount2">51</b><span>Unit tests across 6 suites</span></div>
-      <div class="metric"><b class="num">3</b><span>Platforms: iOS, Android, web</span></div>
-      <div class="metric"><b class="num">0</b><span>Network calls with your data</span></div>
-      <div class="metric"><b class="num">4</b><span>CI checks on every push</span></div>
-    </div>
-    <div class="arch reveal">
-      <div class="panel arch-diagram" aria-label="Architecture: screens use a wallet state container, which uses pure logic modules and on-device storage">
-        <div class="layer"><b>Screens · Expo Router</b><div class="mods"><code>Wallet</code><code>Best card</code><code>Insights</code><code>Import</code><code>Activity</code><code>Settings</code><code>Developer</code></div></div>
-        <div class="arrow">↓ useWallet()</div>
-        <div class="layer"><b>State · WalletProvider</b><div class="mods"><code>sanitise on load</code><code>import</code><code>cards</code><code>settings</code></div></div>
-        <div class="arrow">↓ pure functions, unit-tested</div>
-        <div class="layer"><b>Logic</b><div class="mods"><code>rewards.ts</code><code>insights.ts</code><code>csvImport.ts</code><code>validation.ts</code><code>demoNfc.ts</code></div></div>
-        <div class="arrow">↓</div>
-        <div class="layer"><b>On-device storage</b><div class="mods"><code>AsyncStorage</code><code>no server</code></div></div>
-      </div>
-      <div class="panel stack">
-        <h3>Stack</h3>
-        <dl>
-          <dt>App</dt><dd>Expo SDK 58, React Native 0.88, React 19, TypeScript</dd>
-          <dt>Navigation</dt><dd>Expo Router (file-based)</dd>
-          <dt>Graphics</dt><dd>react-native-svg card faces, icons and logo</dd>
-          <dt>NFC</dt><dd>Web NFC in Chrome on Android; react-native-nfc-manager in native builds</dd>
-          <dt>Quality</dt><dd>Jest (jest-expo), ESLint, strict TypeScript, GitHub Actions</dd>
-          <dt>Builds</dt><dd>EAS: development, preview (APK) and production profiles</dd>
-          <dt>Type</dt><dd>Satoshi, with Inter for the ₹ glyph</dd>
-        </dl>
-      </div>
+    <div class="head"><span class="eyebrow">FAQ</span><h2>Questions, answered.</h2></div>
+    <div class="faq">
+      <details><summary>Is TAPO a bank or a payment app?</summary><p>No. TAPO doesn't issue cards, hold money or process payments. It's a guide that tells you which of your existing cards to use. You keep paying with your cards as usual.</p></details>
+      <details><summary>Which banks and cards does TAPO support?</summary><p>Any credit or debit card. You enter each card's reward rates yourself, so TAPO works with any issuer or network. TAPO isn't affiliated with any bank or card network.</p></details>
+      <details><summary>Will TAPO ask for my card number or OTP?</summary><p>Never. TAPO only stores a nickname and the last four digits as a label. It has no way to accept a full card number, CVV, PIN or OTP.</p></details>
+      <details><summary>Where is my statement data stored?</summary><p>On your phone only. Statements are read on your device; TAPO keeps the date, merchant and amount of each purchase and ignores everything else. Long numbers such as account or UPI references are masked.</p></details>
+      <details><summary>How accurate are the reward estimates?</summary><p>They follow the rates and monthly caps you enter, rounded down to the paisa so TAPO never over-promises. Your issuer's statement is always the final word.</p></details>
+      <details><summary>When can I download the app?</summary><p>TAPO is in early access. Join the waitlist and we'll email you when the iOS and Android apps are ready for you.</p></details>
+      <details><summary>How much does TAPO cost?</summary><p>TAPO is free during early access.</p></details>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ VALIDATION -->
-<section class="section" id="validation">
+<!-- CTA -->
+<section class="section" id="join">
   <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Validation plan</span>
-      <h2>What we still have to prove.</h2>
-      <p class="lede">A product is a set of bets. These are ours, with the evidence that would confirm or kill each one. Results go here once the interviews are done; none of them are filled in yet.</p>
-    </div>
-    <div class="table-wrap reveal">
-      <table class="hyp">
-        <thead><tr><th scope="col">#</th><th scope="col">We believe</th><th scope="col">We'll know because</th><th scope="col">Status</th></tr></thead>
-        <tbody>
-          <tr><td>H1</td><td>People with two or more cards don't know which earns most for a given purchase.</td><td>Most interviewees can't name their best card for three common categories.</td><td><span class="status">Interviews pending</span></td></tr>
-          <tr><td>H2</td><td>They lose a meaningful amount of rewards every month.</td><td>The median missed-rewards figure from participants' own imported statements.</td><td><span class="status">Interviews pending</span></td></tr>
-          <tr><td>H3</td><td>They would check an app before or after paying.</td><td>Several participants say they'd use it weekly and ask to try it.</td><td><span class="status">Interviews pending</span></td></tr>
-          <tr><td>H4</td><td>They'd import a statement if it never leaves the phone.</td><td>Most agree after seeing the on-device privacy promise.</td><td><span class="status">Interviews pending</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="road reveal">
-      <div class="panel now"><span class="when">Now · prototype</span><h3>Prove the value</h3><ul><li>Card rules and best-card ranking</li><li>Statement CSV import</li><li>Missed-rewards metric and insights</li></ul></div>
-      <div class="panel next"><span class="when">Next · pilot</span><h3>Prove the need</h3><ul><li>10 user interviews and a findings slide</li><li>Installable Android build for testers</li><li>Measure activation and missed rewards</li></ul></div>
-      <div class="panel later"><span class="when">Later · if it works</span><h3>Make it effortless</h3><ul><li>Consent-based data via India's Account Aggregator framework, through a licensed partner</li><li>A maintained library of card reward rules</li><li>Compliance review before any real launch</li></ul></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ TEAM -->
-<section class="section" id="team">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="kicker">Team</span>
-      <h2>The people behind TAPO.</h2>
-      <p class="lede placeholder">Team name · College name · Product Engineering, Year 2</p>
-    </div>
-    <div class="team reveal">
-      <div class="panel member"><div class="avatar" aria-hidden="true">S1</div><div><b class="placeholder">Student name</b><small>Role, e.g. Product and research</small></div></div>
-      <div class="panel member"><div class="avatar" aria-hidden="true">S2</div><div><b class="placeholder">Student name</b><small>Role, e.g. Mobile engineering</small></div></div>
-      <div class="panel member"><div class="avatar" aria-hidden="true">S3</div><div><b class="placeholder">Student name</b><small>Role, e.g. Design and accessibility</small></div></div>
-      <div class="panel member"><div class="avatar" aria-hidden="true">M</div><div><b class="placeholder">Mentor name</b><small>Mentor</small></div></div>
+    <div class="cta">
+      <div>
+        <span class="eyebrow">Early access</span>
+        <h2 style="margin-top:12px">Get TAPO before everyone else.</h2>
+        <p class="lede" style="margin-top:14px">Join the waitlist and we'll let you know as soon as the app is ready for you.</p>
+        <div class="stores" aria-label="App availability">
+          <div class="store"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ECE9E2" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg><span><small>Coming soon</small><b>iPhone</b></span></div>
+          <div class="store"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ECE9E2" aria-hidden="true"><path d="M7 9h10v8a1 1 0 0 1-1 1h-1v3h-2v-3h-2v3H9v-3H8a1 1 0 0 1-1-1zM4.5 9A1.5 1.5 0 0 1 6 10.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 4.5 9zm15 0a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-3 0v-5A1.5 1.5 0 0 1 19.5 9zM7 8a5 5 0 0 1 10 0zm3-2.2a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2zm4 0a.6.6 0 1 0 0-1.2.6.6 0 0 0 0 1.2z"/></svg><span><small>Coming soon</small><b>Android</b></span></div>
+        </div>
+      </div>
+      <form class="waitlist" data-waitlist novalidate>
+        <div class="field"><label for="wl-email-2">Email address</label><input class="input" id="wl-email-2" type="email" name="email" placeholder="you@example.com" autocomplete="email" required></div>
+        <div class="field"><label for="wl-cards">How many cards do you use regularly?</label>
+          <select class="select" id="wl-cards" name="cards"><option value="">Choose one (optional)</option><option value="1">1</option><option value="2-3">2 to 3</option><option value="4+">4 or more</option></select></div>
+        <button class="btn btn-primary" type="submit">Join the waitlist</button>
+        <p class="wl-note">We'll only use your email to tell you about TAPO's launch. Unsubscribe any time.</p>
+        <p class="wl-msg" role="status" hidden></p>
+      </form>
     </div>
   </div>
 </section>
@@ -747,270 +512,299 @@ footer .row { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-
 
 <footer>
   <div class="wrap">
-    <div class="row">
-      <a class="brand" href="#top" aria-label="Back to top">
-        <svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
-        <b style="font-size:18px">TAPO</b>
-      </a>
-      <span>Rewards wallet · capstone prototype</span>
+    <div class="fgrid">
+      <div>
+        <a class="brand" href="#top" aria-label="Back to top"><svg width="28" height="28" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#ECE9E2"/><rect x="8" y="13" width="20" height="8" rx="2.4" fill="#0B0E18"/><rect x="15" y="19" width="6" height="13" rx="2" fill="#0B0E18"/><path d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15" stroke="#0B0E18" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg><b style="font-size:18px">TAPO</b></a>
+        <p style="margin-top:14px;max-width:36ch">The right card for every purchase. Made in India.</p>
+      </div>
+      <div><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#finder">Card finder</a></li><li><a href="#statement">Statement check</a></li><li><a href="#join">Early access</a></li></ul></div>
+      <div><h4>Trust</h4><ul><li><a href="#security">Security</a></li><li><a href="#security">Privacy</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+      <div><h4>Get the app</h4><ul><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div>
     </div>
-    <p>TAPO is a student prototype. It cannot make payments. All issuers, cards and reward rules shown are fictional sample data, and TAPO has no partnership, approval or affiliation with any bank, card network or payment provider. Merchant names in the example statement are used only to show categorisation. Reward figures are estimates, not issuer statements, and nothing here is financial advice. Built with AI assistance; see the project's AI usage declaration.</p>
+    <div class="fine">
+      <p>TAPO is not a bank, card issuer or payment service and does not process payments. TAPO is not affiliated with, endorsed by or partnered with any bank, card network or payment provider. Example cards on this page are fictional. Merchant names in the example statement appear only to show how purchases are categorised. Reward figures are estimates based on the rates you enter and are not financial advice.</p>
+      <p>© 2026 TAPO. Early access.</p>
+    </div>
   </div>
 </footer>
 
 <script>
-/* ---------- the app's real statement parser (transpiled from src/lib/csvImport.ts at build time) ---------- */
 /*__CSV_IMPORT__*/
 </script>
 <script>
 (function () {
   'use strict';
-  document.documentElement.classList.add('js');
 
-  // ---------- sample data (mirrors src/lib/sampleData.ts; fictional) ----------
-  var CARDS = [
-    { id: 'everyday', name: 'Everyday Cashback', issuer: 'Sample Bank Alpha', net: 'RuPay', last4: '0001', base: 1, color: '#1E3A8A',
-      rules: { groceries: { rate: 5, cap: 500 }, utilities: { rate: 2 } } },
-    { id: 'travel', name: 'Travel Miles', issuer: 'Demo Bank Beta', net: 'VISA', last4: '0002', base: 0.5, color: '#115E59',
-      rules: { travel: { rate: 6, cap: 1500 }, dining: { rate: 3 } } },
-    { id: 'online', name: 'Online Saver', issuer: 'Example Co-op Bank', net: 'mastercard', last4: '0003', base: 1, color: '#6B21A8',
-      rules: { online: { rate: 7, cap: 300 }, entertainment: { rate: 4 } } },
-    { id: 'debit', name: 'Salary Debit', issuer: 'Placeholder Finance', net: 'RuPay', last4: '0004', base: 0.25, color: '#334155',
-      rules: { fuel: { rate: 2.5, cap: 200 } } }
-  ];
-  // This month's sample spend (the seeds within the last 30 days), used for caps and missed rewards.
-  var MONTH = [
-    ['everyday', 'groceries', 2340], ['online', 'online', 1899], ['travel', 'travel', 1265], ['travel', 'dining', 640],
-    ['debit', 'fuel', 3000], ['everyday', 'utilities', 1820], ['online', 'entertainment', 499], ['everyday', 'groceries', 865],
-    ['travel', 'travel', 7450], ['debit', 'other', 420], ['online', 'online', 3150], ['travel', 'dining', 1120],
-    ['everyday', 'utilities', 399], ['debit', 'fuel', 2500]
-  ];
-  var CATS = [
-    ['groceries', 'Groceries'], ['dining', 'Dining'], ['fuel', 'Fuel'], ['travel', 'Travel'],
-    ['online', 'Online shopping'], ['utilities', 'Bills & utilities'], ['entertainment', 'Entertainment'], ['other', 'Everything else']
-  ];
+  /* ---------------- categories + formatting ---------------- */
+  var CATS = [['groceries', 'Groceries'], ['dining', 'Dining'], ['fuel', 'Fuel'], ['travel', 'Travel'], ['online', 'Online shopping'], ['utilities', 'Bills & utilities'], ['entertainment', 'Entertainment'], ['other', 'Everything else']];
   var CAT_LABEL = {}; CATS.forEach(function (c) { CAT_LABEL[c[0]] = c[1]; });
   var CAT_COLOR = { dining: '#FFB4A2', groceries: '#8FE0AE', fuel: '#F5C66B', travel: '#9EC2FF', online: '#C7AEFF', utilities: '#F0D86A', entertainment: '#FF9FD0', other: '#C2C9D8' };
-
-  // ---------- reward maths (same as src/lib/rewards.ts) ----------
-  function rule(card, cat) { var r = card.rules[cat]; return r ? { rate: r.rate, cap: r.cap, source: 'category' } : { rate: card.base, cap: undefined, source: 'base' }; }
-  function raw(amount, rate) { return Math.floor(amount * rate) / 100; }
-  function earned(card, cat) {
-    var r = rule(card, cat).rate;
-    return MONTH.filter(function (t) { return t[0] === card.id && t[1] === cat; }).reduce(function (s, t) { return s + raw(t[2], r); }, 0);
-  }
-  function evaluate(card, cat, amount) {
-    var r = rule(card, cat), reward = raw(amount, r.rate), left, limited = false;
-    if (r.cap !== undefined) {
-      left = Math.max(0, Math.round((r.cap - earned(card, cat)) * 100) / 100);
-      if (reward > left) { reward = left; limited = true; }
-    }
-    return { card: card, rate: r.rate, source: r.source, cap: r.cap, left: left, reward: reward, limited: limited };
-  }
-  function rank(cat, amount) {
-    return CARDS.map(function (c) { return evaluate(c, cat, amount); }).sort(function (a, b) {
-      return b.reward - a.reward || b.rate - a.rate || a.card.name.localeCompare(b.card.name);
-    });
-  }
-
-  // ---------- formatting (Indian grouping) ----------
-  var fmt0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
-  var fmt2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  function inr(n, dec) { return '₹' + (dec ? fmt2 : fmt0).format(n); }
+  var COLORS = ['#1E3A8A', '#115E59', '#6B21A8', '#334155', '#9F1239', '#7C2D12', '#0E7490', '#4D7C0F'];
+  var f0 = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+  var f2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function inr(n, d) { return '₹' + (d ? f2 : f0).format(n); }
   function pct(n) { return (Math.round(n * 100) / 100) + '%'; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function $(id) { return document.getElementById(id); }
 
-  // ---------- card faces ----------
-  var TAP = '<svg class="cf-tap" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>';
-  function face(c) {
-    return '<div class="cardface" style="--c:' + c.color + '">' +
-      '<div class="cf-top"><div><div class="cf-name">' + esc(c.name) + '</div><div class="cf-issuer">' + esc(c.issuer) + '</div></div><span class="cf-sample">SAMPLE</span></div>' +
-      '<div class="cf-chip"></div>' + TAP +
-      '<div class="cf-num">•••• •••• •••• ' + c.last4 + '</div>' +
-      '<div class="cf-bottom"><span class="cf-holder">Demo cardholder</span><span class="cf-net">' + esc(c.net) + '</span></div></div>';
+  /* ---------------- cards (kept in this browser) ---------------- */
+  var KEY = 'tapo.site.cards.v1';
+  var EXAMPLES = [
+    { id: 'ex1', name: 'Everyday Cashback', base: 1, color: '#1E3A8A', example: true, rules: [{ cat: 'groceries', rate: 5, cap: 500 }, { cat: 'utilities', rate: 2 }] },
+    { id: 'ex2', name: 'Travel Miles', base: 0.5, color: '#115E59', example: true, rules: [{ cat: 'travel', rate: 6, cap: 1500 }, { cat: 'dining', rate: 3 }] },
+    { id: 'ex3', name: 'Online Saver', base: 1, color: '#6B21A8', example: true, rules: [{ cat: 'online', rate: 7, cap: 300 }, { cat: 'entertainment', rate: 4 }] },
+    { id: 'ex4', name: 'Fuel Debit', base: 0.25, color: '#334155', example: true, rules: [{ cat: 'fuel', rate: 2.5, cap: 200 }] }
+  ];
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  function validCard(c) {
+    return c && typeof c.name === 'string' && c.name.trim() && typeof c.base === 'number' && c.base >= 0 && c.base <= 20 && Array.isArray(c.rules);
   }
-  var byId = {}; CARDS.forEach(function (c) { byId[c.id] = c; });
-  document.querySelectorAll('.float-card').forEach(function (el) { el.querySelector('.inner').innerHTML = face(byId[el.getAttribute('data-card')]); });
-  var mini = document.getElementById('miniCard'); if (mini) mini.innerHTML = face(byId.everyday);
-
-  // ---------- sample-wallet missed rewards (same idea as src/lib/insights.ts tips) ----------
-  function missedFor(rows) { // rows: [cardId, cat, amount]
-    var total = 0, byCat = {};
-    rows.forEach(function (t) {
-      var used = raw(t[2], rule(byId[t[0]], t[1]).rate);
-      var best = CARDS.reduce(function (m, c) { var r = raw(t[2], rule(c, t[1]).rate); return r > m.r ? { r: r, c: c } : m; }, { r: -1, c: null });
-      var extra = best.r - used;
-      if (extra > 0.0001) {
-        total += extra;
-        var k = t[1] + '|' + best.c.id;
-        byCat[k] = byCat[k] || { cat: t[1], card: best.c, extra: 0, count: 0 };
-        byCat[k].extra += extra; byCat[k].count++;
-      }
-    });
-    var tips = Object.keys(byCat).map(function (k) { return byCat[k]; }).sort(function (a, b) { return b.extra - a.extra; });
-    return { total: Math.round(total * 100) / 100, tips: tips };
+  function load() {
+    try { var raw = localStorage.getItem(KEY); if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length && arr.every(validCard)) return arr.slice(0, 8); } } catch (e) {}
+    return clone(EXAMPLES);
   }
-  var sampleMissed = missedFor(MONTH).total;
-  document.getElementById('heroMissed').textContent = inr(sampleMissed, true);
-  document.getElementById('miniMissed').textContent = inr(sampleMissed, true);
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(cards)); } catch (e) {} }
+  var cards = load();
+  function byId(id) { for (var i = 0; i < cards.length; i++) if (cards[i].id === id) return cards[i]; return null; }
 
-  // ---------- recommender ----------
-  var state = { cat: 'groceries', amount: 2340 };
-  var chips = document.getElementById('catChips');
-  CATS.forEach(function (c) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'chip'; b.textContent = c[1];
-    b.setAttribute('aria-pressed', c[0] === state.cat ? 'true' : 'false');
-    b.addEventListener('click', function () {
-      state.cat = c[0];
-      chips.querySelectorAll('.chip').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-      renderRanks();
+  /* ---------------- reward maths (same rules as the app) ---------------- */
+  function rule(card, cat) {
+    for (var i = 0; i < card.rules.length; i++) if (card.rules[i].cat === cat) return { rate: card.rules[i].rate, cap: card.rules[i].cap, source: 'category' };
+    return { rate: card.base, cap: undefined, source: 'base' };
+  }
+  function raw(amount, rate) { return Math.floor(amount * rate) / 100; }
+  function evaluate(card, cat, amount) {
+    var r = rule(card, cat), reward = raw(amount, r.rate), limited = false;
+    if (r.cap !== undefined && reward > r.cap) { reward = r.cap; limited = true; }
+    return { card: card, rate: r.rate, cap: r.cap, source: r.source, reward: reward, limited: limited };
+  }
+  function rank(cat, amount) {
+    return cards.map(function (c) { return evaluate(c, cat, amount); }).sort(function (a, b) { return b.reward - a.reward || b.rate - a.rate || a.card.name.localeCompare(b.card.name); });
+  }
+  function bestFor(cat, amount) { return rank(cat, amount)[0]; }
+  function missedFor(rows, payId) {
+    var used = byId(payId) || cards[0], total = 0, earned = 0, groups = {};
+    rows.forEach(function (x) {
+      var u = raw(x.amountRupees, rule(used, x.category).rate); earned += u;
+      var best = cards.reduce(function (m, c) { var r = raw(x.amountRupees, rule(c, x.category).rate); return r > m.r ? { r: r, c: c } : m; }, { r: -1, c: null });
+      var extra = best.r - u;
+      if (extra > 0.0001) { total += extra; var k = x.category + '|' + best.c.id; groups[k] = groups[k] || { cat: x.category, card: best.c, extra: 0, count: 0 }; groups[k].extra += extra; groups[k].count++; }
     });
-    chips.appendChild(b);
-  });
-  var amountEl = document.getElementById('amount');
-  var presets = document.getElementById('presets');
-  [499, 2340, 7500, 15000].forEach(function (v) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'chip'; b.textContent = inr(v);
-    b.addEventListener('click', function () { amountEl.value = String(v); state.amount = v; renderRanks(); });
-    presets.appendChild(b);
-  });
-  amountEl.addEventListener('input', function () {
-    var digits = amountEl.value.replace(/[^\d]/g, '').slice(0, 7);
-    if (digits !== amountEl.value) amountEl.value = digits;
-    state.amount = Math.min(1000000, Number(digits) || 0);
-    renderRanks();
-  });
+    return { total: Math.round(total * 100) / 100, earned: Math.round(earned * 100) / 100, tips: Object.keys(groups).map(function (k) { return groups[k]; }).sort(function (a, b) { return b.extra - a.extra; }) };
+  }
+  function rulesText(c) {
+    var parts = [pct(c.base) + ' base'];
+    c.rules.forEach(function (r) { parts.push(pct(r.rate) + ' ' + CAT_LABEL[r.cat] + (r.cap ? ' (cap ' + inr(r.cap) + '/mo)' : '')); });
+    return parts.join(' · ');
+  }
 
-  function renderRanks() {
-    var list = rank(state.cat, state.amount);
-    var top = list[0].reward || 1;
-    document.getElementById('ranks').innerHTML = list.map(function (e, i) {
-      var why = e.source === 'category'
-        ? pct(e.rate) + ' back on ' + CAT_LABEL[state.cat]
-        : 'No ' + CAT_LABEL[state.cat] + ' rule · base ' + pct(e.rate);
-      var capLine = '';
-      if (e.cap !== undefined) {
-        capLine = e.limited
-          ? (e.left === 0 ? 'Monthly cap of ' + inr(e.cap) + ' already used this month' : 'Capped: only ' + inr(e.left, true) + ' of the ' + inr(e.cap) + ' monthly cap left')
-          : 'Within the ' + inr(e.cap) + ' monthly cap';
-      }
-      var w = state.amount > 0 ? Math.max(2, (e.reward / top) * 100) : 2;
-      return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '" style="--c:' + e.card.color + '">' +
-        '<span class="pos">' + (i + 1) + '</span>' +
-        '<div class="who"><b><i></i>' + esc(e.card.name) + '</b><div class="why">' + why + '</div>' +
-        (capLine ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + capLine + '</div>' : '') +
-        '<div class="bar"><i style="width:' + w + '%"></i></div></div>' +
-        '<span class="val">' + inr(e.reward, true) + '</span></div>';
+  /* ---------------- card list + editor ---------------- */
+  var editing = null; // card id, 'new', or null
+  function renderCards() {
+    $('cardsList').innerHTML = cards.map(function (c) {
+      return '<div class="crow" style="--c:' + esc(c.color) + '"><i></i><div style="min-width:0"><b>' + esc(c.name) + (c.example ? '<span class="tag">Example</span>' : '') + '</b><span class="rules">' + esc(rulesText(c)) + '</span></div>' +
+        '<div class="acts"><button class="btn-link" type="button" data-edit="' + esc(c.id) + '">Edit</button>' + (cards.length > 1 ? '<button class="btn-link" type="button" data-del="' + esc(c.id) + '" aria-label="Remove ' + esc(c.name) + '">Remove</button>' : '') + '</div></div>';
     }).join('');
-    var best = list[0], next = list[1];
-    var v = document.getElementById('verdict');
-    if (!state.amount) { v.innerHTML = 'Enter an amount to compare cards.'; return; }
-    var diff = Math.round((best.reward - next.reward) * 100) / 100;
-    v.innerHTML = '<b>' + esc(best.card.name) + '</b> earns about <b>' + inr(best.reward, true) + '</b> on this ' + inr(state.amount) + ' purchase' +
-      (diff > 0 ? ', ' + inr(diff, true) + ' more than ' + esc(next.card.name) + '.' : '. Ties go to the higher headline rate, then the name.');
+    $('addCard').disabled = cards.length >= 8;
+    var pay = $('payCard'), cur = pay.value;
+    pay.innerHTML = cards.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('');
+    if (byId(cur)) pay.value = cur; else pay.value = cards[cards.length - 1].id;
   }
-  renderRanks();
-
-  // ---------- statement import demo ----------
-  var payCard = document.getElementById('payCard');
-  CARDS.forEach(function (c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.name + ' •• ' + c.last4; payCard.appendChild(o); });
-  payCard.value = 'debit';
-  var lastRows = null;
-  var errEl = document.getElementById('importErr');
-  function showError(msg) { errEl.textContent = msg; errEl.hidden = !msg; }
-
-  function runImport(text) {
-    showError('');
-    try {
-      var r = importStatement(text, []);
-      lastRows = r;
-      renderImport();
-    } catch (e) {
-      showError(e && e.message ? e.message : 'Couldn’t read that file. Make sure it’s a CSV export.');
+  function catOptions(sel) { return '<option value="">No rule</option>' + CATS.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === sel ? ' selected' : '') + '>' + c[1] + '</option>'; }).join(''); }
+  function openEditor(id) {
+    editing = id;
+    var c = id === 'new' ? { name: '', base: 1, rules: [] } : byId(id);
+    var rows = '';
+    for (var i = 0; i < 3; i++) {
+      var r = c.rules[i] || {};
+      rows += '<div class="rule-row"><div class="field"><label for="rc' + i + '">Category ' + (i + 1) + '</label><select class="select" id="rc' + i + '">' + catOptions(r.cat) + '</select></div>' +
+        '<div class="field"><label for="rr' + i + '">Rate %</label><input class="input" id="rr' + i + '" inputmode="decimal" value="' + (r.rate != null ? r.rate : '') + '"></div>' +
+        '<div class="field"><label for="rp' + i + '">Monthly cap ₹</label><input class="input" id="rp' + i + '" inputmode="numeric" placeholder="None" value="' + (r.cap != null ? r.cap : '') + '"></div></div>';
     }
+    $('editorSlot').innerHTML = '<form class="editor" id="editor" novalidate>' +
+      '<div class="ed-grid"><div class="field"><label for="edName">Card nickname</label><input class="input" id="edName" maxlength="24" autocomplete="off" placeholder="e.g. Grocery card" value="' + esc(c.name) + '"></div>' +
+      '<div class="field"><label for="edBase">Base reward %</label><input class="input" id="edBase" inputmode="decimal" value="' + c.base + '"></div></div>' +
+      '<p class="muted small">Add up to three categories where this card earns more.</p>' + rows +
+      '<p class="err" id="edErr" role="alert" hidden></p>' +
+      '<div class="ed-actions"><button class="btn btn-primary btn-sm" type="submit">' + (id === 'new' ? 'Add card' : 'Save changes') + '</button><button class="btn btn-ghost btn-sm" type="button" id="edCancel">Cancel</button></div></form>';
+    $('edName').focus();
+    $('edCancel').addEventListener('click', closeEditor);
+    $('editor').addEventListener('submit', function (e) { e.preventDefault(); saveEditor(); });
   }
-  function renderImport() {
-    var r = lastRows; if (!r) return;
-    var out = document.getElementById('result');
-    if (!r.rows.length) { out.innerHTML = '<div class="result-empty"><h3>No purchases found</h3><p>Every row was money in, a duplicate or unreadable.</p></div>'; return; }
+  function closeEditor() { editing = null; $('editorSlot').innerHTML = ''; }
+  function num(v) { v = String(v).replace(/,/g, '').trim(); return v === '' ? NaN : Number(v); }
+  function saveEditor() {
+    var err = $('edErr'), name = $('edName').value.replace(/\s+/g, ' ').trim(), base = num($('edBase').value);
+    function fail(m) { err.textContent = m; err.hidden = false; }
+    if (!name) return fail('Give the card a nickname.');
+    if ((name.replace(/\D/g, '')).length >= 8) return fail('Use a nickname, not a card number. TAPO never stores card numbers.');
+    if (!(base >= 0 && base <= 20)) return fail('Base reward must be between 0% and 20%.');
+    var rules = [], seen = {};
+    for (var i = 0; i < 3; i++) {
+      var cat = $('rc' + i).value; if (!cat) continue;
+      var rate = num($('rr' + i).value), capRaw = $('rp' + i).value.trim(), cap = capRaw === '' ? undefined : num(capRaw);
+      if (seen[cat]) return fail(CAT_LABEL[cat] + ' is listed twice.');
+      if (!(rate >= 0 && rate <= 20)) return fail('Rate for ' + CAT_LABEL[cat] + ' must be between 0% and 20%.');
+      if (cap !== undefined && !(cap > 0 && cap <= 100000)) return fail('Cap for ' + CAT_LABEL[cat] + ' must be a positive amount, or leave it empty.');
+      seen[cat] = true; rules.push(cap === undefined ? { cat: cat, rate: rate } : { cat: cat, rate: rate, cap: cap });
+    }
+    if (editing === 'new') {
+      cards.push({ id: 'c' + Date.now().toString(36), name: name, base: base, rules: rules, color: COLORS[cards.length % COLORS.length] });
+    } else {
+      var c = byId(editing); c.name = name; c.base = base; c.rules = rules; delete c.example;
+    }
+    save(); closeEditor(); refresh();
+  }
+  $('addCard').addEventListener('click', function () { openEditor('new'); });
+  $('cardsList').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.edit) openEditor(t.dataset.edit);
+    if (t.dataset.del) { cards = cards.filter(function (c) { return c.id !== t.dataset.del; }); if (editing === t.dataset.del) closeEditor(); save(); refresh(); }
+  });
+  $('resetCards').addEventListener('click', function () { cards = clone(EXAMPLES); save(); closeEditor(); refresh(); });
+
+  /* ---------------- finder ---------------- */
+  var state = { cat: 'groceries', amount: 2340 };
+  CATS.forEach(function (c) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = c[1];
+    b.setAttribute('aria-pressed', String(c[0] === state.cat));
+    b.addEventListener('click', function () { state.cat = c[0]; document.querySelectorAll('#catChips .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); renderRanks(); });
+    $('catChips').appendChild(b);
+  });
+  $('amount').addEventListener('input', function (e) {
+    var d = e.target.value.replace(/\D/g, '').slice(0, 7); if (d !== e.target.value) e.target.value = d;
+    state.amount = Math.min(1000000, Number(d) || 0); renderRanks();
+  });
+  function renderRanks() {
+    var list = rank(state.cat, state.amount), top = list[0].reward || 1, label = CAT_LABEL[state.cat];
+    $('ranks').innerHTML = list.map(function (e, i) {
+      var why = e.source === 'category' ? pct(e.rate) + ' back on ' + label : 'No ' + label + ' rate, so the ' + pct(e.rate) + ' base rate applies';
+      var cap = e.cap ? (e.limited ? 'Limited by the ' + inr(e.cap) + ' monthly cap' : 'Within the ' + inr(e.cap) + ' monthly cap') : '';
+      return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '"><span class="pos">' + (i + 1) + '</span><div style="min-width:0"><b>' + esc(e.card.name) + '</b><div class="why">' + esc(why) + '</div>' +
+        (cap ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + cap + '</div>' : '') +
+        '<div class="bar"><i style="width:' + (state.amount ? Math.max(2, e.reward / top * 100) : 2) + '%;background:' + esc(e.card.color) + '"></i></div></div><span class="val">' + inr(e.reward, true) + '</span></div>';
+    }).join('');
+    var v = $('verdict');
+    if (!state.amount) { v.textContent = 'Enter an amount to compare your cards.'; return; }
+    var b = list[0], n = list[1];
+    var diff = n ? Math.round((b.reward - n.reward) * 100) / 100 : 0;
+    v.innerHTML = 'Use <b>' + esc(b.card.name) + '</b>. It earns about <b>' + inr(b.reward, true) + '</b> on this ' + inr(state.amount) + ' purchase' +
+      (n && diff > 0 ? ', ' + inr(diff, true) + ' more than ' + esc(n.card.name) + '.' : '.');
+  }
+
+  /* ---------------- statement check ---------------- */
+  var lastResult = null;
+  function showErr(m) { $('importErr').textContent = m; $('importErr').hidden = !m; }
+  function runImport(text) {
+    showErr('');
+    try { lastResult = importStatement(text, []); renderResult(); }
+    catch (e) { showErr(e && e.message ? e.message : 'We couldn’t read that file. Make sure it’s a CSV export.'); }
+  }
+  function renderResult() {
+    var r = lastResult; if (!r) return;
+    var out = $('result');
+    if (!r.rows.length) { out.innerHTML = '<div class="empty"><h3 style="color:var(--ink)">No purchases found</h3><p>Every row was money in, a duplicate, or unreadable.</p></div>'; return; }
     var total = r.rows.reduce(function (s, x) { return s + x.amountRupees; }, 0);
-    var tuples = r.rows.map(function (x) { return [payCard.value, x.category, x.amountRupees]; });
-    var m = missedFor(tuples);
+    var m = missedFor(r.rows, $('payCard').value);
     var cats = {}; r.rows.forEach(function (x) { cats[x.category] = (cats[x.category] || 0) + x.amountRupees; });
-    var catList = Object.keys(cats).sort(function (a, b) { return cats[b] - cats[a]; });
-    var maxCat = cats[catList[0]];
-    var skipped = r.skipped, notes = [];
-    if (skipped.credits) notes.push(skipped.credits + ' money in');
-    if (skipped.invalid) notes.push(skipped.invalid + ' unreadable');
-    if (skipped.duplicates) notes.push(skipped.duplicates + ' duplicate');
-    if (skipped.overLimit) notes.push(skipped.overLimit + ' over limits');
+    var order = Object.keys(cats).sort(function (a, b) { return cats[b] - cats[a]; }), max = cats[order[0]];
+    var sk = r.skipped, notes = [];
+    if (sk.credits) notes.push(sk.credits + ' money in'); if (sk.invalid) notes.push(sk.invalid + ' unreadable'); if (sk.duplicates) notes.push(sk.duplicates + ' duplicate'); if (sk.overLimit) notes.push(sk.overLimit + ' over limits');
     out.innerHTML =
-      '<div class="stats">' +
-        '<div class="stat"><small>Purchases</small><b>' + r.rows.length + '</b></div>' +
-        '<div class="stat"><small>Spent</small><b>' + inr(total) + '</b></div>' +
-        '<div class="stat warn"><small>Missed rewards</small><b>' + inr(m.total, true) + '</b></div>' +
-      '</div>' +
-      '<p class="note">Columns found: ' + esc(r.columns.date) + ' · ' + esc(r.columns.description) + ' · ' + esc(r.columns.amount) +
-        (notes.length ? '. Skipped ' + notes.join(', ') + '.' : '.') + '</p>' +
-      '<div class="catbars">' + catList.map(function (c) {
-        return '<div class="catbar"><div class="top"><span>' + CAT_LABEL[c] + '</span><span>' + inr(cats[c]) + '</span></div>' +
-          '<div class="bar"><i style="width:' + Math.max(3, cats[c] / maxCat * 100) + '%;background:' + CAT_COLOR[c] + '"></i></div></div>';
-      }).join('') + '</div>' +
-      (m.tips.length ? '<div class="tips">' + m.tips.slice(0, 3).map(function (t) {
-        return '<div class="tip">Use <b>' + esc(t.card.name) + '</b> for ' + CAT_LABEL[t.cat] + ': ' + inr(t.extra, true) + ' more on ' + t.count + (t.count === 1 ? ' purchase' : ' purchases') + ', before monthly caps.</div>';
-      }).join('') + '</div>' : '<div class="tip" style="background:var(--green-bg);color:var(--green)">This card was already the best choice for every purchase.</div>') +
-      '<div class="rows">' + r.rows.slice(0, 6).map(function (x) {
-        return '<div><span>' + esc(x.merchant) + '</span><span>' + CAT_LABEL[x.category] + '</span><span class="num">' + inr(x.amountRupees) + '</span></div>';
-      }).join('') + (r.rows.length > 6 ? '<div><span style="color:var(--muted)">and ' + (r.rows.length - 6) + ' more</span><span></span><span></span></div>' : '') + '</div>';
+      '<div class="stats"><div class="stat"><small>Purchases</small><b>' + r.rows.length + '</b></div><div class="stat"><small>Spent</small><b>' + inr(total) + '</b></div><div class="stat warn"><small>Missed rewards</small><b>' + inr(m.total, true) + '</b></div></div>' +
+      '<p class="muted small">Read columns ' + esc(r.columns.date) + ', ' + esc(r.columns.description) + ' and ' + esc(r.columns.amount) + (notes.length ? '. Skipped ' + notes.join(', ') + '.' : '.') + '</p>' +
+      '<div style="display:grid;gap:12px">' + order.map(function (c) { return '<div class="catbar"><div class="top"><span>' + CAT_LABEL[c] + '</span><span>' + inr(cats[c]) + '</span></div><div class="bar"><i style="width:' + Math.max(3, cats[c] / max * 100) + '%;background:' + CAT_COLOR[c] + '"></i></div></div>'; }).join('') + '</div>' +
+      '<div style="display:grid;gap:8px">' + (m.tips.length ? m.tips.slice(0, 3).map(function (t) { return '<div class="tip">Use <b>' + esc(t.card.name) + '</b> for ' + CAT_LABEL[t.cat] + ': ' + inr(t.extra, true) + ' more on ' + t.count + (t.count === 1 ? ' purchase' : ' purchases') + ', before monthly caps.</div>'; }).join('') : '<div class="tip good">You already used your best card for every purchase.</div>') + '</div>' +
+      '<div class="lines">' + r.rows.slice(0, 6).map(function (x) { return '<div><span>' + esc(x.merchant) + '</span><span>' + CAT_LABEL[x.category] + '</span><span class="num">' + inr(x.amountRupees) + '</span></div>'; }).join('') +
+      (r.rows.length > 6 ? '<div><span style="color:var(--muted)">and ' + (r.rows.length - 6) + ' more</span><span></span><span></span></div>' : '') + '</div>';
   }
-  payCard.addEventListener('change', renderImport);
-  document.getElementById('example').addEventListener('click', function () { runImport(EXAMPLE_CSV); });
+  $('payCard').addEventListener('change', function () { renderResult(); renderPhone(); });
+  $('example').addEventListener('click', function () { runImport(EXAMPLE_CSV); });
   function readFile(f) {
     if (!f) return;
-    if (f.size > MAX_IMPORT_BYTES) { showError('That file is too large. Export a shorter date range (under 2 MB).'); return; }
-    f.text().then(runImport, function () { showError('Couldn’t open that file. Try exporting it again as CSV.'); });
+    if (f.size > MAX_IMPORT_BYTES) { showErr('That file is too large. Export a shorter date range (under 2 MB).'); return; }
+    f.text().then(runImport, function () { showErr('We couldn’t open that file. Try exporting it again as CSV.'); });
   }
-  document.getElementById('file').addEventListener('change', function (e) { readFile(e.target.files && e.target.files[0]); e.target.value = ''; });
-  var drop = document.getElementById('drop');
+  $('file').addEventListener('change', function (e) { readFile(e.target.files && e.target.files[0]); e.target.value = ''; });
+  var drop = $('drop');
   ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
   drop.addEventListener('drop', function (e) { readFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
 
-  // ---------- hero tilt (desktop pointer only) ----------
-  var stage = document.getElementById('stage');
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduce && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
-    stage.addEventListener('pointermove', function (e) {
-      var b = stage.getBoundingClientRect();
-      var x = (e.clientX - b.left) / b.width - 0.5, y = (e.clientY - b.top) / b.height - 0.5;
-      stage.querySelectorAll('.float-card').forEach(function (el, i) {
-        var k = (i + 1) * 6;
-        el.style.transform = 'rotateY(' + (x * k) + 'deg) rotateX(' + (-y * k) + 'deg) translateZ(' + (i * 10) + 'px)';
-      });
-    });
-    stage.addEventListener('pointerleave', function () { stage.querySelectorAll('.float-card').forEach(function (el) { el.style.transform = ''; }); });
+  /* ---------------- phone mockup (live from the example statement + your cards) ---------------- */
+  var exampleRows = importStatement(EXAMPLE_CSV, []).rows;
+  function renderPhone() {
+    var pay = byId($('payCard').value) || cards[cards.length - 1];
+    var spent = exampleRows.reduce(function (s, x) { return s + x.amountRupees; }, 0);
+    var m = missedFor(exampleRows, pay.id);
+    $('phSpent').textContent = inr(spent);
+    $('phEarned').textContent = inr(m.earned, true);
+    $('phMissed').textContent = inr(m.total, true);
+    $('phTip').textContent = m.tips[0] ? 'Use ' + m.tips[0].card.name + ' for ' + CAT_LABEL[m.tips[0].cat] : 'You used your best cards';
+    $('phBest').textContent = bestFor('groceries', 2340).card.name;
+    var c = bestFor('groceries', 2340).card;
+    $('phoneCard').innerHTML = '<div class="cardface" style="--c:' + esc(c.color) + '"><div class="cf-name">' + esc(c.name) + '</div><div class="cf-chip"></div><div class="cf-num">•••• ••••</div></div>';
   }
 
-  // ---------- nav ----------
-  var nav = document.getElementById('nav'), menuBtn = document.getElementById('menuBtn');
-  menuBtn.addEventListener('click', function () {
-    var open = nav.classList.toggle('open');
-    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  document.querySelectorAll('#navLinks a').forEach(function (a) { a.addEventListener('click', function () { nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); }); });
-  if ('IntersectionObserver' in window) {
-    var links = {}; document.querySelectorAll('#navLinks a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
-    var spy = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting && links[en.target.id]) {
-          Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
-          links[en.target.id].setAttribute('aria-current', 'true');
-        }
-      });
-    }, { rootMargin: '-40% 0px -55% 0px' });
-    document.querySelectorAll('main section[id]').forEach(function (s) { spy.observe(s); });
+  function refresh() { renderCards(); renderRanks(); renderResult(); renderPhone(); }
+  refresh();
+
+  /* ---------------- nav ---------------- */
+  var nav = $('nav'), menu = $('menu');
+  menu.addEventListener('click', function () { var o = nav.classList.toggle('open'); menu.setAttribute('aria-expanded', String(o)); });
+  document.querySelectorAll('#links a').forEach(function (a) { a.addEventListener('click', function () { nav.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); }); });
+
+  /* ---------------- waitlist (saved to the page's database) ---------------- */
+  var forms = Array.prototype.slice.call(document.querySelectorAll('[data-waitlist]'));
+  var EMAIL = /^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/i;
+  var waitDb = null, myId = null, canWrite = null, joined = false;
+  function setMsg(form, text, isErr) { var p = form.querySelector('.wl-msg'); p.textContent = text; p.hidden = !text; p.classList.toggle('err', !!isErr); }
+  function markJoined() {
+    joined = true;
+    forms.forEach(function (f) {
+      f.innerHTML = '<div class="wl-done" role="status"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6FD9A4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4.5 4.5L19 7"/></svg><span><b>You’re on the list.</b> We’ll email you when TAPO is ready for you.</span></div>';
+    });
   }
+  function closed(msg) {
+    forms.forEach(function (f) {
+      f.querySelectorAll('input, select, button').forEach(function (el) { el.disabled = true; });
+      setMsg(f, msg, false);
+    });
+  }
+  forms.forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (joined) return;
+      var email = form.querySelector('input[type=email]').value.trim();
+      var cardsSel = form.querySelector('select[name=cards]');
+      if (!EMAIL.test(email)) { setMsg(form, 'Enter a valid email address, like name@example.com.', true); return; }
+      if (!waitDb || !myId) { setMsg(form, 'Sign-ups aren’t open on this page right now. Please try again later.', true); return; }
+      var btn = form.querySelector('button[type=submit]'); btn.disabled = true; setMsg(form, 'Joining…', false);
+      waitDb.collection('waitlist').doc(myId).set({ email: email, cards: cardsSel ? cardsSel.value : '', joinedAt: new Date().toISOString() })
+        .then(markJoined)
+        .catch(function (err) {
+          btn.disabled = false;
+          var code = err && err.code;
+          if (code === 'invalid_argument') closed('Early access sign-ups are by invitation right now.');
+          else if (code === 'quota_exceeded') setMsg(form, 'The waitlist is full for now. Please check back soon.', true);
+          else setMsg(form, 'We couldn’t save that. Check your connection and try again.', true);
+        });
+    });
+  });
+  (async function () {
+    try {
+      var c = window.claude;
+      if (!c || !c.use) return;
+      var results = await Promise.all([c.use('db'), c.use('user')]);
+      waitDb = results[0]; var user = results[1];
+      if (!waitDb || !user) return;
+      myId = await user.id();
+      if (!myId) { waitDb = null; return; }
+      canWrite = await user.can('data.write');
+      if (canWrite === false) { closed('Early access sign-ups are by invitation right now.'); return; }
+      var snap = await waitDb.collection('waitlist').doc(myId).get();
+      if (snap && snap.exists) markJoined();
+    } catch (e) { /* keep the form; submit explains if saving isn't possible */ }
+  })();
 })();
 </script>
