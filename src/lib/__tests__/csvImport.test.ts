@@ -75,6 +75,10 @@ describe('categorise', () => {
     expect(categorise('AIRTEL POSTPAID')).toBe('utilities');
     expect(categorise('BOOKMYSHOW')).toBe('entertainment');
     expect(categorise('RANDOM SHOP')).toBe('other');
+    expect(categorise('train tickets')).toBe('travel');
+    expect(categorise('cab to airport')).toBe('travel');
+    expect(categorise('Friday dinner')).toBe('dining');
+    expect(categorise('busy store')).toBe('other');
   });
 });
 

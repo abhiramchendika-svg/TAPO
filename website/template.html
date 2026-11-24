@@ -304,6 +304,60 @@ a.stat:hover { transform: translateY(-3px); border-color: #3a4260; }
 .why.cap { color: var(--amber); }
 .val { font-size: 22px; font-weight: 900; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
 .rank.best .val { color: var(--green); }
+/* best card: inputs on the left, one clear answer on the right */
+.best-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 16px; align-items: start; }
+.best-input { position: sticky; top: 20px; gap: 22px; }
+.search { display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 16px; border-radius: 16px; background: var(--bg); border: 1px solid var(--line); }
+.search:focus-within { border-color: var(--cream); }
+.search input { flex: 1; width: 0; min-width: 0; background: none; border: 0; outline: 0; font-size: 17px; }
+.small-chips { gap: 6px; margin-top: 2px; }
+.small-chips .chip { min-height: 32px; padding: 0 11px; font-size: 13px; }
+.cat-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px 0 5px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.cat-pill .cico { width: 26px; height: 26px; border-radius: 50%; }
+.cat-pill[aria-pressed="true"] { background: var(--cream); color: var(--night); border-color: var(--cream); font-weight: 700; }
+.best-answer { display: grid; gap: 16px; min-width: 0; }
+.reco { padding: 24px; border-radius: 24px; border: 1px solid color-mix(in srgb, var(--green) 40%, transparent); background: radial-gradient(500px 260px at 0% 0%, rgba(111,217,164,.16), transparent 70%), var(--surface); display: grid; gap: 20px; animation: rise .45s var(--ease) both; box-shadow: 0 30px 60px -40px rgba(111,217,164,.45); }
+.reco.reco-flat { border-color: var(--line); background: var(--surface); box-shadow: none; }
+.reco-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.reco-k { font-weight: 700; font-size: 14px; color: var(--green); letter-spacing: .02em; }
+.reco-flat .reco-k { color: var(--muted); }
+.reco-top .tag { font-size: 12.5px; padding: 4px 10px 4px 4px; border-radius: 999px; }
+.reco-main { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 22px; align-items: center; }
+.reco-text { display: grid; gap: 8px; min-width: 0; }
+.reco-text h2 { font-size: clamp(24px, 2.6vw, 32px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+.reco-earn { color: var(--muted); font-size: 16px; }
+.reco-earn b { color: var(--green); font-size: 26px; font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.reco-flat .reco-earn b { color: var(--ink); }
+.reco-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
+.reco-stats div { padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--bg) 70%, transparent); border: 1px solid var(--line-soft); display: grid; gap: 1px; min-width: 0; }
+.reco-stats small { color: var(--muted); font-size: 12px; }
+.reco-stats b { font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.reco-stats b.g { color: var(--green); }
+.reco-stats b.a { color: var(--amber); }
+.reco-stats span { font-size: 12px; color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reasons { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; color: #CFE9DB; }
+.reasons li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; align-items: start; }
+.reasons svg { margin-top: 3px; }
+.split { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 12px; padding: 14px 16px; border-radius: 16px; background: var(--amber-bg); border: 1px solid #4a3c1c; color: #F8DFA6; font-size: 14.5px; }
+.split b { display: block; color: #FBE3AE; margin-bottom: 2px; }
+.cmp { padding: 20px 22px; display: grid; gap: 4px; }
+.cmp .box-h { margin-bottom: 8px; }
+.cmp .box-h h2 { font-size: 16px; }
+.cmp-row { display: grid; grid-template-columns: 6px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+.cmp-row > i { width: 6px; height: 34px; border-radius: 3px; }
+.cmp-name { min-width: 0; display: grid; gap: 2px; }
+.cmp-name b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-name small { color: var(--muted); font-size: 12.5px; }
+.cmp-name .bar { height: 4px; margin-top: 4px; }
+.cmp-val { text-align: right; display: grid; gap: 1px; }
+.cmp-val b { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.cmp-val small { font-size: 12px; color: var(--subtle); }
+.cmp-row.top .cmp-val b { color: var(--green); }
+.cmp-row.top .cmp-val small { color: var(--green); }
+.cmp .subtle { margin-top: 10px; }
+@media (max-width: 1100px) { .reco-main { grid-template-columns: minmax(0, 1fr); } .reco-card { max-width: 280px; } }
+@media (max-width: 900px) { .best-layout { grid-template-columns: minmax(0, 1fr); } .best-input { position: static; } }
 .verdict { padding: 18px 20px; border-radius: 18px; background: var(--green-bg); border: 1px solid #1F4A3A; color: #CFF5E1; font-size: 15.5px; }
 
 /* insights */
@@ -762,7 +816,7 @@ var SITE = ['home', 'product', 'security', 'faq'];
 var APPR = ['wallet', 'best', 'insights', 'import', 'cards'];
 var APP_NAV = [['wallet', 'Wallet', 'wallet'], ['best', 'Best card', 'best'], ['insights', 'Insights', 'chart'], ['import', 'Import', 'import'], ['cards', 'Cards', 'cards']];
 var cleanup = [];
-var ui = { cat: 'groceries', amount: 2340, month: 'this', parsed: null, payCard: null, view: 'carousel', openCard: null };
+var ui = { cat: 'groceries', amount: 2500, merchant: '', month: 'this', parsed: null, payCard: null, view: 'carousel', openCard: null };
 try { if (localStorage.getItem('tapo.web.view') === 'stack') ui.view = 'stack'; } catch (e) {}
 function route() { var h = (location.hash || '').slice(1); return SITE.indexOf(h) >= 0 || APPR.indexOf(h) >= 0 ? h : 'home'; }
 function go(r) { if (location.hash.slice(1) === r) render(); else location.hash = r; }
@@ -1000,14 +1054,35 @@ SCREENS.wallet = function () {
     '<div class="grid2" style="margin-top:16px"><div class="panel box"><div class="box-h"><h2>Recent activity</h2><a class="link-btn" href="#insights">Insights →</a></div><div>' + (recent.length ? recent.map(txnRow).join('') : '<p class="muted">No activity yet. <a href="#import">Import a statement</a>.</p>') + '</div></div>' +
     '<div class="panel box"><div class="box-h"><h2>Quick check</h2><a class="link-btn" href="#best">Best card →</a></div><p class="muted small">Tap a category to see which card to use for a ₹1,000 purchase.</p><div class="chips" id="quickCats">' + CATS.map(function (c) { return '<button class="chip" type="button" data-cat="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div><div id="quickAns" class="verdict" style="display:none"></div></div></div>';
 };
+var MERCHANT_IDEAS = ['Food delivery', 'Supermarket', 'Petrol', 'Train tickets', 'Online shopping', 'Electricity bill', 'Movie tickets'];
 SCREENS.best = function () {
-  return head('Best card', 'Which card should I use?') +
-    '<div class="grid2" style="align-items:start"><div class="panel box"><span class="lbl">What are you buying?</span><div class="cat-grid" id="catGrid">' + CATS.map(function (c) { return '<button class="cat" type="button" data-cat="' + c[0] + '" aria-pressed="' + (ui.cat === c[0]) + '">' + catIcon(c[0], 18) + '<span>' + c[1] + '</span></button>'; }).join('') + '</div>' +
-    '<label class="lbl" for="amt">How much?</label><div class="amount"><span aria-hidden="true">₹</span><input id="amt" inputmode="numeric" autocomplete="off" value="' + ui.amount + '"></div>' +
-    '<div class="chips">' + [250, 1000, 2340, 5000, 15000].map(function (v) { return '<button class="chip" type="button" data-amt="' + v + '">' + inr(v) + '</button>'; }).join('') + '</div>' +
-    '<p class="subtle small">Monthly caps count what each card has already earned this month in your activity.</p></div>' +
-    '<div class="box" style="padding:0;gap:10px"><div id="ranks" style="display:grid;gap:10px" aria-live="polite"></div><div id="verdict"></div></div></div>';
+  return head('Best card', 'Which card should I pay with?') +
+    '<div class="best-layout"><div class="panel box best-input">' +
+      '<div class="field"><label for="merchant">Where are you paying?</label><div class="search">' + ico('best', 18, '#69728C') + '<input id="merchant" autocomplete="off" placeholder="Type a shop or what you’re buying" value="' + esc(ui.merchant || '') + '"></div>' +
+      '<div class="chips small-chips">' + MERCHANT_IDEAS.map(function (m) { return '<button class="chip" type="button" data-merchant="' + esc(m) + '">' + esc(m) + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field"><label for="amt">How much?</label><div class="amount"><span aria-hidden="true">₹</span><input id="amt" inputmode="numeric" autocomplete="off" value="' + ui.amount + '"></div>' +
+      '<div class="chips small-chips">' + [250, 1000, 2500, 5000, 15000].map(function (v) { return '<button class="chip" type="button" data-amt="' + v + '">' + inr(v) + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field"><span class="lbl" id="catLbl">Category <span class="subtle" id="catHint"></span></span><div class="cat-row" id="catGrid" role="group" aria-labelledby="catLbl">' + CATS.map(function (c) { return '<button class="cat-pill" type="button" data-cat="' + c[0] + '" aria-pressed="' + (ui.cat === c[0]) + '">' + catIcon(c[0], 15) + c[1] + '</button>'; }).join('') + '</div></div>' +
+    '</div>' +
+    '<div class="best-answer" id="answer" aria-live="polite"></div></div>';
 };
+/* The recommendation: the best card, why, how much more it earns, and a split when a cap runs out. */
+function recommendation(cat, amount) {
+  var list = rank(cat, amount), best = list[0], next = list[1], worst = list[list.length - 1];
+  var out = { list: list, best: best, next: next, worst: worst, split: null };
+  if (!best) return out;
+  // If the best card's cap runs out partway, suggest paying the rest with the next card.
+  if (best.limited && best.left > 0 && next) {
+    var coverable = Math.floor(best.left * 100 / best.rate);
+    var rest = amount - coverable;
+    if (rest > 0) {
+      var nextOnRest = evaluate(next.card, cat, rest).reward;
+      var total = Math.round((best.left + nextOnRest) * 100) / 100;
+      if (total > best.reward + 0.009) out.split = { first: best.card, firstAmt: coverable, second: next.card, secondAmt: rest, total: total };
+    }
+  }
+  return out;
+}
 SCREENS.insights = function () {
   var ref = ui.month === 'this' ? new Date() : prevMonth(new Date());
   var ins = insights(ref);
@@ -1132,7 +1207,7 @@ function mountApp(r) {
   countUps(); shineOn();
   if (r === 'wallet') {
     $$('[data-view]').forEach(function (b) { b.addEventListener('click', function () { ui.view = b.getAttribute('data-view'); try { localStorage.setItem('tapo.web.view', ui.view); } catch (e) {} render(); }); });
-    $$('[data-bestcat]').forEach(function (a) { a.addEventListener('click', function () { ui.cat = a.getAttribute('data-bestcat'); ui.amount = 1000; }); });
+    $$('[data-bestcat]').forEach(function (a) { a.addEventListener('click', function () { ui.cat = a.getAttribute('data-bestcat'); ui.amount = 1000; ui.merchant = ''; }); });
     $$('[data-viewcard]').forEach(function (a) { a.addEventListener('click', function () { ui.openCard = a.getAttribute('data-viewcard'); }); });
     // Stack view: cards below the fold sit tilted back and settle flat as they scroll in
     var sv = $('#stackview');
@@ -1169,27 +1244,75 @@ function mountApp(r) {
       ans.style.display = '';
       ans.innerHTML = 'For ' + CAT[cat].label + ', use <b>' + esc(best.card.name) + '</b>: about ' + inr(best.reward, true) + ' back on ₹1,000. <a href="#best" data-goto="' + cat + '">Compare all →</a>';
     });
-    $('#quickAns').addEventListener('click', function (e) { var a = e.target.closest('[data-goto]'); if (a) { ui.cat = a.getAttribute('data-goto'); ui.amount = 1000; } });
+    $('#quickAns').addEventListener('click', function (e) { var a = e.target.closest('[data-goto]'); if (a) { ui.cat = a.getAttribute('data-goto'); ui.amount = 1000; ui.merchant = ''; } });
   }
   if (r === 'best') {
     var paint = function () {
-      var list = rank(ui.cat, ui.amount), top = list[0] ? list[0].reward || 1 : 1, L = CAT[ui.cat].label;
-      $('#ranks').innerHTML = list.map(function (e, i) {
-        var why = e.source === 'category' ? pct(e.rate) + ' back on ' + L : 'No ' + L + ' rate · ' + pct(e.rate) + ' base';
-        var cap = e.cap !== undefined ? (e.limited ? (e.left === 0 ? 'Monthly cap of ' + inr(e.cap) + ' already used' : 'Only ' + inr(e.left, true) + ' of the ' + inr(e.cap) + ' cap left') : inr(e.left, true) + ' of the ' + inr(e.cap) + ' cap left') : '';
-        return '<div class="rank' + (i === 0 && e.reward > 0 ? ' best' : '') + '"><span class="pos">' + (i + 1) + '</span><div style="min-width:0"><b>' + esc(e.card.name) + '</b><div class="why">' + why + '</div>' + (cap ? '<div class="why' + (e.limited ? ' cap' : '') + '">' + cap + '</div>' : '') + '<div class="bar" style="margin-top:8px"><i style="width:' + (ui.amount ? Math.max(3, e.reward / top * 100) : 3) + '%;background:' + (i === 0 ? 'var(--green)' : esc(e.card.color)) + '"></i></div></div><span class="val">' + inr(e.reward, true) + '</span></div>';
-      }).join('') || '<div class="panel empty"><p>Add a card to compare.</p><a class="btn btn-primary btn-sm" href="#cards">Add a card</a></div>';
-      var b = list[0], n = list[1];
-      $('#verdict').innerHTML = b && ui.amount ? '<div class="verdict">Use <b>' + esc(b.card.name) + '</b>. It earns about <b>' + inr(b.reward, true) + '</b> on this ' + inr(ui.amount) + ' purchase' + (n && b.reward - n.reward > 0 ? ', ' + inr(Math.round((b.reward - n.reward) * 100) / 100, true) + ' more than ' + esc(n.card.name) + '.' : '.') + '</div>' : '';
+      var ans = $('#answer'), L = CAT[ui.cat].label;
+      $$('#catGrid .cat-pill').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-cat') === ui.cat)); });
+      if (!S.cards.length) { ans.innerHTML = '<div class="panel empty"><h2 style="color:var(--ink)">Add a card first</h2><p>TAPO compares the cards you add.</p><a class="btn btn-primary btn-sm" href="#cards">Add a card</a></div>'; return; }
+      if (!ui.amount) { ans.innerHTML = '<div class="panel empty"><h2 style="color:var(--ink)">How much are you paying?</h2><p>Enter an amount and TAPO will pick the card that earns the most.</p></div>'; return; }
+      var rec = recommendation(ui.cat, ui.amount), b = rec.best, n = rec.next, w = rec.worst;
+      var reasons = [];
+      var spent = rec.list.filter(function (e) { return e !== b && e.source === 'category' && e.limited && e.left === 0; });
+      var hasCatRate = rec.list.some(function (e) { return e.source === 'category'; });
+      if (b.source === 'category') reasons.push(pct(b.rate) + ' back on ' + L + ', the highest rate you have for it');
+      else if (hasCatRate) reasons.push('Its ' + pct(b.rate) + ' everyday rate is the best you can get on ' + L + ' right now');
+      else reasons.push('None of your cards has a special ' + L + ' rate, so its ' + pct(b.rate) + ' everyday rate is the highest');
+      spent.forEach(function (e) { reasons.push(esc(e.card.name) + ' would earn ' + pct(e.rate) + ', but its ' + inr(e.cap) + ' monthly ' + L + ' cap is used up'); });
+      if (b.cap !== undefined) reasons.push(b.limited ? 'Monthly ' + L + ' cap: only ' + inr(b.left, true) + ' of ' + inr(b.cap) + ' left this month' : inr(b.left, true) + ' of its ' + inr(b.cap) + ' monthly cap left, enough for this purchase');
+      var lead = n ? Math.round((b.reward - n.reward) * 100) / 100 : 0;
+      var capAfter = b.cap !== undefined ? Math.max(0, Math.round((b.left - b.reward) * 100) / 100) : null;
+      var tie = n && lead === 0 && b.reward > 0;
+      var nothing = b.reward === 0;
+      var maxR = b.reward || 1;
+
+      ans.innerHTML =
+        '<section class="reco ' + (nothing ? 'reco-flat' : '') + '">' +
+          '<div class="reco-top"><span class="reco-k">' + (nothing ? 'No card earns rewards here' : tie ? 'Any of these works' : 'Pay with') + '</span><span class="tag">' + catIcon(ui.cat, 13).replace('class="cico"', 'class="cico" style="width:22px;height:22px;border-radius:7px;display:inline-grid;vertical-align:-6px;margin-right:6px"') + esc(L) + ' · ' + inr(ui.amount) + '</span></div>' +
+          '<div class="reco-main"><div class="reco-card">' + cardFace(b.card) + '</div>' +
+          '<div class="reco-text"><h2>' + esc(b.card.name) + '</h2>' +
+            '<p class="reco-earn">You earn <b>' + inr(b.reward, true) + '</b></p>' +
+            '<div class="reco-stats">' +
+              (n ? '<div><small>vs next best</small><b class="' + (lead > 0 ? 'g' : '') + '">' + (lead > 0 ? '+' + inr(lead, true) : 'Same') + '</b><span>' + esc(n.card.name) + '</span></div>' : '') +
+              (w && w !== b ? '<div><small>vs worst choice</small><b class="g">+' + inr(Math.round((b.reward - w.reward) * 100) / 100, true) + '</b><span>' + esc(w.card.name) + '</span></div>' : '') +
+              (capAfter !== null ? '<div><small>Cap left after</small><b class="a">' + inr(capAfter, true) + '</b><span>of ' + inr(b.cap) + ' this month</span></div>' : '') +
+            '</div></div></div>' +
+          '<ul class="reasons">' + reasons.map(function (r) { return '<li>' + ico('check', 16, '#6FD9A4', 2.6) + '<span>' + r + '</span></li>'; }).join('') + '</ul>' +
+          (rec.split ? '<div class="split">' + ico('trend', 18, '#F5C66B') + '<div><b>Better: split the bill</b><span>Pay ' + inr(rec.split.firstAmt) + ' with ' + esc(rec.split.first.name) + ' (uses up its cap) and ' + inr(rec.split.secondAmt) + ' with ' + esc(rec.split.second.name) + '. Total rewards ' + inr(rec.split.total, true) + ' instead of ' + inr(b.reward, true) + '.</span></div></div>' : '') +
+        '</section>' +
+        '<section class="panel cmp"><div class="box-h"><h2>All your cards for this purchase</h2></div>' +
+          rec.list.map(function (e, i) {
+            var note = e.source === 'category' ? pct(e.rate) + ' on ' + L : pct(e.rate) + ' everyday rate';
+            if (e.limited) note += e.left === 0 ? ' · cap used up' : ' · capped at ' + inr(e.left, true);
+            var diff = Math.round((b.reward - e.reward) * 100) / 100;
+            return '<div class="cmp-row' + (i === 0 ? ' top' : '') + '"><i style="background:' + esc(e.card.color) + '"></i><div class="cmp-name"><b>' + esc(e.card.name) + '</b><small>' + note + '</small><div class="bar"><i style="width:' + Math.max(3, e.reward / maxR * 100) + '%;background:' + (i === 0 ? 'var(--green)' : esc(e.card.color)) + ';filter:brightness(1.5)"></i></div></div>' +
+              '<div class="cmp-val"><b>' + inr(e.reward, true) + '</b><small>' + (i === 0 ? 'Best' : diff > 0 ? '−' + inr(diff, true) : 'Same') + '</small></div></div>';
+          }).join('') +
+          '<p class="subtle small">Estimates from the rates you entered. Monthly caps count what each card has already earned this month.</p>' +
+        '</section>';
+      shineOn(ans);
     };
-    $('#catGrid').addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (!b) return; ui.cat = b.getAttribute('data-cat'); $$('#catGrid .cat').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); paint(); });
+    var setMerchant = function (text) {
+      ui.merchant = text;
+      var hint = $('#catHint');
+      if (text.trim()) {
+        var c = categorise(text);
+        ui.cat = c;
+        hint.textContent = c === 'other' ? '· couldn’t tell, pick one below' : '· matched from “' + text.trim().slice(0, 30) + '”';
+      } else hint.textContent = '';
+      paint();
+    };
+    $('#merchant').addEventListener('input', function (e) { setMerchant(e.target.value); });
+    $$('[data-merchant]').forEach(function (b) { b.addEventListener('click', function () { $('#merchant').value = b.getAttribute('data-merchant'); setMerchant(b.getAttribute('data-merchant')); }); });
+    $('#catGrid').addEventListener('click', function (e) { var b = e.target.closest('[data-cat]'); if (!b) return; ui.cat = b.getAttribute('data-cat'); $('#catHint').textContent = ''; paint(); });
     $('#amt').addEventListener('input', function (e) { var d = e.target.value.replace(/\D/g, '').slice(0, 7); if (d !== e.target.value) e.target.value = d; ui.amount = Math.min(1000000, Number(d) || 0); paint(); });
     $$('[data-amt]').forEach(function (b) { b.addEventListener('click', function () { ui.amount = Number(b.getAttribute('data-amt')); $('#amt').value = ui.amount; paint(); }); });
     paint();
   }
   if (r === 'insights') {
     $$('[data-m]').forEach(function (b) { b.addEventListener('click', function () { ui.month = b.getAttribute('data-m'); render(); }); });
-    $$('[data-compare]').forEach(function (b) { b.addEventListener('click', function () { ui.cat = b.getAttribute('data-compare'); ui.amount = Number(b.getAttribute('data-avg')); go('best'); }); });
+    $$('[data-compare]').forEach(function (b) { b.addEventListener('click', function () { ui.merchant = ''; ui.cat = b.getAttribute('data-compare'); ui.amount = Number(b.getAttribute('data-avg')); go('best'); }); });
   }
   if (r === 'import') mountImport();
   if (r === 'cards') mountCards();

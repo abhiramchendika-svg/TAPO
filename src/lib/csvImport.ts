@@ -196,10 +196,10 @@ export function cleanMerchant(raw: string): string {
 /* ------------------------------------------------------------- categorising */
 
 const KEYWORDS: [Category, RegExp][] = [
-  ['dining', /swiggy|zomato|restaurant|cafe|café|coffee|dominos|domino's|pizza|kfc|mcdonald|burger|starbucks|biryani|dhaba|eatery|bakery|food/i],
+  ['dining', /swiggy|zomato|restaurant|cafe|café|coffee|dominos|domino's|pizza|kfc|mcdonald|burger|starbucks|biryani|dhaba|eatery|bakery|food|dinner|lunch|breakfast|takeaway/i],
   ['groceries', /bigbasket|big basket|blinkit|zepto|dmart|d-mart|grocery|grocer|supermarket|kirana|reliance fresh|more retail|spencer|instamart|jiomart|nature'?s basket|vegetable|milk/i],
   ['fuel', /petrol|diesel|fuel|hpcl|bpcl|iocl|indian oil|bharat petroleum|hindustan petroleum|shell|filling station|\bcng\b/i],
-  ['travel', /irctc|makemytrip|goibibo|cleartrip|yatra|indigo|air india|vistara|akasa|spicejet|airline|airways|uber|\bola\b|rapido|redbus|hotel|oyo|metro|railway|airport|travel/i],
+  ['travel', /irctc|makemytrip|goibibo|cleartrip|yatra|indigo|air india|vistara|akasa|spicejet|airline|airways|uber|\bola\b|rapido|redbus|hotel|oyo|metro|railway|airport|travel|train|flight|\bbus\b|\bcab\b|taxi|\bauto\b/i],
   ['online', /amazon|flipkart|myntra|ajio|meesho|nykaa|tata cliq|snapdeal|lenskart|firstcry|purplle|shopping|ecom/i],
   ['utilities', /electricity|bescom|msedcl|tneb|tata power|adani elec|water bill|gas bill|piped gas|broadband|fibre|fiber|recharge|postpaid|prepaid|airtel|jio|\bvi\b|vodafone|bsnl|dth|tata play|insurance|lic\b|bill ?pay|utility/i],
   ['entertainment', /netflix|prime video|hotstar|jiocinema|sonyliv|zee5|spotify|gaana|youtube|bookmyshow|pvr|inox|cinema|movie|steam|playstation|xbox|gaming/i],
