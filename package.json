@@ -27,6 +27,7 @@
     "react-native-web": "^0.21.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/jest": "30.0.0",
     "@types/react": "~19.3.0",
     "eslint": "^9.39.5",
@@ -46,10 +47,17 @@
     "export:web": "expo export --platform web",
     "build:website": "node website/build.js",
     "build:android": "npx eas-cli@latest build --platform android --profile preview",
-    "doctor": "npx expo-doctor"
+    "doctor": "npx expo-doctor",
+    "build:web": "node scripts/build-web.mjs",
+    "build:site": "node site/build.mjs",
+    "test:e2e": "playwright test"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/e2e/"
+    ]
   },
   "private": true
 }

@@ -61,7 +61,7 @@ function RootStack({ signedIn }: { signedIn: boolean }) {
 }
 
 function Shell() {
-  const { ready, session } = useAuth();
+  const { ready, session, touch } = useAuth();
   const [fontsLoaded, fontError] = useFonts(FONT_FILES);
   // If fonts fail to load, carry on with system fonts rather than blocking the app.
   if (!ready || (!fontsLoaded && !fontError)) return <Loading />;
@@ -72,8 +72,18 @@ function Shell() {
       userId={session?.userId ?? null}
       adoptLegacy={session?.adoptLegacy}
       defaultName={session?.name}
+      cryptoKey={session?.key}
     >
-      <RootStack signedIn={!!session} />
+      {/* Any touch counts as activity for the inactivity lock. */}
+      <View
+        style={{ flex: 1 }}
+        onStartShouldSetResponderCapture={() => {
+          touch();
+          return false;
+        }}
+      >
+        <RootStack signedIn={!!session} />
+      </View>
     </WalletProvider>
   );
 }

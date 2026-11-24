@@ -16,7 +16,7 @@ type Mode = 'signin' | 'signup';
  * on each launch (sessions don't survive a restart) and after signing out.
  */
 export default function SignInScreen() {
-  const { signIn, signUp, removeAccount, accountCount } = useAuth();
+  const { signIn, signUp, removeAccount, accountCount, lockedForIdle } = useAuth();
   const [showIntro, setShowIntro] = useState(true);
   const [mode, setMode] = useState<Mode>(accountCount > 0 ? 'signin' : 'signup');
   const [name, setName] = useState('');
@@ -82,7 +82,9 @@ export default function SignInScreen() {
           {mode === 'signup' ? 'Create your account' : 'Welcome back'}
         </Text>
         <Text style={[type.body, { color: colors.textMuted, marginTop: space.sm, marginBottom: space.xl }]}>
-          {mode === 'signup'
+          {lockedForIdle && mode === 'signin'
+            ? 'TAPO locked after 10 minutes without activity. Sign in again to continue.'
+            : mode === 'signup'
             ? 'Your account keeps your cards and spending private on this device.'
             : 'Sign in to see your cards and rewards.'}
         </Text>
@@ -209,9 +211,9 @@ export default function SignInScreen() {
         ) : null}
 
         <View style={{ marginTop: space.xl }}>
-          <Notice title="Signed out on every restart" icon="lock">
-            For your security, TAPO signs you out whenever the app restarts or the page reloads. Your account and data stay
-            on this device only; nothing is sent to a server.
+          <Notice title="Encrypted on this device" icon="lock">
+            Your wallet is encrypted with a key made from your password, so it can only be opened by signing in. TAPO locks
+            after 10 minutes without activity. Nothing is sent to a server.
           </Notice>
         </View>
       </Screen>

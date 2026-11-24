@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import type { AESEncryptionKey } from 'expo-crypto';
+
 import { walletKeyFor } from './auth';
+import { isEnvelope, openJson, sealJson } from './vault';
 import { maskLongNumbers, type ImportedRow } from './csvImport';
 import { makeId } from './format';
 import { buildDemoData } from './sampleData';
@@ -157,6 +160,7 @@ export function WalletProvider({
   userId = null,
   adoptLegacy = false,
   defaultName,
+  cryptoKey,
 }: {
   children: ReactNode;
   userId?: string | null;
@@ -164,23 +168,41 @@ export function WalletProvider({
   adoptLegacy?: boolean;
   /** Used as the display name for a brand-new account. */
   defaultName?: string;
+  /** AES-256 key derived from the account password. The wallet is only ever written encrypted. */
+  cryptoKey?: AESEncryptionKey;
 }) {
   const key = userId ? walletKeyFor(userId) : null;
+  const aad = userId ? `tapo-wallet:${userId}` : '';
   const [ready, setReady] = useState(!key);
   const [data, setData] = useState<WalletData>(() => buildDemoData());
+  // If stored data exists but can't be decrypted, never overwrite it.
+  const [writeBlocked, setWriteBlocked] = useState(false);
 
   useEffect(() => {
-    if (!key) return;
+    if (!key || !cryptoKey) return;
     let cancelled = false;
     (async () => {
       try {
-        let stored = await AsyncStorage.getItem(key);
-        if (!stored && adoptLegacy) {
-          stored = (await AsyncStorage.getItem(STORAGE_KEY)) ?? (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
-          // The data now belongs to this account; don't leave an unowned copy behind.
-          if (stored) await AsyncStorage.multiRemove([STORAGE_KEY, LEGACY_STORAGE_KEY]);
+        let raw = await AsyncStorage.getItem(key);
+        if (!raw && adoptLegacy) {
+          raw = (await AsyncStorage.getItem(STORAGE_KEY)) ?? (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
+          // The data now belongs to this account (and is re-saved encrypted); remove the plaintext copy.
+          if (raw) await AsyncStorage.multiRemove([STORAGE_KEY, LEGACY_STORAGE_KEY]);
         }
-        let parsed = stored ? sanitize(JSON.parse(stored)) : null;
+        let parsed: WalletData | null = null;
+        if (raw) {
+          const outer: unknown = JSON.parse(raw);
+          if (isEnvelope(outer)) {
+            try {
+              parsed = sanitize(await openJson(outer, cryptoKey, aad));
+            } catch {
+              if (!cancelled) setWriteBlocked(true);
+            }
+          } else {
+            // Saved before encryption existed: read it once; the save effect re-writes it encrypted.
+            parsed = sanitize(outer);
+          }
+        }
         if (!parsed) parsed = buildDemoData();
         if (!parsed.profile && defaultName && !validateDisplayName(defaultName)) parsed = { ...parsed, profile: { displayName: defaultName } };
         if (!cancelled) setData(parsed);
@@ -198,9 +220,17 @@ export function WalletProvider({
   }, [key]);
 
   useEffect(() => {
-    if (!ready || !key) return;
-    AsyncStorage.setItem(key, JSON.stringify(data)).catch(() => {});
-  }, [data, ready, key]);
+    if (!ready || !key || !cryptoKey || writeBlocked) return;
+    let stale = false;
+    sealJson(data, cryptoKey, aad)
+      .then((sealed) => {
+        if (!stale) return AsyncStorage.setItem(key, sealed);
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [data, ready, key, cryptoKey, aad, writeBlocked]);
 
   const getCard = useCallback((id: string) => data.cards.find((c) => c.id === id), [data.cards]);
 

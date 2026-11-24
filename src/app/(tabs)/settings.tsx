@@ -209,7 +209,7 @@ function AccountSection() {
         </Text>
       </View>
       <Text style={type.caption}>
-        Your account and data are stored only on this device. TAPO signs you out every time the app restarts.
+        Your account and encrypted wallet are stored only on this device. TAPO locks after 10 minutes without activity.
       </Text>
       <Button label="Sign out" icon="lock" variant="secondary" onPress={signOut} />
       {armed ? (
