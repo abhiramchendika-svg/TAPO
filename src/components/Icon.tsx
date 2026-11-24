@@ -286,12 +286,13 @@ export const CATEGORY_ICON: Record<Category, IconName> = {
 
 /** Deep tint + light foreground per category for the dark theme (foreground ≥ 4.5:1 on tint). */
 export const CATEGORY_TINT: Record<Category, { bg: string; fg: string }> = {
-  dining: { bg: '#3A2220', fg: '#FFB4A2' },
-  groceries: { bg: '#17301F', fg: '#8FE0AE' },
-  fuel: { bg: '#33270F', fg: '#F5C66B' },
-  travel: { bg: '#172540', fg: '#9EC2FF' },
-  online: { bg: '#2A1F45', fg: '#C7AEFF' },
-  utilities: { bg: '#2F2A10', fg: '#F0D86A' },
-  entertainment: { bg: '#3A1A2E', fg: '#FF9FD0' },
-  other: { bg: '#232838', fg: '#C2C9D8' },
+  // Muted, warm category tones (no purple). Foregrounds meet 4.5:1+ on their backgrounds.
+  dining: { bg: '#2A1A15', fg: '#E7A58F' },
+  groceries: { bg: '#16211A', fg: '#9BCBA6' },
+  fuel: { bg: '#2A2114', fg: '#E2B56E' },
+  travel: { bg: '#151D27', fg: '#9DB7D3' },
+  online: { bg: '#13221F', fg: '#86C3BC' },
+  utilities: { bg: '#252117', fg: '#D9C79A' },
+  entertainment: { bg: '#2A161C', fg: '#E39AAE' },
+  other: { bg: '#1E1E21', fg: '#B4B2AC' },
 };

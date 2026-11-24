@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  Animated,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
-import { colors, focusRing, fonts, isFocused, radius, resolveFont, shadow, space, type } from '../theme';
+import { colors, controlRadius, focusRing, fonts, isFocused, motion, radius, resolveFont, shadow, space, type } from '../theme';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
@@ -118,6 +119,7 @@ export function Button({
         styles.button,
         sm && styles.buttonSm,
         { backgroundColor: state.pressed ? v.pressed : v.bg, borderColor: v.border },
+        state.pressed && !disabled && { transform: [{ scale: 0.975 }] },
         disabled && { opacity: 0.45 },
         isFocused(state) && focusRing,
         style,
@@ -177,7 +179,10 @@ export function IconButton({
   );
 }
 
-/** Pill segmented control, e.g. GALLERY | LIST. */
+/**
+ * Segmented control, e.g. Gallery | Stack | List. The selection thumb springs between options
+ * (native driver); the label colour changes immediately so the response never waits on motion.
+ */
 export function Segmented<T extends string>({
   options,
   value,
@@ -189,20 +194,53 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
   label: string;
 }) {
+  const [layouts, setLayouts] = useState<Record<string, { x: number; width: number }>>({});
+  const [x] = useState(() => new Animated.Value(0));
+  const [w] = useState(() => new Animated.Value(0));
+  const placedRef = useRef(false);
+  const active = layouts[value];
+  // The thumb exists once the selected option has been measured.
+  const placed = !!active;
+  useEffect(() => {
+    if (!active) return;
+    if (!placedRef.current) {
+      x.setValue(active.x);
+      w.setValue(active.width);
+      placedRef.current = true;
+      return;
+    }
+    Animated.parallel([
+      Animated.spring(x, { toValue: active.x, ...motion.spring, useNativeDriver: false }),
+      Animated.spring(w, { toValue: active.width, ...motion.spring, useNativeDriver: false }),
+    ]).start();
+  }, [active, x, w]);
+
   return (
     <View style={styles.segmented} accessibilityRole="tablist" accessibilityLabel={label}>
+      {placed ? <Animated.View pointerEvents="none" style={[styles.segmentThumb, { left: x, width: w }]} /> : null}
       {options.map((o) => {
-        const active = o.value === value;
+        const isActive = o.value === value;
         return (
           <Pressable
             key={o.value}
             onPress={() => onChange(o.value)}
+            onLayout={(e) => {
+              const { x: lx, width } = e.nativeEvent.layout;
+              setLayouts((prev) =>
+                prev[o.value]?.x === lx && prev[o.value]?.width === width ? prev : { ...prev, [o.value]: { x: lx, width } },
+              );
+            }}
             accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
+            accessibilityState={{ selected: isActive }}
             accessibilityLabel={o.label}
-            style={(state) => [styles.segment, active && styles.segmentActive, isFocused(state) && focusRing]}
+            style={(state) => [
+              styles.segment,
+              !placed && isActive && styles.segmentActive,
+              state.pressed && { transform: [{ scale: 0.97 }] },
+              isFocused(state) && focusRing,
+            ]}
           >
-            <Text style={[styles.segmentText, active && { color: colors.onPrimary }]}>{o.label}</Text>
+            <Text style={[styles.segmentText, isActive && { color: colors.onPrimary }]}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -291,7 +329,7 @@ export function Field({
           }}
           accessibilityLabel={label}
           accessibilityHint={error ?? hint}
-          placeholderTextColor="#8A93A8"
+          placeholderTextColor={colors.textSubtle}
           selectionColor={colors.primary}
           style={styles.input}
           autoCorrect={false}
@@ -403,14 +441,14 @@ const styles = StyleSheet.create({
   button: {
     minHeight: 52,
     paddingHorizontal: space.xl - 4,
-    borderRadius: radius.pill,
+    borderRadius: controlRadius,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: space.sm,
   },
-  buttonSm: { minHeight: 44, paddingHorizontal: space.lg },
+  buttonSm: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: 10 },
   // Title Case ("Reset Demo Data") — labels are written in sentence case and capitalised here.
   buttonText: {
     fontFamily: fonts.body,
@@ -430,19 +468,27 @@ const styles = StyleSheet.create({
   segmented: {
     flexDirection: 'row',
     padding: 3,
-    borderRadius: radius.pill,
+    borderRadius: controlRadius,
     borderWidth: 1,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surfaceSunken,
   },
-  segment: { minHeight: 38, paddingHorizontal: space.md + 2, borderRadius: radius.pill, justifyContent: 'center' },
+  segment: { minHeight: 38, paddingHorizontal: space.md + 2, borderRadius: controlRadius - 3, justifyContent: 'center', zIndex: 1 },
+  segmentThumb: {
+    position: 'absolute',
+    top: 3,
+    bottom: 3,
+    borderRadius: controlRadius - 3,
+    backgroundColor: colors.primary,
+    boxShadow: '0px 1px 0px rgba(255,255,255,0.35) inset, 0px 4px 12px rgba(0,0,0,0.35)',
+  },
   segmentActive: { backgroundColor: colors.primary },
   segmentText: { fontFamily: fonts.body, fontSize: 14, fontWeight: '700', color: colors.textMuted },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   chip: {
     minHeight: 44,
     paddingHorizontal: space.md + 2,
-    borderRadius: radius.pill,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
@@ -458,7 +504,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
     borderWidth: 1,
     borderColor: colors.borderStrong,
-    borderRadius: radius.md + 2,
+    borderRadius: controlRadius,
     backgroundColor: colors.surfaceSunken,
     paddingHorizontal: space.md,
   },

@@ -17,7 +17,7 @@ export const SAMPLE_CARDS: Card[] = [
       { id: 'r1', category: 'groceries', ratePercent: 5, monthlyCapRupees: 500 },
       { id: 'r2', category: 'utilities', ratePercent: 2 },
     ],
-    color: '#1E3A8A',
+    color: '#2B4570',
     isSample: true,
   },
   {
@@ -32,7 +32,7 @@ export const SAMPLE_CARDS: Card[] = [
       { id: 'r3', category: 'travel', ratePercent: 6, monthlyCapRupees: 1500 },
       { id: 'r4', category: 'dining', ratePercent: 3 },
     ],
-    color: '#115E59',
+    color: '#1F5A55',
     isSample: true,
   },
   {
@@ -47,7 +47,7 @@ export const SAMPLE_CARDS: Card[] = [
       { id: 'r5', category: 'online', ratePercent: 7, monthlyCapRupees: 300 },
       { id: 'r6', category: 'entertainment', ratePercent: 4 },
     ],
-    color: '#6B21A8',
+    color: '#6E2A33',
     isSample: true,
   },
   {
@@ -59,7 +59,7 @@ export const SAMPLE_CARDS: Card[] = [
     last4: '0004',
     baseRatePercent: 0.25,
     rules: [{ id: 'r7', category: 'fuel', ratePercent: 2.5, monthlyCapRupees: 200 }],
-    color: '#334155',
+    color: '#3B3F46',
     isSample: true,
   },
 ];
@@ -103,4 +103,4 @@ export function buildDemoData(now = new Date()): WalletData {
   };
 }
 
-export const CARD_COLORS = ['#1E3A8A', '#115E59', '#6B21A8', '#334155', '#9F1239', '#7C2D12'];
+export const CARD_COLORS = ['#2B4570', '#1F5A55', '#6E2A33', '#3B3F46', '#7A5A2E', '#2E4A36'];

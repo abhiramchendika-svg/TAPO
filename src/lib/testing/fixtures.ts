@@ -11,7 +11,7 @@ export function card(partial: Partial<Card> & Pick<Card, 'id' | 'nickname'>): Ca
     last4: '0001',
     baseRatePercent: 1,
     rules: [],
-    color: '#1E3A8A',
+    color: '#2B4570',
     isSample: true,
     ...partial,
   };

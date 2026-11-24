@@ -1,51 +1,66 @@
 import type { TextStyle, ViewStyle } from 'react-native';
 
 /**
- * "Gallery at night" tokens: a deep navy scene, warm off-white gallery walls,
- * and spotlight accents. Text/background pairs meet WCAG AA (4.5:1) or better;
+ * "Obsidian & Champagne" tokens, shared with the website (site/styles.css).
+ * Warm neutral graphite surfaces, porcelain text and one accent: champagne, used for primary
+ * actions and the brand. Semantic colours are separate: sage = money earned, ochre = caps and
+ * missed rewards, coral = errors. No purple anywhere. Text pairs meet WCAG AA (4.5:1) or better;
  * ratios noted are against `surface` unless stated.
  */
 export const colors = {
-  bg: '#0B0E18', // the dark scene
-  surface: '#151A29',
-  surfaceAlt: '#1D2335',
-  surfaceSunken: '#10141F',
-  border: '#272E43',
-  borderStrong: '#39415A',
+  bg: '#0A0A0B', // obsidian
+  surface: '#141416',
+  surfaceAlt: '#1C1C1F',
+  surfaceSunken: '#0F0F11',
+  border: '#26262A',
+  borderStrong: '#36363B',
 
-  ink: '#F4F2EC', // headings, ~15:1
-  text: '#E6E4DE', // body, ~13:1
-  textMuted: '#B3BACB', // ~8.5:1
-  textSubtle: '#939CB2', // ~6:1
+  ink: '#F2EFE9', // porcelain, ~16:1
+  text: '#E2DED7', // ~13:1
+  textMuted: '#ABA8A1', // ~7.6:1
+  textSubtle: '#8E8B85', // ~5.4:1
 
-  primary: '#ECE9E2', // off-white "gallery wall" — used for primary fills
-  primaryPressed: '#D6D2C8',
-  primarySoft: '#242B40',
-  onPrimary: '#0B0E18', // ~16:1 on primary
+  primary: '#D8BF8F', // champagne — the one accent
+  primaryPressed: '#C4AB7B',
+  primarySoft: '#2A2418',
+  onPrimary: '#17130C', // ~10.8:1 on primary
 
-  /** Gallery wall (light panels inside the dark scene). */
-  wall: '#ECE9E2',
-  wallShade: '#D9D5CB',
-  onWall: '#14171F', // ~15:1 on wall
-  onWallMuted: '#4A5060', // ~6.6:1 on wall
+  /** Light panels inside the dark scene (porcelain). */
+  wall: '#F2EFE9',
+  wallShade: '#E2DED7',
+  onWall: '#141416', // ~16:1 on wall
+  onWallMuted: '#55524C', // ~7:1 on wall
   spotlight: '#FFF8E8',
 
-  hero: '#ECE9E2',
-  heroText: '#0B0E18',
-  heroMuted: '#4A5060',
+  hero: '#F2EFE9',
+  heroText: '#0A0A0B',
+  heroMuted: '#55524C',
 
-  success: '#6FD9A4', // ~9.8:1
-  successBg: '#132A22',
-  warningText: '#F2C46D', // ~9:1 on warningBg
-  warningBg: '#2A2416',
-  warningBorder: '#4D3F1D',
-  danger: '#FF9B92', // ~8:1
-  dangerBg: '#2B1719',
-  dangerBorder: '#5A2B2F',
+  success: '#8FCBA6', // sage: money earned, ~9:1
+  successBg: '#13201A',
+  warningText: '#E3AE6B', // ochre: caps, missed rewards, ~8:1 on warningBg
+  warningBg: '#241B10',
+  warningBorder: '#4A3820',
+  danger: '#EE8E80', // coral, ~7.5:1
+  dangerBg: '#2A1614',
+  dangerBorder: '#5A2B27',
 };
+
+/** Motion tokens (ms) and spring settings shared by app components. */
+export const motion = {
+  instant: 100,
+  micro: 160,
+  standard: 280,
+  layout: 420,
+  cinematic: 700,
+  spring: { damping: 18, stiffness: 220, mass: 0.9 },
+  springSoft: { damping: 22, stiffness: 160, mass: 1 },
+} as const;
 
 export const space = { xxs: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 };
 export const radius = { sm: 8, md: 12, lg: 16, xl: 20, xxl: 28, pill: 999 };
+/** Buttons and inputs are rounded rectangles, not pills. */
+export const controlRadius = 12;
 
 /**
  * Font roles. These are tokens, resolved to a concrete font file per weight
@@ -99,8 +114,9 @@ export function resolveFont(family: string | undefined, weight: TextStyle['fontW
   if (role === 'mono') {
     return w >= 700 ? 'JetBrainsMono_700Bold' : w <= 300 ? 'JetBrainsMono_300Light' : 'JetBrainsMono_500Medium';
   }
-  // Satoshi has Light, Regular, Medium, Bold and Black.
-  if (role === 'display') return w >= 800 ? 'Satoshi_900Black' : 'Satoshi_700Bold';
+  // Satoshi has Light, Regular, Medium, Bold and Black. Headings use Bold; Black is reserved
+  // for explicit weight-900 requests.
+  if (role === 'display') return w >= 900 ? 'Satoshi_900Black' : 'Satoshi_700Bold';
   if (w >= 800) return 'Satoshi_900Black';
   if (w >= 600) return 'Satoshi_700Bold';
   if (w >= 500) return 'Satoshi_500Medium';
@@ -124,36 +140,36 @@ export function isFontRole(family: unknown): family is FontRole {
 }
 
 export const type = {
-  /** Page headline: Satoshi Black, tight tracking. */
+  /** Page headline: Satoshi Bold, tight tracking (Apple-like weight, not Black). */
   display: {
     fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '900' as const,
+    lineHeight: 37,
+    fontWeight: '700' as const,
     color: colors.ink,
     fontFamily: fonts.display,
-    letterSpacing: -0.8,
+    letterSpacing: -1,
   },
   title: {
     fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '900' as const,
+    lineHeight: 29,
+    fontWeight: '700' as const,
     color: colors.ink,
     fontFamily: fonts.display,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
-  h2: { fontSize: 18, fontWeight: '700' as const, color: colors.ink, letterSpacing: -0.2 },
-  body: { fontSize: 16, color: colors.text, lineHeight: 22 },
+  h2: { fontSize: 18, fontWeight: '700' as const, color: colors.ink, letterSpacing: -0.3 },
+  body: { fontSize: 16, color: colors.text, lineHeight: 23 },
   small: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
-  caption: { fontSize: 12, color: colors.textSubtle, lineHeight: 16, fontWeight: '600' as const },
+  caption: { fontSize: 12, color: colors.textSubtle, lineHeight: 16, fontWeight: '500' as const },
   label: { fontSize: 14, fontWeight: '600' as const, color: colors.text },
   /**
-   * Small label/kicker in Satoshi, Title Case ("Sample Ledger", "Good Morning").
-   * (Named `mono` for history; it's no longer monospace.)
+   * Small section label ("Good Morning", "Recent Activity"): Satoshi Medium, Title Case.
+   * (Named `mono` for history; it's not monospace.)
    */
   mono: {
     fontFamily: fonts.body,
     fontSize: 13,
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
     textTransform: 'capitalize' as const,
     color: colors.textSubtle,
     fontWeight: '500' as const,
@@ -163,7 +179,7 @@ export const type = {
     fontSize: 13,
     fontWeight: '500' as const,
     color: colors.textSubtle,
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
     textTransform: 'capitalize' as const,
   },
 };

@@ -15,6 +15,14 @@ const STORAGE_KEY = 'tapo/demo-data/v1';
 /** Key used before the app was renamed to TAPO; read once so existing data carries over. */
 const LEGACY_STORAGE_KEY = 'rupee-wallet/demo-data/v1';
 
+/** Card colours from earlier versions mapped to the current palette (the old set included a purple). */
+const CARD_COLOR_UPDATES: Record<string, string> = {
+  '#1E3A8A': '#2B4570',
+  '#115E59': '#1F5A55',
+  '#6B21A8': '#6E2A33',
+  '#334155': '#3B3F46',
+};
+
 /**
  * Persisted fields are limited to display data (nickname, sample issuer,
  * network, type, last four digits, reward rules) and sample transactions.
@@ -35,7 +43,7 @@ function sanitize(raw: unknown): WalletData | null {
       last4: c.last4,
       baseRatePercent: c.baseRatePercent,
       rules: Array.isArray(c.rules) ? c.rules : [],
-      color: c.color,
+      color: CARD_COLOR_UPDATES[c.color] ?? c.color,
       isSample: !!c.isSample,
     }));
   const name = typeof data.profile?.displayName === 'string' ? data.profile.displayName.trim() : '';
