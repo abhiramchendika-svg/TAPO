@@ -432,17 +432,31 @@ textarea.input { min-height: 120px; padding: 14px; font: 13px/1.5 var(--mono); r
 .stage3d .glow { position: absolute; left: 15%; right: 15%; bottom: 2%; height: 18%; background: radial-gradient(closest-side, rgba(111,217,164,.25), transparent); filter: blur(14px); }
 
 /* ---------- wallet: stack view ---------- */
-.stackview { display: grid; gap: 30px; max-width: 520px; margin: 8px auto 34px; perspective: 1000px; }
-.sv-item { display: grid; gap: 12px; transform-origin: 50% 0; transition: transform .7s var(--ease), filter .7s; }
-.sv-item.below { transform: rotateX(18deg) translateY(36px) scale(.96); filter: brightness(.75); }
-.sv-info { padding: 16px 18px; display: grid; gap: 14px; }
+/* Each card is a compact row: a 230px card on the left, its month at a glance on the right. */
+.stackview { display: grid; gap: 14px; max-width: 880px; margin: 4px auto 30px; perspective: 1200px; }
+.sv-item { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: center; padding: 16px; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); transform-origin: 50% 0; transition: transform .6s var(--ease), opacity .6s, border-color .2s; }
+.sv-item:hover { border-color: #39415c; }
+.sv-item.below { transform: translateY(26px) rotateX(10deg); opacity: .55; }
+.sv-item .cardface { box-shadow: 0 18px 34px -20px color-mix(in srgb, var(--c) 85%, transparent), 0 0 0 1px rgba(255,255,255,.09) inset; }
+.sv-item .sv-info { padding: 0; background: none; border: 0; border-radius: 0; display: grid; gap: 16px; min-width: 0; }
+.sv-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sv-head b { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .sv-stats div { display: grid; gap: 2px; min-width: 0; }
-.sv-stats small { color: var(--muted); font-size: 12.5px; }
-.sv-stats b { font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.sv-acts { display: flex; gap: 10px; }
-.sv-acts .btn { flex: 1; }
-.view-toggle { margin-bottom: 4px; }
+.sv-stats small { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sv-stats b { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sv-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.sv-acts .btn { min-height: 36px; }
+.view-toggle { margin-bottom: 0; }
+.head-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end; min-width: 0; }
+.screen-head > div:first-child { min-width: 0; }
+@media (max-width: 640px) {
+  .sv-item { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .sv-item .cardface { max-width: 300px; margin-inline: auto; }
+  .sv-stats b { font-size: 16px; }
+  .sv-acts .btn { flex: 1; }
+  .head-actions { justify-content: flex-start; }
+}
 
 /* ---------- product: three phones rising ---------- */
 .rise { display: flex; justify-content: center; align-items: flex-end; gap: clamp(14px, 3vw, 40px); padding-block: 30px 10px; }
@@ -1279,12 +1293,12 @@ SCREENS.wallet = function () {
   var toggle = S.cards.length ? '<div class="seg-switch view-toggle" role="group" aria-label="Card view"><button type="button" data-view="carousel" aria-pressed="' + (ui.view === 'carousel') + '">Carousel</button><button type="button" data-view="stack" aria-pressed="' + (ui.view === 'stack') + '">Stack</button></div>' : '';
   var stackHtml = '<div class="stackview" id="stackview">' + S.cards.map(function (c) {
     var s = cardStats(c);
-    return '<article class="sv-item">' + cardFace(c) + '<div class="panel sv-info"><div class="sv-stats"><div><small>Spent this month</small><b>' + inr(s.spend) + '</b></div><div><small>Rewards earned</small><b style="color:var(--green)">+' + inr(s.reward, true) + '</b></div>' +
+    return '<article class="sv-item">' + cardFace(c) + '<div class="sv-info"><div class="sv-head"><b>' + esc(c.name) + '</b>' + (c.example ? '<span class="tag">Example</span>' : '') + '<span class="subtle small" style="margin-left:auto;white-space:nowrap">' + esc(bestLine(c)) + '</span></div><div class="sv-stats"><div><small>Spent this month</small><b>' + inr(s.spend) + '</b></div><div><small>Rewards earned</small><b style="color:var(--green)">+' + inr(s.reward, true) + '</b></div>' +
       '<div><small>' + (s.capCat ? CAT[s.capCat].label + ' cap left' : 'Monthly cap') + '</small><b style="color:var(--amber)">' + (s.capCat ? inr(s.capLeft) : 'None') + '</b></div></div>' +
       '<div class="sv-acts"><a class="btn btn-ghost btn-sm" href="#cards" data-viewcard="' + esc(c.id) + '">View card</a>' +
       (s.bestCat ? '<a class="btn btn-primary btn-sm" href="#best" data-bestcat="' + s.bestCat + '">Best for ' + CAT[s.bestCat].label + '</a>' : '<a class="btn btn-primary btn-sm" href="#best">Compare cards</a>') + '</div></div></article>';
   }).join('') + '</div>';
-  return head(greeting(), 'Your wallet', '<div style="display:flex;gap:10px;flex-wrap:wrap">' + toggle + '<a class="btn btn-ghost btn-sm" href="#cards">' + ico('plus', 16) + 'Add card</a></div>') +
+  return head(greeting(), 'Your wallet', '<div class="head-actions">' + toggle + '<a class="btn btn-ghost btn-sm" href="#cards">' + ico('plus', 16) + 'Add card</a></div>') +
     (S.cards.length && ui.view === 'stack' ? stackHtml : S.cards.length ? '<div class="carousel" id="carousel">' + S.cards.map(function (c, i) { return '<div class="slot" data-i="' + i + '">' + cardFace(c) + '</div>'; }).join('') + '<div class="slot"><a class="add-slot" href="#cards">' + ico('plus', 18) + ' Add a card</a></div></div><div class="active-card" id="activeCard"></div>' :
       '<div class="panel empty"><h2 style="color:var(--ink)">No cards yet</h2><p>Add your first card to get recommendations.</p><a class="btn btn-primary" href="#cards">Add a card</a></div>') +
     '<div class="grid3"><div class="panel stat"><small>Spent this month</small><b data-count="' + ins.total + '">' + inr(ins.total) + '</b><span class="hint">' + ins.count + ' purchases</span></div>' +
