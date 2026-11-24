@@ -120,6 +120,8 @@ for (const cat of DECIDE_CATS) {
 const CARD_FACES = Object.fromEntries(cards.map((c) => [c.id, cardFace(c)]));
 
 /* ---------- shell ---------- */
+// Styles are inlined into every page (no render-blocking request); styles.css is still written for reference.
+let CSS = '';
 const NAV = [['/', 'Home'], ['/product/', 'Product'], ['/security/', 'Security'], ['/faq/', 'FAQ']];
 function page({ pathName, title, description, body, data = '' }) {
   const url = SITE_URL + pathName;
@@ -145,7 +147,7 @@ ${SITE_URL ? `<meta property="og:url" content="${url}">\n<meta property="og:imag
 <link rel="icon" href="/favicon.png">
 <link rel="preload" href="/fonts/Satoshi-Regular.otf" as="font" type="font/otf" crossorigin>
 <link rel="preload" href="/fonts/Satoshi-Bold.otf" as="font" type="font/otf" crossorigin>
-<link rel="stylesheet" href="/styles.css">
+<style>${CSS}</style>
 <script>/* adaptive quality: decided before first paint */(function(){try{var n=navigator,m=window.matchMedia,low=(n.connection&&n.connection.saveData)||(n.deviceMemory&&n.deviceMemory<=4)||(n.hardwareConcurrency&&n.hardwareConcurrency<=4)||(m&&m('(prefers-reduced-transparency: reduce)').matches);if(low)document.documentElement.setAttribute('data-quality','low')}catch(e){}})()</script>
 </head>
 <body>
@@ -157,9 +159,9 @@ ${SITE_URL ? `<meta property="og:url" content="${url}">\n<meta property="og:imag
 <main id="main">${body}</main>
 <footer class="sfoot"><div class="wrap"><div class="fgrid">
 <div><a class="brand" href="/">${LOGO}<b>TAPO</b></a><p style="margin-top:14px;max-width:34ch">The right card for every purchase. Made for India.</p></div>
-<div><h4>Product</h4><ul><li><a href="/product/">How it works</a></li><li><a href="/app/">Open the web app</a></li><li><a href="/app/">Create an account</a></li></ul></div>
-<div><h4>Trust</h4><ul><li><a href="/security/">Security</a></li><li><a href="/security/#keep">What we store</a></li><li><a href="/faq/">FAQ</a></li></ul></div>
-<div><h4>Apps</h4><ul><li>Web · available now</li><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div></div>
+<div><h2 class="fh">Product</h2><ul><li><a href="/product/">How it works</a></li><li><a href="/app/">Open the web app</a></li><li><a href="/app/">Create an account</a></li></ul></div>
+<div><h2 class="fh">Trust</h2><ul><li><a href="/security/">Security</a></li><li><a href="/security/#keep">What we store</a></li><li><a href="/faq/">FAQ</a></li></ul></div>
+<div><h2 class="fh">Apps</h2><ul><li>Web · available now</li><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div></div>
 <div class="fine"><p>TAPO is not a bank, card issuer or payment service and does not process payments. TAPO is not affiliated with, endorsed by or partnered with any bank, card network or payment provider. Example cards and figures on this site are fictional and calculated with TAPO's own reward engine. Reward figures are estimates based on the rates you enter and are not financial advice.</p><p>© ${NOW.getFullYear()} TAPO</p></div></div></footer>
 ${data}
 <script src="/site.js" defer></script>
@@ -246,13 +248,13 @@ const check = ico('check', 18, '#8FCBA6', 2.4);
 const security = `
 <section class="sec first"><div class="wrap"><p class="kicker">SECURITY &amp; PRIVACY</p><h1 class="h2" style="font-size:clamp(40px,6vw,80px);margin-top:18px;max-width:15ch">We can't leak what we never collect.</h1><p class="lede" style="margin-top:22px">TAPO is designed so sensitive card data has nowhere to go, and the little it does keep is encrypted with a key only your password can create.</p></div></section>
 <section class="sec" id="keep"><div class="wrap"><div class="keep rv">
-<div><h3>What TAPO keeps</h3><ul>
+<div><h2 class="keep-h">What TAPO keeps</h2><ul>
 <li><span>Your name and email</span><span>to sign you in</span></li>
 <li><span>Card nicknames and last four digits</span><span>as labels</span></li>
 <li><span>Reward rates and monthly caps</span><span>you enter them</span></li>
 <li><span>Date, merchant and amount of purchases</span><span>from statements you import</span></li>
 <li><span>A salted hash of your password</span><span>never the password</span></li></ul></div>
-<div class="never"><h3>What TAPO never asks for</h3><ul>
+<div class="never"><h2 class="keep-h">What TAPO never asks for</h2><ul>
 <li><span>Full card number</span><span>no field exists</span></li><li><span>CVV or PIN</span><span>no field exists</span></li><li><span>OTP or UPI PIN</span><span>no field exists</span></li><li><span>Net-banking login</span><span>no bank connection</span></li><li><span>Payment tokens</span><span>TAPO never pays</span></li></ul></div>
 </div></div></section>
 <section class="sec"><div class="wrap"><div class="split-head"><div><p class="kicker">HOW YOUR WALLET IS LOCKED</p><h2 class="h2" style="margin-top:16px">Four steps, all on your device.</h2></div><p class="lede">Nothing in this chain leaves your phone or browser. There is no TAPO server to breach.</p></div>
@@ -291,6 +293,10 @@ const notFound = `<section class="sec first"><div class="wrap"><p class="kicker"
 /* ---------- write ---------- */
 fs.rmSync(path.join(out, 'product'), { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
+const fontFaces = [['Regular', 400], ['Medium', 500], ['Bold', 700]]
+  .map(([n, w]) => `@font-face{font-family:"Satoshi";font-weight:${w};font-style:normal;font-display:swap;src:url(/fonts/Satoshi-${n}.otf) format("opentype")}`)
+  .join('\n');
+CSS = buildCss();
 const decideData = `<script type="application/json" id="decide-data">${JSON.stringify({ table: DECIDE, faces: CARD_FACES, labels: CATEGORY_LABELS }).replace(/</g, '\\u003c')}</script>`;
 const PAGES = [
   { pathName: '/', file: 'index.html', title: 'Home', description: 'TAPO tells you which of your cards earns the most for every purchase, and shows the rewards you missed. Free, encrypted, built for India.', body: home, data: decideData },
@@ -304,17 +310,14 @@ for (const p of PAGES) {
   fs.writeFileSync(file, page(p));
 }
 fs.writeFileSync(path.join(out, '404.html'), page({ pathName: '/404', title: 'Page not found', description: 'This page does not exist.', body: notFound }));
-const fontFaces = [['Regular', 400], ['Medium', 500], ['Bold', 700]]
-  .map(([n, w]) => `@font-face{font-family:"Satoshi";font-weight:${w};font-style:normal;font-display:swap;src:url(/fonts/Satoshi-${n}.otf) format("opentype")}`)
-  .join('\n') +
-  '\n@font-face{font-family:"JetBrains Mono";font-weight:500;font-style:normal;font-display:swap;src:url(/fonts/JetBrainsMono-Medium.ttf) format("truetype")}';
-// ₹ is missing from Satoshi; the system UI font draws it.
-fs.writeFileSync(path.join(out, 'styles.css'), fontFaces + '\n' + fs.readFileSync(path.join(root, 'site/styles.css'), 'utf8'));
+function buildCss() {
+  // ₹ is missing from Satoshi; the system UI font draws it.
+  return fontFaces + '\n' + fs.readFileSync(path.join(root, 'site/styles.css'), 'utf8');
+}
+fs.writeFileSync(path.join(out, 'styles.css'), CSS);
 fs.copyFileSync(path.join(root, 'site/site.js'), path.join(out, 'site.js'));
 fs.cpSync(path.join(root, 'site/public'), out, { recursive: true });
 fs.rmSync(path.join(out, 'fonts', 'Satoshi-Black.otf'), { force: true });
-// Self-hosted mono for small labels (from the app's own font package; OFL licensed).
-fs.copyFileSync(path.join(root, 'node_modules/@expo-google-fonts/jetbrains-mono/500Medium/JetBrainsMono_500Medium.ttf'), path.join(out, 'fonts', 'JetBrainsMono-Medium.ttf'));
 fs.copyFileSync(path.join(root, 'assets/favicon.png'), path.join(out, 'favicon.png'));
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /app/\n${SITE_URL ? `Sitemap: ${SITE_URL}/sitemap.xml\n` : ''}`);
 if (SITE_URL) {

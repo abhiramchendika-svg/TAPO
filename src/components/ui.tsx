@@ -139,7 +139,7 @@ const buttonVariants: Record<ButtonVariant, { bg: string; pressed: string; fg: s
   danger: { bg: 'transparent', pressed: colors.dangerBg, fg: colors.danger, border: colors.dangerBorder },
   ghost: { bg: 'transparent', pressed: colors.surfaceAlt, fg: colors.ink, border: 'transparent' },
   /** Dark button for use on light "wall" panels. */
-  inverse: { bg: colors.bg, pressed: '#1D2335', fg: colors.primary, border: colors.bg },
+  inverse: { bg: colors.bg, pressed: colors.border, fg: colors.primary, border: colors.bg },
 };
 
 /** Circular icon-only button (≥44pt target). */

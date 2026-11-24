@@ -66,7 +66,7 @@ export type Status = 'sample' | 'estimate' | 'best' | 'unavailable' | 'demo-appr
 const STATUS: Record<Status, { label: string; icon: IconName; fg: string; bg: string; border: string }> = {
   sample: { label: 'Sample record', icon: 'info', fg: colors.textMuted, bg: colors.surfaceAlt, border: colors.borderStrong },
   estimate: { label: 'Estimate', icon: 'spark', fg: colors.ink, bg: colors.primarySoft, border: colors.borderStrong },
-  best: { label: 'Best match', icon: 'check', fg: colors.success, bg: colors.successBg, border: '#1F4A3A' },
+  best: { label: 'Best match', icon: 'check', fg: colors.success, bg: colors.successBg, border: colors.successBorder },
   unavailable: {
     label: 'Not available',
     icon: 'lock',
@@ -79,7 +79,7 @@ const STATUS: Record<Status, { label: string; icon: IconName; fg: string; bg: st
     icon: 'check',
     fg: colors.success,
     bg: colors.successBg,
-    border: '#1F4A3A',
+    border: colors.successBorder,
   },
   'demo-declined': {
     label: 'Declined · simulated',

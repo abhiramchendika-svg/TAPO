@@ -123,7 +123,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
                     key={i}
                     style={[
                       styles.dot,
-                      { backgroundColor: d.green ? colors.success : colors.primary, opacity, transform: [{ translateX }, { translateY }] },
+                      { backgroundColor: d.green ? colors.primary : colors.ink, opacity, transform: [{ translateX }, { translateY }] },
                     ]}
                   />
                 );
@@ -131,13 +131,13 @@ export function Intro({ onDone }: { onDone: () => void }) {
             </Animated.View>
             <Animated.View style={[StyleSheet.absoluteFill, { opacity: mark, transform: [{ scale: markScale }] }]}>
               <Svg width={STAGE} height={STAGE} viewBox="0 0 40 40">
-                <Rect x={1} y={1} width={38} height={38} rx={10.5} fill="none" stroke={colors.primary} strokeWidth={0.8} />
-                <Rect x={8} y={13} width={20} height={8} rx={2.4} fill={colors.primary} />
+                <Rect x={1} y={1} width={38} height={38} rx={10.5} fill="none" stroke={colors.borderStrong} strokeWidth={0.8} />
+                <Rect x={8} y={13} width={20} height={8} rx={2.4} fill={colors.ink} />
                 <Rect x={10.5} y={15.2} width={4} height={3.2} rx={0.8} fill="#D8B96A" />
-                <Rect x={15} y={19} width={6} height={13} rx={2} fill={colors.primary} />
+                <Rect x={15} y={19} width={6} height={13} rx={2} fill={colors.ink} />
                 <Path
                   d="M30 12.5a6 6 0 0 1 0 9M33.5 9.5a10.5 10.5 0 0 1 0 15"
-                  stroke={colors.success}
+                  stroke={colors.primary}
                   strokeWidth={2.2}
                   strokeLinecap="round"
                   fill="none"
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     height: DOT,
     borderRadius: DOT / 2,
   },
-  word: { fontFamily: fonts.display, fontWeight: '900', fontSize: 34, letterSpacing: 11, color: colors.ink, paddingLeft: 11 },
+  word: { fontFamily: fonts.display, fontWeight: '700', fontSize: 32, letterSpacing: 10, color: colors.ink, paddingLeft: 11 },
   tag: { marginTop: 6, fontSize: 14, color: colors.textMuted },
   skip: { position: 'absolute', bottom: 40, alignSelf: 'center', fontSize: 13, color: colors.textSubtle },
 });

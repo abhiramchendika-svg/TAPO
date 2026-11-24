@@ -71,7 +71,7 @@ export default function TransactionsScreen() {
           value={query}
           onChangeText={setQuery}
           placeholder="Search merchant, card or category"
-          placeholderTextColor="#8A93A8"
+          placeholderTextColor={colors.textSubtle}
           selectionColor={colors.primary}
           accessibilityLabel="Search activity"
           autoCorrect={false}

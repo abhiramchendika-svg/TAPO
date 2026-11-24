@@ -38,6 +38,7 @@ export const colors = {
 
   success: '#8FCBA6', // sage: money earned, ~9:1
   successBg: '#13201A',
+  successBorder: '#2C4A39',
   warningText: '#E3AE6B', // ochre: caps, missed rewards, ~8:1 on warningBg
   warningBg: '#241B10',
   warningBorder: '#4A3820',

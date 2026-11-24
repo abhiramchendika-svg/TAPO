@@ -19,17 +19,21 @@ function TabIcon({
   plain?: boolean;
 }) {
   return (
-    <View
-      style={{
-        width: 50,
-        height: 26,
-        borderRadius: radius.pill,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: focused && !plain ? colors.primarySoft : 'transparent',
-      }}
-    >
-      <Icon name={name} color={color} size={21} strokeWidth={focused ? 2.2 : 1.9} />
+    <View style={{ width: 50, height: 26, alignItems: 'center', justifyContent: 'center' }}>
+      {/* Bottom bar: a short champagne rule marks the current tab (not a filled pill). */}
+      {focused && !plain ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: -7,
+            width: 18,
+            height: 2,
+            borderRadius: radius.pill,
+            backgroundColor: colors.primary,
+          }}
+        />
+      ) : null}
+      <Icon name={name} color={color} size={21} strokeWidth={focused ? 2.1 : 1.8} />
     </View>
   );
 }
@@ -49,7 +53,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.ink,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSubtle,
         tabBarPosition: wide ? 'left' : 'bottom',
         tabBarLabelPosition: wide ? 'beside-icon' : 'below-icon',

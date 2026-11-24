@@ -25,7 +25,8 @@
   --coral: #EE8E80;
   /* type */
   --font: "Satoshi", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /* small labels: Satoshi Medium, uppercase, tracked (no extra font download) */
+  --mono: "Satoshi", "Inter", system-ui, sans-serif;
   --t-xs: 12.5px; --t-sm: 14px; --t-md: 16.5px; --t-lg: clamp(18px, 1.6vw, 20px);
   --t-h3: clamp(20px, 1.9vw, 24px); --t-h2: clamp(32px, 4.2vw, 52px); --t-h1: clamp(40px, 5.2vw, 74px);
   /* space + shape */
@@ -75,7 +76,7 @@ main, header, footer { position: relative; z-index: 1; }
 .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
 .sec { padding-block: var(--s9); border-top: 1px solid var(--rule); }
 .sec.first { border-top: 0; }
-.kicker { font: 500 var(--t-xs)/1 var(--mono); color: var(--text-3); letter-spacing: .04em; display: flex; gap: 10px; align-items: center; }
+.kicker { font: 500 var(--t-xs)/1 var(--mono); color: var(--text-3); letter-spacing: .08em; text-transform: uppercase; display: flex; gap: 10px; align-items: center; }
 .kicker b { color: var(--champagne); font-weight: 500; }
 .h2 { font-size: var(--t-h2); line-height: 1.04; letter-spacing: -0.035em; }
 .lede { color: var(--text-2); font-size: var(--t-lg); max-width: 58ch; line-height: 1.55; }
@@ -301,7 +302,7 @@ html[data-quality="low"] .snav.scrolled { background: rgba(10,10,11,.97); -webki
 .keep { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); }
 .keep > div { padding: var(--s5) var(--s5) var(--s5) 0; }
 .keep > div + div { padding-left: var(--s5); border-left: 1px solid var(--rule); }
-.keep h3 { font-size: var(--t-h3); margin-bottom: var(--s4); }
+.keep .keep-h { font-size: var(--t-h3); margin-bottom: var(--s4); }
 .keep ul { list-style: none; margin: 0; padding: 0; }
 .keep li { display: flex; justify-content: space-between; gap: var(--s4); padding: 12px 0; border-bottom: 1px solid var(--rule); color: var(--text-2); }
 .keep li span:last-child { color: var(--text-3); font-size: 13.5px; text-align: right; }
@@ -335,7 +336,7 @@ html[data-quality="low"] .snav.scrolled { background: rgba(10,10,11,.97); -webki
 /* ---------- footer ---------- */
 footer.sfoot { border-top: 1px solid var(--rule); padding-block: var(--s8) var(--s6); color: var(--text-2); font-size: 14.5px; padding-bottom: calc(var(--s6) + env(safe-area-inset-bottom, 0px)); }
 .fgrid { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: var(--s6); }
-.fgrid h4 { margin-bottom: 14px; font: 500 var(--t-xs)/1 var(--mono); letter-spacing: .04em; color: var(--text-3); }
+.fgrid .fh { margin: 0 0 14px; font: 500 var(--t-xs)/1 var(--mono); letter-spacing: .04em; color: var(--text-3); }
 .fgrid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .fgrid a { text-decoration: none; }
 .fgrid a:hover { color: var(--porcelain); }
@@ -387,3 +388,6 @@ footer.sfoot { border-top: 1px solid var(--rule); padding-block: var(--s8) var(-
   :root { --t-md: 17.5px; }
   .wrap { max-width: 1320px; }
 }
+
+/* labels that used the mono role: uppercase, tracked Satoshi */
+.q > span, .answer-k, .step .no, .chapter .no, .rise-cap, .fgrid .fh, .hero-facts dt, .big-figure small, .ds-k { letter-spacing: .08em; text-transform: uppercase; }

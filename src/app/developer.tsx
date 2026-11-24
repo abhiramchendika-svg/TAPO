@@ -316,7 +316,7 @@ function NfcTester() {
 
       {result ? (
         <View
-          style={[styles.result, { borderColor: result.ok ? '#1F4A3A' : colors.dangerBorder }]}
+          style={[styles.result, { borderColor: result.ok ? colors.successBorder : colors.dangerBorder }]}
           accessibilityRole="alert"
         >
           <Text style={[type.small, { color: result.ok ? colors.success : colors.danger }]}>{result.message}</Text>

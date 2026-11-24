@@ -275,7 +275,7 @@ export default function ImportScreen() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
-  success: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start', borderColor: '#1F4A3A' },
+  success: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start', borderColor: colors.successBorder },
   successIcon: {
     width: 40,
     height: 40,
