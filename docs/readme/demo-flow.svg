@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="t d">
+  <title id="t">How the TAPO tap-to-pay demo works</title>
+  <desc id="d">Four steps. 1, set up: choose a dummy merchant, amount and sample card. 2, trigger: scan an NFC tag whose text record starts with TAPO-DEMO, or press Simulate tap. 3, review and process: the screen shows the demo details, then a simulated processing step. 4, result: a simulated approved or declined result and a dummy receipt with a DEMO ID, saved only on the device. Nothing is sent to a bank or card network.</desc>
+  <rect width="1200" height="400" rx="20" fill="#0A0A0B"/>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <g>
+      <rect x="40" y="70" width="250" height="200" rx="16" fill="#141416" stroke="#26262A"/>
+      <text x="64" y="108" font-size="13" letter-spacing="2" fill="#D8BF8F">STEP 1 · SET UP</text>
+      <text x="64" y="146" font-size="22" font-weight="600" fill="#F2EFE9">Dummy checkout</text>
+      <text x="64" y="180" font-size="15" fill="#ABA8A1">Pick a fictional merchant,</text>
+      <text x="64" y="202" font-size="15" fill="#ABA8A1">an amount and a sample card</text>
+      <text x="64" y="244" font-size="13" fill="#8E8B85">e.g. “Sample Chai Stall”</text>
+    </g>
+    <g>
+      <rect x="330" y="70" width="250" height="200" rx="16" fill="#141416" stroke="#D8BF8F" stroke-opacity=".55"/>
+      <text x="354" y="108" font-size="13" letter-spacing="2" fill="#D8BF8F">STEP 2 · TRIGGER</text>
+      <text x="354" y="146" font-size="22" font-weight="600" fill="#F2EFE9">Demo tag or tap</text>
+      <text x="354" y="180" font-size="15" fill="#ABA8A1">Scan an NFC sticker with the</text>
+      <text x="354" y="202" font-size="15" fill="#ABA8A1">text TAPO-DEMO:…, or press</text>
+      <text x="354" y="224" font-size="15" fill="#ABA8A1">Simulate tap</text>
+      <text x="354" y="252" font-size="13" fill="#8E8B85">The tag only starts the demo</text>
+    </g>
+    <g>
+      <rect x="620" y="70" width="250" height="200" rx="16" fill="#141416" stroke="#26262A"/>
+      <text x="644" y="108" font-size="13" letter-spacing="2" fill="#D8BF8F">STEP 3 · REVIEW</text>
+      <text x="644" y="146" font-size="22" font-weight="600" fill="#F2EFE9">Simulated processing</text>
+      <text x="644" y="180" font-size="15" fill="#ABA8A1">Merchant, amount, card label</text>
+      <text x="644" y="202" font-size="15" fill="#ABA8A1">and tag code are shown,</text>
+      <text x="644" y="224" font-size="15" fill="#ABA8A1">then a short pause</text>
+      <text x="644" y="252" font-size="13" fill="#8E8B85">No network request is made</text>
+    </g>
+    <g>
+      <rect x="910" y="70" width="250" height="200" rx="16" fill="#141416" stroke="#26262A"/>
+      <text x="934" y="108" font-size="13" letter-spacing="2" fill="#D8BF8F">STEP 4 · RESULT</text>
+      <text x="934" y="146" font-size="22" font-weight="600" fill="#F2EFE9">Dummy receipt</text>
+      <text x="934" y="180" font-size="15" fill="#ABA8A1">Approved or declined, both</text>
+      <text x="934" y="202" font-size="15" fill="#ABA8A1">labelled simulated</text>
+      <text x="934" y="232" font-size="14" font-family="Consolas, Menlo, monospace" fill="#8FCBA6">DEMO-YYYYMMDD-XXXXXX</text>
+      <text x="934" y="256" font-size="13" fill="#8E8B85">Saved on this device only</text>
+    </g>
+    <g stroke="#55524C" stroke-width="2" fill="none">
+      <path d="M296 170h26M576 170h0"/>
+      <path d="M586 170h26"/>
+      <path d="M876 170h26"/>
+    </g>
+    <g fill="#55524C">
+      <path d="M322 164l8 6-8 6z"/>
+      <path d="M612 164l8 6-8 6z"/>
+      <path d="M902 164l8 6-8 6z"/>
+    </g>
+    <text x="40" y="330" font-size="16" fill="#E3AE6B">Nothing in this flow reaches a bank, a card network or a payment provider. A “simulated approval” is not a payment authorization.</text>
+    <text x="40" y="360" font-size="14" fill="#8E8B85">Approve or decline is chosen in the app's hidden Developer screen (approve by default).</text>
+  </g>
+</svg>

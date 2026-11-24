@@ -1,277 +1,222 @@
-# TAPO (Demo)
+<p align="center">
+  <img src="docs/readme/banner.svg" alt="TAPO: tap a demo tag, see a simulated checkout. Capstone prototype using dummy data only; no real money moves and no bank card is read." width="100%">
+</p>
 
-A cross-platform (iOS, Android, web) **prototype** of an India-focused multi-card rewards wallet, built with
-Expo SDK 58, Expo Router and TypeScript.
+<p align="center">
+  <strong>A capstone prototype that demonstrates an NFC-triggered, fully simulated payment flow,<br>inside a rewards wallet that tells you which card to use.</strong>
+</p>
 
-It helps you organise payment cards and pick the best one for a purchase based on reward rules.
-**It does not make payments.** All issuers, cards, reward rules and transactions are fictional sample data. There is
-no partnership, approval or affiliation with any bank, card network or payment provider.
+<p align="center">
+  <a href="https://docs.expo.dev/versions/v58.0.0/">Expo SDK 58</a> ·
+  React Native 0.88 ·
+  TypeScript ·
+  iOS · Android · Web
+</p>
 
-## Features
+> [!IMPORTANT]
+> **TAPO does not process payments.** Every merchant, amount, card and receipt in the demo is fictional.
+> NFC is used only as a *trigger* for the demo: the app reads a short text code from an ordinary NFC sticker.
+> It never reads, emulates or charges a contactless bank card, and a “simulated approval” is not a payment
+> authorization from any bank or card network.
 
-| Screen | What it does |
+## Contents
+
+- [What TAPO is](#what-tapo-is)
+- [The tap-to-pay demo](#the-tap-to-pay-demo)
+- [Where NFC works, and where it falls back](#where-nfc-works-and-where-it-falls-back)
+- [Try it with a real NFC tag](#try-it-with-a-real-nfc-tag)
+- [Run the project](#run-the-project)
+- [Data, accounts and privacy](#data-accounts-and-privacy)
+- [Tech stack and structure](#tech-stack-and-structure)
+- [Checks and tests](#checks-and-tests)
+- [Limits of this prototype](#limits-of-this-prototype)
+
+## What TAPO is
+
+TAPO is an India-focused **multi-card rewards wallet** built as an educational capstone project. You add your
+cards with their reward rates and monthly caps (never the card number), and TAPO:
+
+- **recommends the best card** for a purchase, explaining why and accounting for caps already used this month;
+- **imports a bank or card statement CSV** on the device and shows the rewards you missed by using the wrong card;
+- **demonstrates an NFC-triggered checkout** with dummy data: the part this README focuses on.
+
+It runs as an iOS and Android app (Expo) and on the web, with a public marketing site and the web app served at
+`/app`.
+
+## The tap-to-pay demo
+
+<p align="center">
+  <img src="docs/readme/demo-flow.svg" alt="Four steps: 1, choose a dummy merchant, amount and sample card. 2, scan an NFC tag whose text starts with TAPO-DEMO, or press Simulate tap. 3, review the details and a simulated processing step, with no network request. 4, a simulated approved or declined result and a dummy receipt with a DEMO ID, saved only on the device." width="100%">
+</p>
+
+Open it from **Wallet → Tap-to-pay demo**, or **Card details → Pay → Try the tap-to-pay demo**
+([`src/app/demo-pay.tsx`](src/app/demo-pay.tsx)).
+
+| Step | What happens |
 | --- | --- |
-| **Wallet** (home) | Sample cards carousel, “Choose a card” action, recent sample transactions, this month’s sample spend |
-| **Add / edit card** | Nickname, fictional issuer, network, credit/debit, last four digits, base rate and editable per-category rules with optional monthly caps. Live card preview and inline validation |
-| **Card details** | Safe display info, reward rules, mock monthly spend by category with estimated rewards, recent sample transactions, remove card |
-| **Choose card** | Merchant category + amount (₹) → ranked recommendation with a plain-language explanation and full comparison |
-| **Activity** | Sample transactions with category filters and totals |
-| **Import statement** | Load real spending from a bank or card statement CSV (file picker or paste). Parsed on the device; only date, merchant and amount are kept; credits and duplicates are skipped; long or bank-masked numbers are masked to the last four digits; purchases are categorised automatically. Wallet → *Import statement* |
-| **Missed rewards** | The core metric on the Wallet screen: how much more your best cards would have earned this month |
-| **Insights** | This month / last month: total spend, estimated rewards and overall rate, spend by category, rewards by card, and “Ways to earn more” tips that show where another card's rules would have earned more (before monthly caps), with a link to compare cards |
-| **Settings** | Profile, reset demo data, remove all cards (with inline confirmation), privacy notes, How TAPO works, replay the introduction |
-| **Developer** (hidden) | Tap **Version 1.0.0** in Settings → About seven times. Build info, the demo's approve/decline result, an NFC tester (support status, tag-text validator, scan without paying), local storage counts and raw JSON, and **Wipe all local data** |
-| **Pay** | States clearly: “Tap to pay is not available in this prototype.” Links to the labelled demo below |
-| **Tap-to-pay demo** | A clearly labelled **simulation** (“Demo mode — no real money is charged”): dummy merchant + amount → scan a demo NFC tag or *Simulate tap* → review → simulated processing → approved or declined (set in the developer screen) → dummy receipt |
+| **1 · Set up** | Choose a fictional merchant (for example “Sample Chai Stall”), an amount and one of your sample cards. |
+| **2 · Trigger** | Hold a demo NFC tag to the phone, or press **Simulate tap**. The tag must hold a text record starting with `TAPO-DEMO:`. |
+| **3 · Review** | The screen shows the merchant, amount, card label and tag code, then a short *simulated* processing step. |
+| **4 · Result** | A result labelled *simulated*: approved by default, or declined if set in the hidden **Developer** screen. |
+| **Receipt** | A dummy receipt with an ID like `DEMO-20261121-7KQ2XM`, saved only on the device. |
 
-### Design
+Every demo screen carries the banner **“Demo mode — no real money is charged”**. The last 50 demo receipts are
+kept locally, and **Recent demo receipts → Clear demo receipts** deletes them. Nothing is sent over the network.
 
-- **Card faces** ([`CardTile.tsx`](src/components/CardTile.tsx)) use real ID-1 proportions (85.6 × 53.98 mm),
-  layered SVG gradients, a soft highlight and sheen, an original ring pattern, an illustrated contact chip, a generic
-  contactless mark, a masked number, a placeholder cardholder name, and the network name as plain text (no logos).
-  Every card carries a **SAMPLE** badge, and all issuers are fictional.
-- **"Gallery at night" theme**: a dark navy scene, soft spotlight glows and Title Case Satoshi text.
-- **Floating gallery** ([`Gallery.tsx`](src/components/Gallery.tsx)): cards float in the dark with a glow in their
-  own colour and a pool of light beneath, bobbing gently (turned off when the system's Reduce Motion is on). The
-  carousel swipes and snaps card by card, angles neighbouring cards in 3D perspective, and has ← → arrow buttons
-  plus page dots. A Gallery | List switch offers a simple list view.
-- **App icon and splash**: the TAPO mark on a cream tile (`assets/icon.png`), an Android adaptive icon with a
-  monochrome layer for themed icons, and a dark splash screen configured through the `expo-splash-screen` plugin.
-- **Tokens** in [`theme.ts`](src/theme.ts): colours, fonts, type scale and cross-platform `boxShadow` elevation.
-  Text pairs meet WCAG AA contrast.
-- **Icons** are original SVG strokes ([`Icon.tsx`](src/components/Icon.tsx)); `react-native-svg` is the only
-  dependency added for the redesign and ships with Expo Go.
+### What the tag check accepts
 
-### Fonts
+Tag parsing lives in [`src/lib/demoNfc.ts`](src/lib/demoNfc.ts) and is covered by unit tests:
 
-- **Satoshi** (Indian Type Foundry, via [Fontshare](https://www.fontshare.com)) for body text, buttons and headings.
-  The official `.otf` files live in `assets/fonts/satoshi/` with the licence (`LICENSE-FFL.txt`, ITF Free Font
-  License 2.0), which allows embedding in apps and self-hosting on your own sites. It does **not** allow modifying the
-  files or redistributing them, so keep `assets/fonts/satoshi/` out of any *public* repository. Anyone else working
-  on the project should download their own copy from Fontshare.
-- **Inter** draws only the ₹ symbol, because Satoshi has no ₹ glyph. The `<Text>` component swaps it in
-  automatically at a matching weight.
-- **JetBrains Mono** for card numbers and demo transaction IDs.
+- one NDEF **text** record that starts with `TAPO-DEMO:`;
+- a code after the prefix of 3–32 letters, numbers or dashes (for example `TAPO-DEMO:CAPSTONE-01`);
+- tags whose code contains **12 or more digits are rejected**, so nothing that looks like a card number is ever
+  accepted.
 
-### How recommendations work
+The demo handles these cases with clear messages: NFC permission denied, a tag with the wrong text, a cancelled
+scan, a timeout, NFC switched off, and devices or browsers without NFC.
 
-For each card: `reward = amount × rate`, where `rate` is the card’s rule for that category or its base rate.
-If the rule has a monthly cap, the reward is limited to `cap − rewards already earned this month` (from sample
-transactions). Cards are ranked by estimated reward, then headline rate, then name. The logic lives in
-[`src/lib/rewards.ts`](src/lib/rewards.ts) and every result shows the reasons behind it.
+## Where NFC works, and where it falls back
 
-### Safety and privacy by design
+| Where TAPO runs | NFC tag scanning | What the demo does |
+| --- | --- | --- |
+| **Chrome on Android**, over HTTPS or `localhost` | Yes, via [Web NFC](https://developer.mozilla.org/docs/Web/API/Web_NFC_API) (`NDEFReader`) | Scan a demo tag, or Simulate tap |
+| **Android app** (development or release build) | Yes, via `react-native-nfc-manager` | Scan a demo tag, or Simulate tap |
+| **iPhone app** (development or release build) | Yes, through the iOS scanning sheet; needs a paid Apple Developer account to sign the NFC entitlement | Scan a demo tag, or Simulate tap |
+| **Safari and every iOS browser** | No (no Web NFC on iOS) | Explains why, then **Simulate tap** |
+| **Desktop browsers** | No | **Simulate tap** |
+| **Expo Go** | No (it can't load the NFC module) | Says a development build is needed, then **Simulate tap** |
+| Android over plain `http://` on a LAN address | No (Web NFC needs a secure context) | Explains the HTTPS requirement, then **Simulate tap** |
 
-- The data model ([`src/lib/types.ts`](src/lib/types.ts)) has **no fields** for full card numbers, CVV, PIN, OTP,
-  expiry, bank credentials or payment tokens. Only the last four digits are stored, as a label.
-- The last-four field accepts digits only (max 4); nicknames that look like card numbers are rejected and never shown
-  on the card preview.
-- Issuers can only be chosen from a fixed list of obviously fictional names.
-- Data is stored locally with AsyncStorage and sanitised on load. No network calls, analytics or tracking.
-- No host card emulation, tokenisation, provisioning or payment-provider code. NFC is used only by the demo, to
-  *read* a harmless text code from a sticker; the app never writes to tags.
+**Simulate tap** runs exactly the same review → processing → result → receipt flow, so the demo works anywhere.
 
-## Tap-to-pay demo (NFC simulation)
+The native app reads NDEF text only. The config plugin in [`app.json`](app.json) adds the Android `NFC` permission,
+the iOS `NFCReaderUsageDescription` text and the `com.apple.developer.nfc.readersession.formats` entitlement. No
+ISO 7816 application identifiers are declared, so the app **cannot select payment applications on a card**.
 
-Open it from **Wallet → Tap-to-pay demo**, or **Card details → Pay → Try the tap-to-pay demo**.
+## Try it with a real NFC tag
 
-**What it is:** a capstone demonstration of an NFC-triggered checkout using dummy data. Every screen shows
-“Demo mode — no real money is charged”. Results are labelled *simulated*. The result is approve by default; switch
-it to decline in the developer screen. Demo
-receipts (dummy `DEMO-YYYYMMDD-XXXXXX` IDs) are saved locally with the rest of the app's data, and **Recent demo
-receipts → Clear demo receipts** removes them. Nothing is sent over the network.
+1. **Get a blank tag.** Any NFC Forum sticker or card works (for example NTAG213).
+2. **Write one text record** with a free tag-writing app such as *NFC Tools*:
 
-**What it isn't:** a website can't read, emulate or charge a contactless bank card. Web NFC only reads NDEF messages
-on ordinary NFC Forum tags, and TAPO uses it only as a trigger.
-
-### Testing with a real NFC tag (Android + Chrome)
-
-1. **Phone:** an Android phone with NFC turned on (Settings → Connected devices → NFC), and Chrome 89 or newer.
-2. **Prepare a demo tag** (any blank NFC Forum sticker or card, e.g. NTAG213). With a free tag-writing app such as
-   *NFC Tools*, write **one Text record** containing exactly:
-
-   ```
+   ```text
    TAPO-DEMO:CAPSTONE-01
    ```
 
-   The code after `TAPO-DEMO:` can be 3–32 letters, numbers or dashes. **Never write card numbers, PINs or any
-   payment data to a tag.** TAPO rejects tags without that prefix, and any that contain long numbers.
-3. **Open the web app over a secure origin.** Web NFC only works on HTTPS or `localhost`; a LAN address like
-   `http://192.168.1.5:8081` won't work. Either:
-   - **USB port forwarding (easiest):** enable USB debugging on the phone, connect it, open `chrome://inspect/#devices`
-     on your computer, turn on *Port forwarding* for `8081 → localhost:8081`, run `npm run web`, then open
-     `http://localhost:8081` in Chrome on the phone; or
-   - **HTTPS hosting:** `npx expo export --platform web` and deploy the `dist/` folder to any HTTPS static host.
-4. In the demo, choose a merchant and amount → **Continue to tap** → **Scan demo NFC tag**. Allow NFC when Chrome
-   asks, then hold the tag against the back of the phone. The tag code appears on the review screen and receipt.
+   > Never write card numbers, PINs or any other payment data to a tag. TAPO rejects tags that contain long numbers.
 
-Error cases you can demonstrate: deny the NFC permission prompt, tap a tag with different text (invalid tag), press
-**Cancel scan**, or turn NFC off (unavailable).
+3. **Open TAPO on a phone that can scan** (see the table above):
+   - **Android + Chrome:** open the app over HTTPS (your Vercel deployment's `/app`), or over `localhost` using USB
+     port forwarding: enable USB debugging, open `chrome://inspect/#devices` on your computer, forward
+     `8081 → localhost:8081`, run `npm run web`, then open `http://localhost:8081` in Chrome on the phone.
+   - **Native app:** install a development build (below) and start it with `npx expo start --dev-client`.
+4. In the demo, choose a merchant and amount → **Continue to tap** → **Scan demo NFC tag**, allow NFC if asked, and
+   hold the tag to the back of the phone (near the top on iPhone). The tag code appears on the review screen and
+   receipt.
 
-### Native NFC in the iOS / Android app
+## Run the project
 
-The app uses [`react-native-nfc-manager`](https://github.com/revtel/react-native-nfc-manager) to read the same
-`TAPO-DEMO:` text record with the phone's NFC hardware. It reads NDEF text only: it never selects payment
-applications, never reads bank cards, never emulates a card and never writes to tags.
-
-**Expo Go can't use it.** Expo Go only contains Expo's built-in native modules. In Expo Go the demo says it needs a
-development build and offers **Simulate tap**. To scan real tags, build TAPO itself:
-
-- **Android** (any NFC phone, free):
-  - Local: install Android Studio, plug in the phone with USB debugging on, then run `npx expo run:android`.
-  - Or cloud: `npx eas-cli@latest build --profile development --platform android`, then install the APK.
-- **iPhone** (iPhone 7 or newer):
-  - NFC tag reading is a restricted capability, so you need a **paid Apple Developer account**. Free provisioning
-    can't sign the NFC entitlement.
-  - Local (macOS + Xcode): `npx expo run:ios --device`.
-  - Or cloud: `npx eas-cli@latest build --profile development --platform ios`.
-- Then start the dev server with `npx expo start --dev-client` and open TAPO from the development build, not Expo Go.
-
-The config plugin (in `app.json`) adds the Android `NFC` permission, the iOS `NFCReaderUsageDescription` text, and the
-iOS `com.apple.developer.nfc.readersession.formats` entitlement. No ISO 7816 select identifiers are declared, so the
-app can't select payment applications on cards.
-
-**In the app:**
-- **Android:** tap **Scan demo NFC tag** and hold the tag to the back of the phone. If NFC is off, the demo offers
-  **Open NFC settings** and **Check again**.
-- **iPhone:** tap **Scan demo NFC tag**. iOS shows its own scanning sheet; hold the tag near the top of the phone.
-  Closing the sheet counts as cancelling.
-- Phones without NFC, and Expo Go, fall back to **Simulate tap**.
-
-### Simulating on iOS browsers, desktop and Expo Go
-
-Safari and every iOS browser, desktop browsers, and Expo Go can't scan tags. The demo detects this, explains why,
-and offers **Simulate tap**, which runs the same review → processing → result → receipt flow.
-
-## Project structure
-
-```
-src/
-  app/                 Expo Router routes (each file is a screen)
-    _layout.tsx        Root stack + providers
-    (tabs)/            Wallet, Best card, Activity, Insights, Settings tabs
-    onboarding.tsx     First-run introduction
-    developer.tsx      Hidden developer screen
-    how-it-works.tsx   How TAPO works
-    card/add.tsx       Add / edit card (modal; ?id= for edit)
-    card/[id].tsx      Card details
-    pay.tsx            “Tap to pay not available” screen
-    demo-pay.tsx       Tap-to-pay demo (simulation): set up → tap → review → result
-    demo-receipt/[id]  Saved demo receipt
-    transaction/[id]   Sample transaction details
-  components/          UI primitives, CardTile, TransactionRow
-  lib/                 Types, sample data, rewards engine, insights, validation, storage,
-                       demoNfc (shared tag checks + Web NFC), nativeNfc.native.ts (iOS/Android NFC), nativeNfc.ts (web stub)
-  lib/__tests__/       Jest unit tests (formatting, rewards, validation, NFC tag parsing, insights)
-  theme.ts             Colour/spacing tokens (WCAG AA contrast)
-eas.json               EAS Build profiles: development (dev client), preview (installable APK), production
-```
-
-## Setup
-
-Requirements: Node.js 20+ and npm. For devices: the **Expo Go** app (iOS App Store / Google Play), or Xcode
-(macOS only) / Android Studio for simulators and emulators.
+Requirements: **Node.js 20+** and npm. For phones: the **Expo Go** app, or a development build for NFC scanning.
 
 ```bash
 npm install
+npm start          # dev server; scan the QR code with Expo Go
+npm run web        # web app at http://localhost:8081
+npm run android    # Android emulator or device (Android Studio)
+npm run ios        # iOS Simulator (macOS + Xcode)
 ```
 
-## Run
-
-Start the dev server and scan the QR code with Expo Go (Android) or the Camera app (iOS):
+Everything runs in Expo Go **except native NFC scanning**, which needs a development build:
 
 ```bash
-npm start
+npx eas-cli@latest init                                              # once: link to your Expo account
+npx eas-cli@latest build --profile development --platform android   # installable dev build (APK)
+npx expo start --dev-client                                          # then open TAPO from that build
 ```
 
-Or launch directly:
+Locally you can also use `npx expo run:android` or, on macOS with Xcode, `npx expo run:ios --device`.
+Profiles are defined in [`eas.json`](eas.json). Replace the placeholder `com.example.tapo` identifiers in
+`app.json` before distributing a build.
+
+### Production web build
 
 ```bash
-npm run android   # Android emulator or connected device (Android Studio required)
-npm run ios       # iOS Simulator (macOS + Xcode required)
-npm run web       # Browser at http://localhost:8081
+npm run build:web                   # Expo web app → dist/app, plus the pre-rendered public site → dist/
+node scripts/serve-dist.mjs 4173    # serve dist/ locally the way Vercel does
 ```
 
-Everything runs in Expo Go except native NFC scanning in the tap-to-pay demo, which needs a development build (see
-"Native NFC in the iOS / Android app"). In Expo Go the demo falls back to **Simulate tap**.
+[`vercel.json`](vercel.json) uses `npm run build:web`, serves `dist/`, routes `/app/*` to the web app and sets
+security headers. No environment variables are required; `SITE_URL` is optional and only makes link-preview URLs
+absolute.
 
-### Building installable apps
+## Data, accounts and privacy
 
-Use EAS Build (cloud, no local Xcode/Android Studio needed). The first time, link the project to your Expo account
-(this adds a project ID to `app.json`):
+- **No real payment data exists in TAPO.** The data model has no fields for a full card number, CVV, PIN, OTP,
+  expiry date, bank login or payment token. Cards keep a nickname and the last four digits as a label, and
+  nicknames that look like card numbers are rejected.
+- **Sample data is labelled.** The app starts with four fictional sample cards (issuers such as “Sample Bank
+  Alpha”) and sample transactions, marked as samples in the UI.
+- **Accounts are on the device.** Signing up stores a name, email, salt and a password verifier; the password is
+  never stored. The wallet is encrypted with **AES-256-GCM** using a key derived from the password (PBKDF2), held
+  only in memory ([`src/lib/auth.tsx`](src/lib/auth.tsx), [`src/lib/vault.ts`](src/lib/vault.ts)).
+- **Sessions lock themselves** after 10 minutes without activity. Five wrong passwords pause sign-in for
+  30 seconds. On the web a session survives a refresh within the same tab; restarting the native app asks for the
+  password again. Forgotten passwords can't be recovered: **Can't sign in?** removes that account and its data.
+- **Statement imports stay on the device.** Only the date, merchant and amount are kept; long numbers such as
+  account or UPI references are masked to their last four digits.
+- There are no analytics, ads or network calls with your data.
+
+## Tech stack and structure
+
+| Layer | Used here |
+| --- | --- |
+| App | Expo SDK 58, React Native 0.88, React 19, TypeScript, Expo Router |
+| NFC | Web NFC (`NDEFReader`) on the web; `react-native-nfc-manager` 4 in native builds |
+| Storage and crypto | AsyncStorage, `expo-crypto` (AES-256-GCM), PBKDF2-SHA256 |
+| Graphics | `react-native-svg` for card faces, icons and the logo |
+| Public site | Static pages pre-rendered by [`site/build.mjs`](site/build.mjs) using the app's own logic |
+| Quality | Jest (`jest-expo`), Playwright end-to-end tests, ESLint, GitHub Actions CI |
+| Hosting | Vercel (static `dist/`) |
+
+```text
+src/app/              Screens (Expo Router). demo-pay.tsx is the tap-to-pay demo.
+src/lib/demoNfc.ts    Tag parsing, support detection and Web NFC scanning
+src/lib/nativeNfc.*   Native NFC (iOS/Android) and the web stub
+src/lib/              Rewards engine, insights, CSV import, accounts, encrypted storage
+src/lib/__tests__/    Unit tests
+site/                 Public marketing site (Home, Product, Security, FAQ)
+e2e/                  Playwright tests for the site and the web app
+docs/                 Architecture guide, research kit, AI usage declaration, README images
+```
+
+More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) walks through each module.
+
+## Checks and tests
 
 ```bash
-npx eas-cli@latest init
+npm run typecheck   # TypeScript
+npm run lint        # ESLint (expo lint)
+npm test            # Jest unit tests, including NFC tag parsing
+npm run test:e2e    # Playwright, against dist/ (run npm run build:web first)
 ```
 
-The `development` profile builds TAPO with `expo-dev-client` (needed for native NFC); start it with
-`npx expo start --dev-client`. The `preview` profile builds an installable app:
+Locally, Playwright uses the installed Microsoft Edge (see [`playwright.config.ts`](playwright.config.ts)).
+CI runs typecheck, lint, tests and a web build on every push ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
-```bash
-npx eas-cli@latest build --platform android --profile development
-npx eas-cli@latest build --platform android --profile preview
-npx eas-cli@latest build --platform ios --profile preview
-```
+## Limits of this prototype
 
-Or generate native projects locally with `npx expo run:android` / `npx expo run:ios`. Replace the placeholder
-`com.example.tapo` identifiers in `app.json` before distributing.
+- **It is not a payment product.** There is no payment provider, card network, tokenisation, card provisioning or
+  host card emulation, and none is planned in this repository.
+- **The demo result is chosen, not computed.** Approve or decline comes from a developer setting, purely to show
+  both outcomes.
+- **NFC support depends on the device and browser**, as listed above. iOS browsers cannot scan tags at all.
+- Reward rates are entered by the user; estimates are illustrative and are not issuer statements or financial
+  advice.
 
-## Checks
+A real contactless payment product would need, at minimum, regulated issuer and payment partners in India (RBI rules,
+card tokenisation, KYC and data protection), card-network certification, platform wallet approval from Google or
+Apple, PCI DSS scope and security audits, and dispute and support operations.
 
-```bash
-npm run typecheck   # tsc --noEmit
-npm run lint        # expo lint (ESLint)
-npm test            # Jest unit tests (jest-expo)
-npm run doctor      # expo-doctor
-npx expo export --platform android --platform ios --platform web
-```
+---
 
-> **Windows note:** if `expo export` fails with `spawn ...hermesc.exe ENOENT`, the project path is too long for
-> Windows (MAX_PATH 260). Move the project to a shorter path such as `C:\dev\tapo`, or verify the JS bundles
-> with `--no-bytecode`. If the web app shows stale content after moving the folder, start once with
-> `npx expo start --clear`.
-
-## Accounts and sign-in
-
-Both the app and the website require an account. Accounts are **on-device**: there is no server.
-
-- **Create account:** name, email and a password (8+ characters with a letter and a number). Only a random salt and a
-  PBKDF2-SHA256 hash are stored (app: 20,000 iterations in [`src/lib/password.ts`](src/lib/password.ts), unit-tested
-  against Node's PBKDF2; website: 210,000 iterations with Web Crypto). The password itself is never stored.
-- **Sessions are memory-only:** restarting the app or reloading the page signs you out. The logo intro plays on the
-  sign-in screen each time.
-- **Each account has its own wallet** on the device. The first account created takes over any data saved before
-  accounts existed.
-- Wrong passwords get a generic "Email or password is incorrect"; five failures lock sign-in for 30 seconds.
-- **Forgotten password:** it can't be recovered. "Can't sign in?" removes that account and its data from the device.
-- Signed-out users can't open app screens: the router's `Stack.Protected` guards every screen except `sign-in`.
-
-## Docs and showcase website
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): how the code works, with questions to practise before a review.
-- [`docs/RESEARCH.md`](docs/RESEARCH.md): user-interview kit (hypotheses, screener, guide, recording template).
-- [`docs/AI_USAGE.md`](docs/AI_USAGE.md): AI usage declaration for the team to complete and sign.
-- `website/`: the project showcase page. Edit `website/template.html`, then run `npm run build:website` to produce
-  `website/index.html` (it inlines Satoshi and the app's real CSV parser).
-- CI: `.github/workflows/ci.yml` runs typecheck, lint, tests and a web build on every push.
-- Host the web app under a sub-path with `EXPO_BASE_URL=/tapo npm run export:web` (see `app.config.js`).
-
-## Before real contactless payments could be explored
-
-This prototype is intentionally far from a payments product. At minimum, a real product would need:
-
-1. **Regulatory standing in India** – partnering with RBI-regulated issuers/PA-PGs, compliance with RBI card
-   tokenisation (CoFT) and card-data storage rules, KYC/AML, and the Digital Personal Data Protection Act, 2023.
-2. **Network and issuer programmes** – formal agreements and certification with card networks (e.g. RuPay/NPCI,
-   Visa, Mastercard) and their token service providers; real issuer reward data via official APIs.
-3. **Platform wallet access** – Android HCE requires network-certified SDKs and Google approval; on iOS, NFC payments
-   go through Apple Pay / the regionally restricted NFC & SE entitlement, which requires Apple approval.
-4. **Security** – PCI DSS scope analysis, hardware-backed key storage, device attestation, secure provisioning with
-   step-up authentication (issuer OTP flows handled by the issuer, not the app), fraud monitoring, pen testing and
-   independent audits.
-5. **Operations** – dispute and chargeback handling, customer support, incident response and a clear consumer
-   disclosures/T&C process reviewed by legal counsel.
-
-## Disclaimer
-
-Sample data only. Reward estimates are illustrative and do not reflect real card terms. Not financial advice.
+<sub>Capstone prototype. All issuers, cards, merchants, amounts and receipts shown in TAPO are fictional sample data.
+TAPO is not affiliated with any bank, card network or payment provider.</sub>
