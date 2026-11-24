@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { walletKeyFor } from './auth';
 import { maskLongNumbers, type ImportedRow } from './csvImport';
 import { makeId } from './format';
 import { buildDemoData } from './sampleData';
@@ -147,18 +148,42 @@ interface WalletContextValue {
 
 const WalletContext = createContext<WalletContextValue | null>(null);
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(false);
+/**
+ * Holds one account's wallet. `userId` null means nobody is signed in: the provider then keeps
+ * sample data in memory only and never reads or writes storage.
+ */
+export function WalletProvider({
+  children,
+  userId = null,
+  adoptLegacy = false,
+  defaultName,
+}: {
+  children: ReactNode;
+  userId?: string | null;
+  /** The first account on a device takes over data saved before accounts existed. */
+  adoptLegacy?: boolean;
+  /** Used as the display name for a brand-new account. */
+  defaultName?: string;
+}) {
+  const key = userId ? walletKeyFor(userId) : null;
+  const [ready, setReady] = useState(!key);
   const [data, setData] = useState<WalletData>(() => buildDemoData());
 
   useEffect(() => {
+    if (!key) return;
     let cancelled = false;
     (async () => {
       try {
-        const stored =
-          (await AsyncStorage.getItem(STORAGE_KEY)) ?? (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
-        const parsed = stored ? sanitize(JSON.parse(stored)) : null;
-        if (!cancelled && parsed) setData(parsed);
+        let stored = await AsyncStorage.getItem(key);
+        if (!stored && adoptLegacy) {
+          stored = (await AsyncStorage.getItem(STORAGE_KEY)) ?? (await AsyncStorage.getItem(LEGACY_STORAGE_KEY));
+          // The data now belongs to this account; don't leave an unowned copy behind.
+          if (stored) await AsyncStorage.multiRemove([STORAGE_KEY, LEGACY_STORAGE_KEY]);
+        }
+        let parsed = stored ? sanitize(JSON.parse(stored)) : null;
+        if (!parsed) parsed = buildDemoData();
+        if (!parsed.profile && defaultName && !validateDisplayName(defaultName)) parsed = { ...parsed, profile: { displayName: defaultName } };
+        if (!cancelled) setData(parsed);
       } catch {
         // Corrupt or unavailable storage: fall back to fresh demo data.
       } finally {
@@ -168,12 +193,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+    // Loads once per account; the provider is keyed by userId so a new account remounts it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   useEffect(() => {
-    if (!ready) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data)).catch(() => {});
-  }, [data, ready]);
+    if (!ready || !key) return;
+    AsyncStorage.setItem(key, JSON.stringify(data)).catch(() => {});
+  }, [data, ready, key]);
 
   const getCard = useCallback((id: string) => data.cards.find((c) => c.id === id), [data.cards]);
 
@@ -220,12 +247,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const wipeAll = useCallback(async () => {
-    await Promise.all([AsyncStorage.removeItem(STORAGE_KEY), AsyncStorage.removeItem(LEGACY_STORAGE_KEY)]).catch(
-      () => {},
-    );
-    // Fresh demo data, introduction not yet seen. The save effect will write it back.
+    const keys = [STORAGE_KEY, LEGACY_STORAGE_KEY, ...(key ? [key] : [])];
+    await AsyncStorage.multiRemove(keys).catch(() => {});
+    // Fresh demo data for this account, introduction not yet seen. The save effect writes it back.
     setData({ ...buildDemoData(), onboarded: false });
-  }, []);
+  }, [key]);
 
   const setOnboarded = useCallback((onboarded: boolean) => {
     setData((d) => ({ ...d, onboarded }));

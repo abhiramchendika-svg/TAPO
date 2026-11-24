@@ -358,6 +358,37 @@ textarea.input { min-height: 120px; padding: 14px; font: 13px/1.5 var(--mono); r
 @keyframes toast { from { transform: translate(-50%, 20px); opacity: 0; } }
 .empty { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 40px 20px; color: var(--muted); }
 
+/* ---------- sign-in page ---------- */
+.auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 100vh; }
+.auth-art { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: 36px clamp(28px, 4vw, 56px) 48px; border-right: 1px solid var(--line-soft); background: radial-gradient(600px 420px at 70% 30%, rgba(111,217,164,.12), transparent 70%); }
+.auth-cards { position: relative; height: clamp(260px, 30vw, 360px); perspective: 1200px; }
+.ac { position: absolute; width: min(330px, 62%); }
+.ac .cardface { animation: float 7s ease-in-out infinite; }
+.ac0 { left: 4%; top: 0; --rz: -12deg; }
+.ac1 { right: 2%; top: 22%; --rz: 8deg; }
+.ac1 .cardface { animation-delay: -2.3s; }
+.ac2 { left: 18%; top: 46%; --rz: -3deg; }
+.ac2 .cardface { animation-delay: -4.4s; }
+.auth-main { display: grid; place-items: center; padding: 40px max(20px, env(safe-area-inset-right, 0px)) 40px max(20px, env(safe-area-inset-left, 0px)); }
+.auth-box { width: min(420px, 100%); }
+.auth-mobile-brand { display: none; margin-bottom: 26px; }
+.auth-help { margin-top: 16px; }
+.auth-help summary { cursor: pointer; color: var(--muted); font-size: 14px; font-weight: 500; padding: 6px 0; }
+.auth-help[open] { display: grid; gap: 12px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.auth-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 22px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+.auth-note svg { margin-top: 2px; }
+.who { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.who-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--night); font-weight: 900; font-size: 13px; flex: none; }
+.who b { display: block; color: var(--ink); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 900px) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth-art { display: none; }
+  .auth-mobile-brand { display: flex; }
+  .auth-main { place-items: start center; padding-top: 32px; }
+}
+@media (max-width: 560px) { .signout-site { display: none; } }
+
 /* ---------- intro (dots assemble into the TAPO mark) ---------- */
 .intro { position: fixed; inset: 0; z-index: 100; background: var(--night); display: grid; place-items: center; transition: opacity .55s var(--ease), visibility .55s; cursor: pointer; }
 .intro.out { opacity: 0; visibility: hidden; }
@@ -872,10 +903,86 @@ function validState(s) {
   return s && Array.isArray(s.cards) && Array.isArray(s.txns) && s.cards.every(function (c) { return c && typeof c.id === 'string' && typeof c.name === 'string' && typeof c.base === 'number' && Array.isArray(c.rules); }) &&
     s.txns.every(function (t) { return t && CAT[t.category] && typeof t.amount === 'number' && !isNaN(Date.parse(t.date)); });
 }
-var S;
-try { var stored = localStorage.getItem(KEY); S = stored ? JSON.parse(stored) : null; } catch (e) { S = null; }
-if (!validState(S)) S = fresh();
-function persist() { try { localStorage.setItem(KEY, JSON.stringify({ cards: S.cards, txns: S.txns })); } catch (e) {} }
+/* The signed-in account's wallet. Null while signed out. */
+var S = null;
+function dataKey() { return KEY + '.' + SESSION.id; }
+function loadUserData(adoptLegacy) {
+  var data = null;
+  try {
+    var stored = localStorage.getItem(dataKey());
+    if (!stored && adoptLegacy) { stored = localStorage.getItem(KEY); if (stored) localStorage.removeItem(KEY); }
+    data = stored ? JSON.parse(stored) : null;
+  } catch (e) { data = null; }
+  S = validState(data) ? data : fresh();
+  persist();
+}
+function persist() { if (!SESSION || !S) return; try { localStorage.setItem(dataKey(), JSON.stringify({ cards: S.cards, txns: S.txns })); } catch (e) {} }
+
+/* =====================================================================================
+   Accounts (stored in this browser). Passwords are hashed with PBKDF2-SHA256 (Web Crypto);
+   only the salt and hash are kept. The session lives in memory, so any reload signs out.
+   ===================================================================================== */
+var ACCT_KEY = 'tapo.web.accounts';
+var ITER = 210000;
+var SESSION = null;
+var fails = { count: 0, until: 0 };
+var storageOk = (function () { try { localStorage.setItem('tapo.web.probe', '1'); localStorage.removeItem('tapo.web.probe'); return true; } catch (e) { return false; } })();
+var memAccounts = [];
+function loadAccounts() {
+  if (!storageOk) return memAccounts;
+  try { var a = JSON.parse(localStorage.getItem(ACCT_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x && typeof x.email === 'string' && /^[0-9a-f]{32}$/.test(x.salt) && /^[0-9a-f]{64}$/.test(x.hash); }) : []; } catch (e) { return []; }
+}
+function saveAccounts(list) { memAccounts = list; if (storageOk) try { localStorage.setItem(ACCT_KEY, JSON.stringify(list)); } catch (e) {} }
+function hex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+function unhex(s) { var out = new Uint8Array(s.length / 2); for (var i = 0; i < out.length; i++) out[i] = parseInt(s.substr(i * 2, 2), 16); return out; }
+function derive(password, saltBytes, iterations) {
+  var enc = new TextEncoder().encode(password.normalize('NFKC'));
+  return crypto.subtle.importKey('raw', enc, 'PBKDF2', false, ['deriveBits']).then(function (k) {
+    return crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: saltBytes, iterations: iterations }, k, 256);
+  }).then(hex);
+}
+function sameHex(a, b) { if (a.length !== b.length) return false; var d = 0; for (var i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
+function checkName(n) { if (!n) return 'Enter your name.'; if (n.length > 24) return 'Keep your name to 24 characters or fewer.'; if (!/^[\p{L}\p{M}][\p{L}\p{M} .'-]*$/u.test(n)) return 'Use letters only (spaces, . \' and - are fine).'; return null; }
+function checkEmail(e) { if (!e) return 'Enter your email address.'; if (e.length > 254 || !/^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/.test(e)) return 'Enter a valid email address, like name@example.com.'; return null; }
+function checkPassword(p) { if (p.length < 8) return 'Use at least 8 characters for your password.'; if (p.length > 128) return 'Use 128 characters or fewer.'; if (!/\p{L}/u.test(p) || !/\d/.test(p)) return 'Include at least one letter and one number.'; return null; }
+function signUp(name, email, password) {
+  name = name.replace(/\s+/g, ' ').trim(); email = email.trim().toLowerCase();
+  var problem = checkName(name) || checkEmail(email) || checkPassword(password);
+  if (problem) return Promise.reject(new Error(problem));
+  var list = loadAccounts();
+  if (list.some(function (a) { return a.email === email; })) return Promise.reject(new Error('An account with this email already exists in this browser. Sign in instead.'));
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  return derive(password, salt, ITER).then(function (hash) {
+    var acct = { id: hex(crypto.getRandomValues(new Uint8Array(12))), name: name, email: email, salt: hex(salt), hash: hash, iterations: ITER, createdAt: new Date().toISOString() };
+    saveAccounts(list.concat([acct]));
+    startSession(acct, list.length === 0);
+  });
+}
+function signIn(email, password) {
+  if (fails.until > Date.now()) return Promise.reject(new Error('Too many attempts. Try again in ' + Math.ceil((fails.until - Date.now()) / 1000) + ' seconds.'));
+  email = email.trim().toLowerCase();
+  var acct = loadAccounts().filter(function (a) { return a.email === email; })[0];
+  // Hash even for an unknown email so both cases take the same time.
+  return derive(password, acct ? unhex(acct.salt) : new Uint8Array(16), acct ? acct.iterations : ITER).then(function (hash) {
+    if (!acct || !sameHex(hash, acct.hash)) {
+      fails.count++;
+      if (fails.count >= 5) { fails = { count: 0, until: Date.now() + 30000 }; throw new Error('Too many attempts. Try again in 30 seconds.'); }
+      throw new Error('Email or password is incorrect.');
+    }
+    fails = { count: 0, until: 0 };
+    startSession(acct, false);
+  });
+}
+function startSession(acct, adoptLegacy) { SESSION = { id: acct.id, name: acct.name, email: acct.email }; loadUserData(adoptLegacy); }
+function signOut() { SESSION = null; S = null; ui.parsed = null; introShown = false; render(); }
+function removeAccount(email) {
+  email = email.trim().toLowerCase();
+  var list = loadAccounts(), acct = list.filter(function (a) { return a.email === email; })[0];
+  if (!acct) return false;
+  try { localStorage.removeItem(KEY + '.' + acct.id); } catch (e) {}
+  saveAccounts(list.filter(function (a) { return a.id !== acct.id; }));
+  return true;
+}
 function cardById(id) { for (var i = 0; i < S.cards.length; i++) if (S.cards[i].id === id) return S.cards[i]; return null; }
 
 /* =====================================================================================
@@ -952,14 +1059,83 @@ var ui = { cat: 'groceries', amount: 2340, month: 'this', parsed: null, payCard:
 try { if (localStorage.getItem('tapo.web.view') === 'stack') ui.view = 'stack'; } catch (e) {}
 function route() { var h = (location.hash || '').slice(1); return SITE.indexOf(h) >= 0 || APPR.indexOf(h) >= 0 ? h : 'home'; }
 function go(r) { if (location.hash.slice(1) === r) render(); else location.hash = r; }
+var introShown = false;
 function render() {
   cleanup.forEach(function (fn) { try { fn(); } catch (e) {} }); cleanup = [];
+  var root = $('#root');
+  // Signed out: every address shows the sign-in page, and the intro plays in front of it.
+  if (!SESSION) {
+    root.innerHTML = authPage(); window.scrollTo(0, 0); mountAuth();
+    document.title = 'Sign in · TAPO';
+    if (!introShown) { introShown = true; intro(); }
+    return;
+  }
   var r = route();
   var html = APPR.indexOf(r) >= 0 ? appShell(r) : siteShell(r);
-  var root = $('#root');
   var swap = function () { root.innerHTML = html; window.scrollTo(0, 0); mount(r); var h1 = $('h1', root); if (h1 && document.activeElement !== document.body) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); } };
   if (document.startViewTransition && !REDUCE && root.childElementCount) document.startViewTransition(swap); else swap();
   document.title = (TITLES[r] ? TITLES[r] + ' · ' : '') + 'TAPO';
+}
+
+/* =====================================================================================
+   Sign-in page
+   ===================================================================================== */
+var authMode = null;
+function authPage() {
+  if (!authMode) authMode = loadAccounts().length ? 'signin' : 'signup';
+  var up = authMode === 'signup';
+  return '<div class="auth"><section class="auth-art" aria-hidden="true"><a class="brand">' + LOGO + '<b>TAPO</b></a>' +
+    '<div class="auth-cards">' + EXAMPLE_CARDS.slice(0, 3).map(function (c, i) { return '<div class="ac ac' + i + '">' + cardFace(c) + '</div>'; }).join('') + '</div>' +
+    '<div><h2 class="h2" style="font-size:clamp(34px,4.4vw,54px)">Every card.<br><span class="shine-text">The right one.</span></h2><p class="lede" style="margin-top:14px">See which card earns the most for every purchase, and what the wrong one cost you.</p></div></section>' +
+    '<main class="auth-main"><div class="auth-box">' +
+    '<a class="brand auth-mobile-brand" aria-hidden="true">' + LOGO + '<b>TAPO</b></a>' +
+    '<h1 style="font-size:clamp(30px,4vw,40px);font-weight:900;letter-spacing:-0.03em;line-height:1.05">' + (up ? 'Create your account' : 'Welcome back') + '</h1>' +
+    '<p class="muted" style="margin-top:8px">' + (up ? 'Your account keeps your cards and spending private in this browser.' : 'Sign in to see your cards and rewards.') + '</p>' +
+    '<div class="seg-switch" role="group" aria-label="Account" style="margin:22px 0 18px"><button type="button" data-mode="signin" aria-pressed="' + !up + '">Sign in</button><button type="button" data-mode="signup" aria-pressed="' + up + '">Create account</button></div>' +
+    '<form id="authForm" novalidate style="display:grid;gap:14px">' +
+      (up ? '<div class="field"><label for="aName">Your name</label><input class="input" id="aName" autocomplete="name" maxlength="24"></div>' : '') +
+      '<div class="field"><label for="aEmail">Email</label><input class="input" id="aEmail" type="email" autocomplete="' + (up ? 'username' : 'email') + '" maxlength="254"></div>' +
+      '<div class="field"><label for="aPass">Password</label><input class="input" id="aPass" type="password" autocomplete="' + (up ? 'new-password' : 'current-password') + '" maxlength="128">' + (up ? '<span class="subtle small">At least 8 characters, with a letter and a number.</span>' : '') + '</div>' +
+      (up ? '<div class="field"><label for="aPass2">Confirm password</label><input class="input" id="aPass2" type="password" autocomplete="new-password" maxlength="128"></div>' : '') +
+      '<label class="small muted" style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="aShow"> Show password</label>' +
+      '<p class="err" id="aErr" role="alert" hidden></p><p class="small" id="aNote" role="status" style="color:var(--green)" hidden></p>' +
+      '<button class="btn btn-primary" type="submit" id="aSubmit">' + (up ? 'Create account' : 'Sign in') + ' ' + ico('arrow', 18) + '</button>' +
+    '</form>' +
+    (up ? '' : '<details class="auth-help"><summary>Can’t sign in?</summary><p class="muted small">TAPO stores only a secure hash of your password in this browser, so it can’t be recovered or reset. If you’ve forgotten it, you can remove the account and its data from this browser, then create a new one.</p><button class="btn btn-danger btn-sm" type="button" id="aRemove">Remove account from this browser</button></details>') +
+    (storageOk ? '' : '<p class="tip" style="margin-top:16px;display:block">This browser is blocking site storage, so a new account will only last until you leave this page.</p>') +
+    '<div class="auth-note">' + ico('lock', 16, '#6FD9A4') + '<span>For your security, TAPO signs you out every time the page reloads. Your account and data stay in this browser only; nothing is sent to a server.</span></div>' +
+    '</div></main></div>';
+}
+function mountAuth() {
+  $$('[data-mode]').forEach(function (b) { b.addEventListener('click', function () { authMode = b.getAttribute('data-mode'); render(); }); });
+  var form = $('#authForm'), err = $('#aErr'), note = $('#aNote'), submit = $('#aSubmit');
+  function fail(m) { err.textContent = m; err.hidden = !m; }
+  $('#aShow').addEventListener('change', function (e) { $$('#authForm input[type=password], #authForm input[data-pw]').forEach(function (i) { i.setAttribute('data-pw', '1'); i.type = e.target.checked ? 'text' : 'password'; }); });
+  if (!window.crypto || !crypto.subtle) { fail('This browser can’t create accounts securely here. Open TAPO over https.'); submit.disabled = true; }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); fail(''); note.hidden = true;
+    var up = authMode === 'signup', email = $('#aEmail').value, pass = $('#aPass').value;
+    if (up && pass !== $('#aPass2').value) { fail('The two passwords don’t match.'); return; }
+    submit.disabled = true; var label = submit.innerHTML; submit.textContent = up ? 'Creating account…' : 'Signing in…';
+    (up ? signUp($('#aName').value, email, pass) : signIn(email, pass)).then(function () {
+      if (!location.hash || SITE.indexOf(location.hash.slice(1)) >= 0 && location.hash.slice(1) === 'home') location.hash = 'wallet';
+      render();
+      toast('Signed in as ' + SESSION.name);
+    }, function (x) {
+      submit.disabled = false; submit.innerHTML = label; $('#aPass').value = ''; var p2 = $('#aPass2'); if (p2) p2.value = '';
+      fail(x && x.message ? x.message : 'Something went wrong. Please try again.');
+    });
+  });
+  var rm = $('#aRemove');
+  if (rm) rm.addEventListener('click', function () {
+    var email = $('#aEmail').value.trim();
+    if (!email) { fail('Enter the account’s email above first.'); return; }
+    if (!rm.getAttribute('data-armed')) { rm.setAttribute('data-armed', '1'); rm.textContent = 'Yes, remove ' + email; return; }
+    var ok = removeAccount(email);
+    if (ok) { authMode = 'signup'; render(); var n = $('#aNote'); n.textContent = 'That account and its data were removed from this browser.'; n.hidden = false; }
+    else { rm.removeAttribute('data-armed'); rm.textContent = 'Remove account from this browser'; fail('There’s no account with that email in this browser.'); }
+  });
+  var first = $('#aName') || $('#aEmail'); if (first && !REDUCE) setTimeout(function () { if (!$('.intro')) first.focus(); }, 50);
 }
 var TITLES = { home: '', product: 'Product', security: 'Security', faq: 'FAQ', wallet: 'Wallet', best: 'Best card', insights: 'Insights', import: 'Import', cards: 'Cards' };
 window.addEventListener('hashchange', render);
@@ -971,7 +1147,7 @@ function siteShell(r) {
   var nav = [['home', 'Home'], ['product', 'Product'], ['security', 'Security'], ['faq', 'FAQ']];
   return '<header class="snav" id="snav"><div class="wrap"><a class="brand" href="#home" aria-label="TAPO home">' + LOGO + '<b>TAPO</b></a>' +
     '<nav class="slinks" id="slinks" aria-label="Site">' + nav.map(function (n) { return '<a href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + n[1] + '</a>'; }).join('') + '</nav>' +
-    '<div class="snav-right"><a class="btn btn-primary btn-sm" href="#wallet">Open TAPO ' + ico('arrow', 16) + '</a><button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="slinks">' + ico('menu', 20) + '</button></div></div></header>' +
+    '<div class="snav-right"><button class="btn btn-ghost btn-sm signout-site" type="button" data-signout title="Signed in as ' + esc(SESSION.email) + '">Sign out</button><a class="btn btn-primary btn-sm" href="#wallet">Open TAPO ' + ico('arrow', 16) + '</a><button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="slinks">' + ico('menu', 20) + '</button></div></div></header>' +
     '<main>' + PAGES[r]() + '</main>' + siteFooter();
 }
 function siteFooter() {
@@ -989,7 +1165,7 @@ PAGES.home = function () {
   var mq = [['groceries', '5%'], ['travel', '6%'], ['online', '7%'], ['dining', '3%'], ['fuel', '2.5%'], ['entertainment', '4%'], ['utilities', '2%'], ['other', '1%']];
   var mqHtml = mq.concat(mq).map(function (m) { return '<span class="mq">' + catIcon(m[0], 15).replace('cico', 'cico" style="width:28px;height:28px;border-radius:9px;background:' + CAT[m[0]].bg) + CAT[m[0]].label + ' <b>up to ' + m[1] + '</b></span>'; }).join('');
   return '<section class="hero"><div class="wrap"><div>' +
-    '<span class="pill"><i></i>Free on the web · No sign-up</span>' +
+    '<span class="pill"><i></i>Free on the web</span>' +
     '<h1>Every card.<br><span class="shine-text">The right one.</span><br>Every time.</h1>' +
     '<p class="lede">TAPO knows the reward rules on every card you carry. It tells you which card earns the most before you pay, and shows exactly what the wrong card cost you after.</p>' +
     '<div class="hero-cta"><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a><a class="btn btn-ghost" href="#product">See how it works</a></div>' +
@@ -1009,7 +1185,7 @@ PAGES.home = function () {
       '<article class="panel tile t-b"><div class="ficon">' + ico('trend', 22, '#F5C66B') + '</div><h3>Missed rewards</h3><p>One number that matters: what your best cards would have earned this month.</p><div class="big-num num" id="bentoMissed">₹0</div></article>' +
       '<article class="panel tile t-c"><div class="ficon">' + ico('file', 22, '#6FD9A4') + '</div><h3>Private statement import</h3><p>Drop a bank CSV. It\'s read in your browser, sorted into categories, and never uploaded.</p></article>' +
       '<article class="panel tile t-d"><div class="ficon">' + ico('chart', 22, '#A99BFF') + '</div><h3>Insights that act</h3><p>Where your money went, what each card earned, and the swaps that pay off.</p><div class="mini-bars" aria-hidden="true">' + [62, 40, 88, 30, 54, 72, 46].map(function (h, i) { return '<i style="height:' + h + '%;--c:' + CATS[i][2] + ';animation-delay:' + (i * 0.07) + 's"></i>'; }).join('') + '</div></article>' +
-      '<article class="panel tile t-e"><div class="ficon">' + ico('shield', 22, '#ECE9E2') + '</div><h3>Nothing to steal</h3><p>No card numbers, no CVV, no OTP, no account. There\'s simply nothing sensitive to leak.</p></article>' +
+      '<article class="panel tile t-e"><div class="ficon">' + ico('shield', 22, '#ECE9E2') + '</div><h3>Nothing to steal</h3><p>No card numbers, no CVV, no OTP, no bank logins. There\'s simply nothing sensitive to leak.</p></article>' +
     '</div></div></section>' +
 
     '<section class="sec"><div class="wrap"><div class="head center"><span class="eyebrow">Three steps</span><h2 class="h2">Set up in five minutes.</h2></div><div class="steps3">' +
@@ -1018,7 +1194,7 @@ PAGES.home = function () {
       '<div class="panel st"><span class="n">3</span><h3>Pay with the right card</h3><p>Ask before you pay, or review your month and recover what you missed.</p></div>' +
     '</div></div></section>' +
 
-    '<section class="sec" style="padding-top:0"><div class="wrap"><div class="cta-band"><h2 class="h2">Stop leaving rewards on the table.</h2><p class="lede">TAPO runs right here in your browser. No download, no sign-up, nothing to pay.</p><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a></div></div></section>';
+    '<section class="sec" style="padding-top:0"><div class="wrap"><div class="cta-band"><h2 class="h2">Stop leaving rewards on the table.</h2><p class="lede">TAPO runs right here in your browser. No download and nothing to pay.</p><a class="btn btn-primary" href="#wallet">Open TAPO ' + ico('arrow', 18) + '</a></div></div></section>';
 };
 
 PAGES.product = function () {
@@ -1046,10 +1222,10 @@ PAGES.product = function () {
 };
 
 PAGES.security = function () {
-  return '<section class="sec"><div class="wrap"><div class="head"><span class="eyebrow">Security & privacy</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">We can\'t leak what we never collect.</h1><p class="lede">TAPO is designed so that sensitive card data has nowhere to go. There\'s no field for it, no server holding it and no account to break into.</p></div>' +
+  return '<section class="sec"><div class="wrap"><div class="head"><span class="eyebrow">Security & privacy</span><h1 class="h2" style="font-size:clamp(40px,6vw,76px)">We can\'t leak what we never collect.</h1><p class="lede">TAPO is designed so that sensitive card data has nowhere to go. There\'s no field for it and no server holding it. Your account lives only in your browser, protected by a hashed password.</p></div>' +
     '<div class="panel box" style="margin-bottom:16px"><h2 style="font-size:20px">TAPO never asks for</h2><div class="never"><span>Full card number</span><span>CVV</span><span>PIN</span><span>OTP</span><span>Expiry date</span><span>Net-banking login</span><span>UPI PIN</span><span>Payment tokens</span></div><p class="muted small">If anyone claiming to be TAPO asks you for one of these, it isn\'t us.</p></div>' +
     '<div class="flow">' +
-      '<div class="panel">' + ico('phone', 26, '#6FD9A4') + '<h3>Stays on your device</h3><p>Cards and spending are saved in your browser\'s storage, or on your phone in the app. There\'s no TAPO account and no cloud copy.</p></div>' +
+      '<div class="panel">' + ico('phone', 26, '#6FD9A4') + '<h3>Stays on your device</h3><p>Your account, cards and spending are saved in this browser, or on your phone in the app. There\'s no cloud copy, and every reload signs you out.</p></div>' +
       '<div class="panel">' + ico('file', 26, '#6FD9A4') + '<h3>Statements read locally</h3><p>Imports are parsed on your device. TAPO keeps the date, merchant and amount; card, account and UPI numbers are masked to the last four digits.</p></div>' +
       '<div class="panel">' + ico('lock', 26, '#6FD9A4') + '<h3>No tracking</h3><p>No ads, no analytics, no selling of data. Clearing your browser data removes everything TAPO stored.</p></div>' +
     '</div></div></section>' +
@@ -1063,7 +1239,9 @@ PAGES.faq = function () {
     ['Is TAPO a bank or a payment app?', 'No. TAPO doesn\'t issue cards, hold money or process payments. It tells you which of your existing cards to use; you keep paying with your cards as usual.'],
     ['Which banks and cards work with TAPO?', 'Any credit or debit card. You enter each card\'s reward rates yourself, so TAPO works with any issuer or network. TAPO isn\'t affiliated with any bank or card network.'],
     ['Will TAPO ask for my card number or OTP?', 'Never. TAPO stores a nickname and, if you like, the last four digits as a label. It has no way to accept a full card number, CVV, PIN or OTP.'],
-    ['Where is my data stored?', 'In your browser\'s local storage on this device. Nothing is sent to a server. Clearing site data, or using "Reset everything" in Cards, removes it.'],
+    ['Where is my data stored?', 'Your account and your wallet are stored in this browser on this device. Your password is never stored, only a secure hash of it. Nothing is sent to a server. Clearing site data removes everything.'],
+    ['Why am I signed out when I reload?', 'For your security, TAPO keeps you signed in only while the page is open. Reloading or closing it signs you out, so nobody who picks up your device later can open your wallet.'],
+    ['I forgot my password. Can I reset it?', 'Because your password is stored only as a secure hash in your browser, nobody can recover it, including us. On the sign-in page, choose "Can’t sign in?" to remove that account and its data from this browser, then create a new one.'],
     ['How do I import a statement?', 'In your bank or card app, download a statement as CSV (Excel files can be saved as CSV). Open Import in TAPO and drop the file. TAPO finds the date, description and amount columns automatically.'],
     ['How accurate are the reward estimates?', 'They follow the rates and monthly caps you enter, rounded down to the paisa. Your issuer\'s statement is always the final word.'],
     ['What are the example cards?', 'Four fictional cards with example activity, so you can explore TAPO straight away. Edit them, remove them, or clear the example activity from the Cards screen.'],
@@ -1081,8 +1259,10 @@ PAGES.faq = function () {
 function appShell(r) {
   return '<div class="app"><aside class="side" aria-label="App"><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a>' +
     APP_NAV.map(function (n) { return '<a class="navi" href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + ico(n[2], 20) + n[1] + '</a>'; }).join('') +
-    '<div class="side-foot"><p>' + ico('lock', 14) + ' Saved in this browser only</p><a class="link-btn" href="#home" style="text-align:left;padding-left:0">' + ico('back', 14) + ' Back to website</a></div></aside>' +
-    '<main class="workspace"><div class="app-top"><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a><a class="link-btn" href="#home">Website</a></div>' + SCREENS[r]() + '</main>' +
+    '<div class="side-foot"><div class="who"><span class="who-av">' + esc(initialsOf(SESSION.name)) + '</span><span style="min-width:0"><b>' + esc(SESSION.name) + '</b><small>' + esc(SESSION.email) + '</small></span></div>' +
+    '<button class="btn btn-ghost btn-sm" type="button" data-signout>' + ico('lock', 14) + ' Sign out</button>' +
+    '<a class="link-btn" href="#home" style="text-align:left;padding-left:0">' + ico('back', 14) + ' Back to website</a></div></aside>' +
+    '<main class="workspace"><div class="app-top"><a class="brand" href="#home">' + LOGO + '<b>TAPO</b></a><div style="display:flex;gap:4px"><a class="link-btn" href="#home">Website</a><button class="link-btn" type="button" data-signout>Sign out</button></div></div>' + SCREENS[r]() + '</main>' +
     '<nav class="tabs" aria-label="App">' + APP_NAV.map(function (n) { return '<a href="#' + n[0] + '"' + (n[0] === r ? ' aria-current="page"' : '') + '>' + ico(n[2], 22) + n[1].split(' ')[0] + '</a>'; }).join('') + '</nav></div>';
 }
 function head(k, title, right) { return '<div class="screen-head"><div><p class="k">' + k + '</p><h1>' + title + '</h1></div>' + (right || '') + '</div>'; }
@@ -1163,7 +1343,9 @@ SCREENS.cards = function () {
 /* =====================================================================================
    Mount (events, dynamic bits)
    ===================================================================================== */
+function initialsOf(name) { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join(''); }
 function mount(r) {
+  $$('[data-signout]').forEach(function (b) { b.addEventListener('click', signOut); });
   if (SITE.indexOf(r) >= 0) mountSite(r); else mountApp(r);
 }
 function countUps() {
@@ -1435,7 +1617,6 @@ function openEditor(id) {
    ===================================================================================== */
 function intro() {
   if (REDUCE || !document.body.animate) return;
-  try { if (sessionStorage.getItem('tapo.intro')) return; sessionStorage.setItem('tapo.intro', '1'); } catch (e) {}
   var U = 4, pts = [], x, y, a;                       // mark geometry in 40-unit space, drawn at 4px per unit
   for (x = 9; x <= 27; x += 2.5) for (y = 14; y <= 20; y += 2.5) pts.push([x, y, 0]);          // crossbar (card)
   for (x = 16; x <= 20; x += 2.2) for (y = 22.5; y <= 31; y += 2.4) pts.push([x, y, 0]);       // stem
@@ -1466,6 +1647,5 @@ function intro() {
 }
 
 render();
-intro();
 })();
 </script>

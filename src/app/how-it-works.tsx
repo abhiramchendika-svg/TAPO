@@ -9,7 +9,7 @@ import { colors, space, type } from '../theme';
 
 const PRINCIPLES = [
   { word: 'Transparent', line: 'Every recommendation shows its working — rate, cap and the reason it won.' },
-  { word: 'Private', line: 'Everything stays on this device. No accounts, no servers, no tracking.' },
+  { word: 'Private', line: 'Everything stays on this device. Your account lives here too: no servers, no tracking.' },
   { word: 'Honest', line: 'Sample data is labelled as sample. TAPO never moves money or pretends to.' },
 ];
 

@@ -23,6 +23,27 @@ export function validateDisplayName(v: string): string | null {
   return null;
 }
 
+/** Name on a new account (same rules as the display name, with a sign-up message). */
+export function validateAccountName(v: string): string | null {
+  if (!v.trim()) return 'Enter your name.';
+  return validateDisplayName(v);
+}
+
+export function validateAccountEmail(v: string): string | null {
+  const t = v.trim();
+  if (!t) return 'Enter your email address.';
+  if (t.length > 254 || !/^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/.test(t)) return 'Enter a valid email address, like name@example.com.';
+  return null;
+}
+
+/** At least 8 characters with a letter and a number; checked before an account is created. */
+export function validateNewPassword(v: string): string | null {
+  if (v.length < 8) return 'Use at least 8 characters for your password.';
+  if (v.length > 128) return 'Use 128 characters or fewer.';
+  if (!/\p{L}/u.test(v) || !/\d/.test(v)) return 'Include at least one letter and one number.';
+  return null;
+}
+
 export function validateLast4(v: string): string | null {
   if (!v) return 'Enter the last four digits.';
   if (!/^\d{4}$/.test(v)) return 'Use exactly 4 digits (0–9).';

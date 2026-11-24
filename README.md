@@ -231,6 +231,21 @@ npx expo export --platform android --platform ios --platform web
 > with `--no-bytecode`. If the web app shows stale content after moving the folder, start once with
 > `npx expo start --clear`.
 
+## Accounts and sign-in
+
+Both the app and the website require an account. Accounts are **on-device**: there is no server.
+
+- **Create account:** name, email and a password (8+ characters with a letter and a number). Only a random salt and a
+  PBKDF2-SHA256 hash are stored (app: 20,000 iterations in [`src/lib/password.ts`](src/lib/password.ts), unit-tested
+  against Node's PBKDF2; website: 210,000 iterations with Web Crypto). The password itself is never stored.
+- **Sessions are memory-only:** restarting the app or reloading the page signs you out. The logo intro plays on the
+  sign-in screen each time.
+- **Each account has its own wallet** on the device. The first account created takes over any data saved before
+  accounts existed.
+- Wrong passwords get a generic "Email or password is incorrect"; five failures lock sign-in for 30 seconds.
+- **Forgotten password:** it can't be recovered. "Can't sign in?" removes that account and its data from the device.
+- Signed-out users can't open app screens: the router's `Stack.Protected` guards every screen except `sign-in`.
+
 ## Docs and showcase website
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): how the code works, with questions to practise before a review.

@@ -7,6 +7,7 @@ import { Text } from '../../components/Text';
 import { Icon, type IconName } from '../../components/Icon';
 import { Logo } from '../../components/Logo';
 import { Button, Field, Notice, Panel, Screen, SectionHeader, Title } from '../../components/ui';
+import { useAuth } from '../../lib/auth';
 import { initials } from '../../lib/format';
 import { DISPLAY_NAME_MAX, validateDisplayName } from '../../lib/validation';
 import { useWallet } from '../../lib/wallet';
@@ -34,6 +35,9 @@ export default function SettingsScreen() {
   return (
     <Screen>
       <Title kicker="Preferences">Settings</Title>
+
+      <SectionHeader title="Account" />
+      <AccountSection />
 
       <SectionHeader title="Profile" />
       <ProfileSection />
@@ -94,8 +98,9 @@ export default function SettingsScreen() {
       <Panel style={{ gap: space.lg }}>
         <Bullet icon="wallet">Data stays on this device in local app storage. Nothing is sent to a server.</Bullet>
         <Bullet icon="card">
-          We only store an optional display name, plus each card’s nickname, fictional issuer, network, card type,
-          last four digits and sample reward rules.
+          We only store your account name and email, a secure hash of your password (never the password itself), an
+          optional display name, plus each card’s nickname, fictional issuer, network, card type, last four digits and
+          reward rules.
         </Bullet>
         <Bullet icon="lock">
           We never ask for or store full card numbers, CVV, PIN, OTP, expiry dates, bank logins or payment tokens.
@@ -188,6 +193,42 @@ function VersionTapper({ unlocked }: { unlocked: boolean }) {
   );
 }
 
+function AccountSection() {
+  const { session, signOut, removeAccount } = useAuth();
+  const [armed, setArmed] = useState(false);
+  if (!session) return null;
+  return (
+    <Panel style={{ gap: space.md }}>
+      <View style={{ gap: 2 }}>
+        <Text style={type.mono}>Signed in as</Text>
+        <Text style={type.h2} numberOfLines={1}>
+          {session.name}
+        </Text>
+        <Text style={[type.small, { color: colors.textMuted }]} numberOfLines={1}>
+          {session.email}
+        </Text>
+      </View>
+      <Text style={type.caption}>
+        Your account and data are stored only on this device. TAPO signs you out every time the app restarts.
+      </Text>
+      <Button label="Sign out" icon="lock" variant="secondary" onPress={signOut} />
+      {armed ? (
+        <View style={{ gap: space.sm }} accessibilityLiveRegion="polite">
+          <Text style={[type.body, { fontWeight: '600' }]}>
+            Delete this account and all its cards and spending from this device? This can’t be undone.
+          </Text>
+          <View style={{ flexDirection: 'row', gap: space.sm }}>
+            <Button label="Cancel" variant="secondary" onPress={() => setArmed(false)} style={{ flex: 1 }} />
+            <Button label="Yes, delete" variant="danger" onPress={() => removeAccount(session.email)} style={{ flex: 1 }} />
+          </View>
+        </View>
+      ) : (
+        <Button label="Delete account" icon="trash" variant="ghost" onPress={() => setArmed(true)} />
+      )}
+    </Panel>
+  );
+}
+
 function ProfileSection() {
   const { data, setProfile } = useWallet();
   const name = data.profile?.displayName;
@@ -232,7 +273,7 @@ function ProfileSection() {
           <Text style={[type.h2, { marginTop: 2 }, !name && { color: colors.textMuted }]} numberOfLines={1}>
             {name ?? 'Not set'}
           </Text>
-          <Text style={[type.caption, { fontWeight: '500', marginTop: 2 }]}>On this device only · not an account</Text>
+          <Text style={[type.caption, { fontWeight: '500', marginTop: 2 }]}>Shown in your Wallet greeting</Text>
         </View>
       </View>
 

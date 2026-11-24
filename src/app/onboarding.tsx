@@ -49,7 +49,7 @@ const PAGES: Page[] = [
     points: [
       'Just a nickname and the last four digits',
       'Never your full card number, CVV, PIN or OTP',
-      'Everything stays on this device — no account, no tracking',
+      'Your account and data stay on this device — no servers, no tracking',
     ],
   },
   {
