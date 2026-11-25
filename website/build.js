@@ -1,6 +1,6 @@
 /**
  * Builds website/index.html from website/template.html:
- *  - inlines the Satoshi font files as base64 @font-face rules (the Artifact host only allows Google Fonts),
+ *  - inlines Plus Jakarta Sans (SIL Open Font License, from @expo-google-fonts) as base64 @font-face rules,
  *  - transpiles src/lib/csvImport.ts so the website's statement demo runs the app's real parser.
  *
  * Usage: npm run build:website
@@ -17,12 +17,13 @@ const weights = [
   ['Regular', 400],
   ['Medium', 500],
   ['Bold', 700],
-  ['Black', 900],
+  ['ExtraBold', 800],
 ];
 const fontFaces = weights
   .map(([name, weight]) => {
-    const b64 = read(`assets/fonts/satoshi/Satoshi-${name}.otf`).toString('base64');
-    return `@font-face{font-family:"Satoshi";font-weight:${weight};font-style:normal;font-display:swap;src:url(data:font/otf;base64,${b64}) format("opentype")}`;
+    const file = `node_modules/@expo-google-fonts/plus-jakarta-sans/${weight}${name}/PlusJakartaSans_${weight}${name}.ttf`;
+    const b64 = read(file).toString('base64');
+    return `@font-face{font-family:"Plus Jakarta Sans";font-weight:${weight};font-style:normal;font-display:swap;src:url(data:font/ttf;base64,${b64}) format("truetype")}`;
   })
   .join('\n');
 

@@ -21,8 +21,9 @@ export function Text({ style, children, ...rest }: TextProps) {
   const family = flat.fontFamily ?? parent.family;
   const weight = flat.fontWeight ?? parent.weight;
   const fontFamily = isFontRole(family) ? resolveFont(family, weight) : family;
-  // Satoshi and JetBrains Mono have no ₹ glyph; draw it in Inter at a matching weight.
-  const needsRupeeFallback = isFontRole(family);
+  // JetBrains Mono has no ₹ glyph; draw it in Inter at a matching weight.
+  // (Plus Jakarta Sans, used for body and display text, has its own ₹.)
+  const needsRupeeFallback = isFontRole(family) && family === 'mono';
 
   return (
     <FontContext.Provider value={{ family, weight }}>

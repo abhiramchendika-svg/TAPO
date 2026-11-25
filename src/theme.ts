@@ -65,13 +65,13 @@ export const controlRadius = 12;
 
 /**
  * Font roles. These are tokens, resolved to a concrete font file per weight
- * by `resolveFont` (used by our <Text> wrapper). Fonts: Satoshi (body,
- * buttons, headings), JetBrains Mono (labels), Inter (₹ only).
+ * by `resolveFont` (used by our <Text> wrapper). Fonts: Plus Jakarta Sans (body,
+ * buttons, headings), JetBrains Mono (labels), Inter (₹ next to mono text only).
  */
 export const fonts = {
   body: 'body',
   display: 'display',
-  /** Kept for existing call sites; same as `display` (now Satoshi). */
+  /** Kept for existing call sites; same as `display` (now Plus Jakarta Sans). */
   condensed: 'display',
   mono: 'mono',
 } as const;
@@ -80,17 +80,18 @@ type FontRole = 'body' | 'display' | 'mono';
 
 /**
  * Only the weights the UI uses are bundled.
- * - Satoshi (ITF Free Font License, assets/fonts/satoshi/LICENSE-FFL.txt): body,
- *   buttons and headings. Official, unmodified .otf files.
- * - Inter: draws ₹ only — Satoshi and JetBrains Mono have no ₹ glyph.
+ * All three are Google Fonts under the SIL Open Font License, loaded from
+ * @expo-google-fonts packages (no font files are committed to this repo).
+ * - Plus Jakarta Sans: body, buttons and headings (it includes the ₹ glyph).
+ * - Inter: draws ₹ inside JetBrains Mono text, which has no ₹ glyph.
  * - JetBrains Mono: small labels, card numbers, codes.
  */
 export const FONT_FILES = {
-  Satoshi_300Light: require('../assets/fonts/satoshi/Satoshi-Light.otf'),
-  Satoshi_400Regular: require('../assets/fonts/satoshi/Satoshi-Regular.otf'),
-  Satoshi_500Medium: require('../assets/fonts/satoshi/Satoshi-Medium.otf'),
-  Satoshi_700Bold: require('../assets/fonts/satoshi/Satoshi-Bold.otf'),
-  Satoshi_900Black: require('../assets/fonts/satoshi/Satoshi-Black.otf'),
+  PlusJakartaSans_300Light: require('@expo-google-fonts/plus-jakarta-sans/300Light/PlusJakartaSans_300Light.ttf'),
+  PlusJakartaSans_400Regular: require('@expo-google-fonts/plus-jakarta-sans/400Regular/PlusJakartaSans_400Regular.ttf'),
+  PlusJakartaSans_500Medium: require('@expo-google-fonts/plus-jakarta-sans/500Medium/PlusJakartaSans_500Medium.ttf'),
+  PlusJakartaSans_700Bold: require('@expo-google-fonts/plus-jakarta-sans/700Bold/PlusJakartaSans_700Bold.ttf'),
+  PlusJakartaSans_800ExtraBold: require('@expo-google-fonts/plus-jakarta-sans/800ExtraBold/PlusJakartaSans_800ExtraBold.ttf'),
   Inter_300Light: require('@expo-google-fonts/inter/300Light/Inter_300Light.ttf'),
   Inter_400Regular: require('@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf'),
   Inter_500Medium: require('@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf'),
@@ -115,17 +116,17 @@ export function resolveFont(family: string | undefined, weight: TextStyle['fontW
   if (role === 'mono') {
     return w >= 700 ? 'JetBrainsMono_700Bold' : w <= 300 ? 'JetBrainsMono_300Light' : 'JetBrainsMono_500Medium';
   }
-  // Satoshi has Light, Regular, Medium, Bold and Black. Headings use Bold; Black is reserved
-  // for explicit weight-900 requests.
-  if (role === 'display') return w >= 900 ? 'Satoshi_900Black' : 'Satoshi_700Bold';
-  if (w >= 800) return 'Satoshi_900Black';
-  if (w >= 600) return 'Satoshi_700Bold';
-  if (w >= 500) return 'Satoshi_500Medium';
-  if (w <= 300) return 'Satoshi_300Light';
-  return 'Satoshi_400Regular';
+  // Bundled weights: Light, Regular, Medium, Bold and ExtraBold. Headings use Bold; ExtraBold
+  // (the heaviest Plus Jakarta Sans weight) is reserved for explicit weight-900 requests.
+  if (role === 'display') return w >= 900 ? 'PlusJakartaSans_800ExtraBold' : 'PlusJakartaSans_700Bold';
+  if (w >= 800) return 'PlusJakartaSans_800ExtraBold';
+  if (w >= 600) return 'PlusJakartaSans_700Bold';
+  if (w >= 500) return 'PlusJakartaSans_500Medium';
+  if (w <= 300) return 'PlusJakartaSans_300Light';
+  return 'PlusJakartaSans_400Regular';
 }
 
-/** Inter weight used to draw ₹ (missing from Satoshi and JetBrains Mono) at a matching weight. */
+/** Inter weight used to draw ₹ (missing from JetBrains Mono) at a matching weight. */
 export function resolveRupeeFont(weight: TextStyle['fontWeight']): string {
   const w = toWeight(weight);
   if (w >= 800) return 'Inter_800ExtraBold';
@@ -141,7 +142,7 @@ export function isFontRole(family: unknown): family is FontRole {
 }
 
 export const type = {
-  /** Page headline: Satoshi Bold, tight tracking (Apple-like weight, not Black). */
+  /** Page headline: Plus Jakarta Sans Bold, tight tracking (Apple-like weight, not Black). */
   display: {
     fontSize: 32,
     lineHeight: 37,
@@ -164,7 +165,7 @@ export const type = {
   caption: { fontSize: 12, color: colors.textSubtle, lineHeight: 16, fontWeight: '500' as const },
   label: { fontSize: 14, fontWeight: '600' as const, color: colors.text },
   /**
-   * Small section label ("Good Morning", "Recent Activity"): Satoshi Medium, Title Case.
+   * Small section label ("Good Morning", "Recent Activity"): Plus Jakarta Sans Medium, Title Case.
    * (Named `mono` for history; it's not monospace.)
    */
   mono: {

@@ -16,7 +16,7 @@ Fill in with your own decisions. Examples of the kind of thing to list:
 
 - The problem: Indians with several cards don't know which card earns most for a purchase.
 - The safety rules: never store full card numbers, CVV, PIN, OTP, credentials or tokens; no real payments.
-- The design direction (dark "gallery" look, Satoshi font, floating cards) and the screens to build.
+- The design direction (dark "gallery" look, Satoshi font (later replaced by the open-licence Plus Jakarta Sans), floating cards) and the screens to build.
 - Which features to add and in what order (insights, statement import, developer screen, NFC demo).
 - _…_
 

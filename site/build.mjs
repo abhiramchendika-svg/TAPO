@@ -145,8 +145,8 @@ ${SITE_URL ? `<meta property="og:url" content="${url}">\n<meta property="og:imag
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.png">
-<link rel="preload" href="/fonts/Satoshi-Regular.otf" as="font" type="font/otf" crossorigin>
-<link rel="preload" href="/fonts/Satoshi-Bold.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="/fonts/PlusJakartaSans-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="/fonts/PlusJakartaSans-Bold.ttf" as="font" type="font/ttf" crossorigin>
 <style>${CSS}</style>
 <script>/* adaptive quality: decided before first paint */(function(){try{var n=navigator,m=window.matchMedia,low=(n.connection&&n.connection.saveData)||(n.deviceMemory&&n.deviceMemory<=4)||(n.hardwareConcurrency&&n.hardwareConcurrency<=4)||(m&&m('(prefers-reduced-transparency: reduce)').matches);if(low)document.documentElement.setAttribute('data-quality','low')}catch(e){}})()</script>
 </head>
@@ -293,8 +293,10 @@ const notFound = `<section class="sec first"><div class="wrap"><p class="kicker"
 /* ---------- write ---------- */
 fs.rmSync(path.join(out, 'product'), { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
-const fontFaces = [['Regular', 400], ['Medium', 500], ['Bold', 700]]
-  .map(([n, w]) => `@font-face{font-family:"Satoshi";font-weight:${w};font-style:normal;font-display:swap;src:url(/fonts/Satoshi-${n}.otf) format("opentype")}`)
+// Plus Jakarta Sans (SIL Open Font License), copied from the @expo-google-fonts package at build time.
+const SITE_FONTS = [['Regular', 400], ['Medium', 500], ['Bold', 700]];
+const fontFaces = SITE_FONTS
+  .map(([n, w]) => `@font-face{font-family:"Plus Jakarta Sans";font-weight:${w};font-style:normal;font-display:swap;src:url(/fonts/PlusJakartaSans-${n}.ttf) format("truetype")}`)
   .join('\n');
 CSS = buildCss();
 const decideData = `<script type="application/json" id="decide-data">${JSON.stringify({ table: DECIDE, faces: CARD_FACES, labels: CATEGORY_LABELS }).replace(/</g, '\\u003c')}</script>`;
@@ -311,13 +313,17 @@ for (const p of PAGES) {
 }
 fs.writeFileSync(path.join(out, '404.html'), page({ pathName: '/404', title: 'Page not found', description: 'This page does not exist.', body: notFound }));
 function buildCss() {
-  // ₹ is missing from Satoshi; the system UI font draws it.
   return fontFaces + '\n' + fs.readFileSync(path.join(root, 'site/styles.css'), 'utf8');
 }
 fs.writeFileSync(path.join(out, 'styles.css'), CSS);
 fs.copyFileSync(path.join(root, 'site/site.js'), path.join(out, 'site.js'));
 fs.cpSync(path.join(root, 'site/public'), out, { recursive: true });
-fs.rmSync(path.join(out, 'fonts', 'Satoshi-Black.otf'), { force: true });
+fs.mkdirSync(path.join(out, 'fonts'), { recursive: true });
+const fontPkg = path.join(root, 'node_modules/@expo-google-fonts/plus-jakarta-sans');
+for (const [n, w] of SITE_FONTS) {
+  fs.copyFileSync(path.join(fontPkg, `${w}${n}/PlusJakartaSans_${w}${n}.ttf`), path.join(out, 'fonts', `PlusJakartaSans-${n}.ttf`));
+}
+fs.copyFileSync(path.join(fontPkg, 'LICENSE_FONT'), path.join(out, 'fonts', 'OFL.txt'));
 fs.copyFileSync(path.join(root, 'assets/favicon.png'), path.join(out, 'favicon.png'));
 fs.writeFileSync(path.join(out, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /app/\n${SITE_URL ? `Sitemap: ${SITE_URL}/sitemap.xml\n` : ''}`);
 if (SITE_URL) {
