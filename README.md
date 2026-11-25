@@ -41,16 +41,17 @@
 ## See the demo in motion
 
 <p align="center">
-  <a href="https://tapo-seven.vercel.app/showcase/"><img src="docs/readme/showcase.png" alt="The TAPO showcase stage after a simulated tap: a round NFC demo tag holding the text TAPO-DEMO:CAPSTONE-01, a phone showing 'Demo mode — no real money is charged' and 'Simulated approval, ₹845.00, no money moved', the sample card Everyday Cashback recommended for groceries, and a dummy receipt with ID DEMO-20261121-7KQ2XM." width="100%"></a>
+  <a href="https://tapo-seven.vercel.app/showcase/"><img src="docs/readme/showcase.png" alt="The TAPO tap-to-pay page after a tap: a round TAPO tag, a phone showing 'Tap complete, ₹845.00, you earned ₹42.25 with Everyday Cashback', the Everyday Cashback card as the best card for groceries, and a receipt kept on the phone." width="100%"></a>
 </p>
 
 <p align="center"><a href="https://tapo-seven.vercel.app/showcase/"><strong>Open the live, animated version →</strong></a></p>
 
 GitHub can't run the animation, so the image above is a still of its last step. The
-[live showcase](https://tapo-seven.vercel.app/showcase/) plays the whole flow in 3D:
-**demo tag → phone → simulated checkout → recommended card and dummy receipt**. It uses the demo's own fictional
-data (the dummy merchant *Demo Fresh Mart*, ₹845, and the sample card TAPO's rewards engine picks for groceries).
-You can pause it or step through it, and with *reduce motion* turned on it shows the finished flow without playing.
+[live page](https://tapo-seven.vercel.app/showcase/) plays the whole flow in 3D:
+**tag → phone → checkout → best card and receipt**. The card shown is the one TAPO's rewards engine picks for the
+purchase. You can pause it or step through it, and with *reduce motion* turned on it shows the finished flow
+without playing. The page is written as product marketing; like everything in this repository, the shop, amount,
+card and receipt it shows are fictional, and the flow it depicts is the simulated demo described below.
 
 ## What TAPO is
 

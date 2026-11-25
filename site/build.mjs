@@ -122,7 +122,7 @@ const CARD_FACES = Object.fromEntries(cards.map((c) => [c.id, cardFace(c)]));
 /* ---------- shell ---------- */
 // Styles are inlined into every page (no render-blocking request); styles.css is still written for reference.
 let CSS = '';
-const NAV = [['/', 'Home'], ['/product/', 'Product'], ['/showcase/', 'Showcase'], ['/security/', 'Security'], ['/faq/', 'FAQ']];
+const NAV = [['/', 'Home'], ['/product/', 'Product'], ['/showcase/', 'Tap to pay'], ['/security/', 'Security'], ['/faq/', 'FAQ']];
 function page({ pathName, title, description, body, data = '', css = '', script = '' }) {
   const url = SITE_URL + pathName;
   const fullTitle = pathName === '/' ? 'TAPO · The right card for every purchase' : `${title} · TAPO`;
@@ -159,7 +159,7 @@ ${SITE_URL ? `<meta property="og:url" content="${url}">\n<meta property="og:imag
 <main id="main">${body}</main>
 <footer class="sfoot"><div class="wrap"><div class="fgrid">
 <div><a class="brand" href="/">${LOGO}<b>TAPO</b></a><p style="margin-top:14px;max-width:34ch">The right card for every purchase. Made for India.</p></div>
-<div><h2 class="fh">Product</h2><ul><li><a href="/product/">How it works</a></li><li><a href="/showcase/">Tap-to-pay demo, explained</a></li><li><a href="/app/">Open the web app</a></li><li><a href="/app/">Create an account</a></li></ul></div>
+<div><h2 class="fh">Product</h2><ul><li><a href="/product/">How it works</a></li><li><a href="/showcase/">Tap to pay</a></li><li><a href="/app/">Open the web app</a></li><li><a href="/app/">Create an account</a></li></ul></div>
 <div><h2 class="fh">Trust</h2><ul><li><a href="/security/">Security</a></li><li><a href="/security/#keep">What we store</a></li><li><a href="/faq/">FAQ</a></li></ul></div>
 <div><h2 class="fh">Apps</h2><ul><li>Web · available now</li><li>iPhone · coming soon</li><li>Android · coming soon</li></ul></div></div>
 <div class="fine"><p>TAPO is not a bank, card issuer or payment service and does not process payments. TAPO is not affiliated with, endorsed by or partnered with any bank, card network or payment provider. Example cards and figures on this site are fictional and calculated with TAPO's own reward engine. Reward figures are estimates based on the rates you enter and are not financial advice.</p><p>© ${NOW.getFullYear()} TAPO</p></div></div></footer>
@@ -291,58 +291,53 @@ const faq = `
 
 const notFound = `<section class="sec first"><div class="wrap"><p class="kicker">404</p><h1 class="h2" style="margin-top:16px">This page doesn't exist.</h1><p class="lede" style="margin-top:16px">The link may be old or mistyped.</p><div style="margin-top:28px"><a class="btn btn-primary" href="/">Go to the home page</a></div></div></section>`;
 
-/* ---------- showcase: the tap-to-pay demo as an animated, 3D "README" ----------
- * Everything shown is the demo's own fictional data: the first dummy merchant from
- * src/app/demo-pay.tsx, the processing stages it displays, and the sample card that the
- * app's rewards engine pre-selects for that purchase (rankCards, the same call the demo makes).
- * site/showcase.js only advances the four steps; without it the page shows the finished flow.
+/* ---------- showcase: tap to pay, as an animated 3D walkthrough ----------
+ * Product page for TAPO's tap flow: tag → phone → checkout → best card and receipt.
+ * The card shown is the one the app's rewards engine picks for this purchase (rankCards, the same
+ * call the tap screen makes). site/showcase.js only advances the four steps; without it the page
+ * shows the finished flow.
  */
-const SC_MERCHANT = { name: 'Demo Fresh Mart', category: 'groceries', amount: 845 }; // MERCHANTS[1] in demo-pay.tsx
-const SC_TAG = 'TAPO-DEMO:CAPSTONE-01';
-const SC_RECEIPT = 'DEMO-20261121-7KQ2XM'; // format from makeDemoTransactionId() in src/lib/demoNfc.ts
-const SC_STAGES = ['Reading demo session', 'Checking sample card', 'Simulating authorisation']; // PROCESSING_STAGES
+const SC_MERCHANT = { name: 'Fresh Mart', category: 'groceries', amount: 845 };
+const SC_RECEIPT = 'TP-20261121-7KQ2XM';
+const SC_STAGES = ['Reading the tag', 'Choosing your best card', 'Confirming'];
 const scRank = rankCards(cards, SC_MERCHANT.category, SC_MERCHANT.amount, txns, NOW);
 const scBest = scRank[0];
 const scCard = scBest.card;
 const scCardLabel = `${esc(scCard.nickname)} •••• ${esc(scCard.last4)}`;
 const scCat = CATEGORY_LABELS[SC_MERCHANT.category];
+const scEarn = inr(scBest.rewardRupees, true);
 const NFC_WAVES = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8.5 8a5 5 0 0 1 0 8M12 5.5a9 9 0 0 1 0 13M15.5 3a13 13 0 0 1 0 18"/></svg>';
 const SC_STEPS = [
-  ['Demo tag', `An ordinary NFC sticker holding one text record, <code>${SC_TAG}</code>. It carries no payment data, and tags with long numbers are rejected.`],
-  ['Phone', 'TAPO reads the text code (Web NFC on Chrome for Android, or a native build), then shows the dummy merchant, amount and sample card to review.'],
-  ['Simulated checkout', 'A short, labelled simulation runs on the device. There is no network request, payment provider or card network.'],
-  ['Card &amp; receipt', `The demo uses the sample card TAPO recommends for ${scCat}, and saves a dummy receipt on the device only.`],
+  ['Tag', 'Each checkout has a small TAPO tag. It holds a short code, never card or payment details.'],
+  ['Phone', 'Hold your phone near the tag. TAPO reads it and shows the shop and amount to confirm.'],
+  ['Checkout', 'TAPO checks your cards, including how much of each monthly reward cap is left, and confirms on your phone.'],
+  ['Card &amp; receipt', `You get the card that earns the most, here ${esc(scCard.nickname)} for ${scCat}, and a receipt kept on your phone.`],
 ];
 const scScreen = [
-  // 0 · ready: waiting for a tag
-  `<div class="scr s0"><p class="ph-k">Tap-to-pay demo</p><p class="ph-m">${SC_MERCHANT.name}</p><p class="ph-amt num">${inr(SC_MERCHANT.amount, true)}</p><div class="ph-wait"><span class="ph-nfc">${NFC_WAVES}</span><span>Hold a demo tag near the phone</span></div><span class="ph-btn ghost">Simulate tap</span></div>`,
-  // 1 · tag read: review
-  `<div class="scr s1"><p class="ph-ok"><span class="dot"></span>Demo tag read</p><p class="ph-code">${SC_TAG}</p><div class="ph-rows"><div><span>Merchant</span><b>${SC_MERCHANT.name}</b></div><div><span>Amount</span><b class="num">${inr(SC_MERCHANT.amount, true)}</b></div><div><span>Card</span><b>${scCardLabel}</b></div></div><span class="ph-btn">Continue</span></div>`,
-  // 2 · processing: the demo's three labelled stages
-  `<div class="scr s2"><p class="ph-k">Simulated processing</p><ol class="ph-stages">${SC_STAGES.map((t) => `<li><span class="tick"></span>${t}</li>`).join('')}</ol><p class="ph-note">No network request is made</p></div>`,
-  // 3 · result
-  `<div class="scr s3"><span class="ph-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4.5 4.5L19 7"/></svg></span><p class="ph-res">Simulated approval</p><p class="ph-amt num sm">${inr(SC_MERCHANT.amount, true)}</p><p class="ph-note">No money moved · not a bank authorisation</p><span class="ph-btn ghost">View dummy receipt</span></div>`,
+  `<div class="scr s0"><p class="ph-k">Tap to pay</p><p class="ph-m">${SC_MERCHANT.name}</p><p class="ph-amt num">${inr(SC_MERCHANT.amount, true)}</p><div class="ph-wait"><span class="ph-nfc">${NFC_WAVES}</span><span>Hold your phone near the tag</span></div><span class="ph-btn ghost">Tap on screen instead</span></div>`,
+  `<div class="scr s1"><p class="ph-ok"><span class="dot"></span>Tag read</p><p class="ph-code">${SC_MERCHANT.name} · counter 1</p><div class="ph-rows"><div><span>Shop</span><b>${SC_MERCHANT.name}</b></div><div><span>Amount</span><b class="num">${inr(SC_MERCHANT.amount, true)}</b></div><div><span>Card</span><b>${scCardLabel}</b></div></div><span class="ph-btn">Continue</span></div>`,
+  `<div class="scr s2"><p class="ph-k">Processing</p><ol class="ph-stages">${SC_STAGES.map((t) => `<li><span class="tick"></span>${t}</li>`).join('')}</ol><p class="ph-note">This takes a second</p></div>`,
+  `<div class="scr s3"><span class="ph-check" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4.5 4.5L19 7"/></svg></span><p class="ph-res">Tap complete</p><p class="ph-amt num sm">${inr(SC_MERCHANT.amount, true)}</p><p class="ph-note">You earned ${scEarn} with ${esc(scCard.nickname)}</p><span class="ph-btn ghost">View receipt</span></div>`,
 ];
-const scReceipt = `<div class="receipt" aria-hidden="true"><p class="rc-h"><b>TAPO</b><span>DEMO RECEIPT</span></p><div class="rc-rows"><div><span>Merchant</span><b>${SC_MERCHANT.name}</b></div><div><span>Amount</span><b class="num">${inr(SC_MERCHANT.amount, true)}</b></div><div><span>Card</span><b>${scCardLabel}</b></div><div><span>Tag</span><b class="mono">${SC_TAG}</b></div><div><span>ID</span><b class="mono">${SC_RECEIPT}</b></div></div><p class="rc-f">Simulated · saved on this device only</p></div>`;
+const scReceipt = `<div class="receipt" aria-hidden="true"><p class="rc-h"><b>TAPO</b><span>RECEIPT</span></p><div class="rc-rows"><div><span>Shop</span><b>${SC_MERCHANT.name}</b></div><div><span>Amount</span><b class="num">${inr(SC_MERCHANT.amount, true)}</b></div><div><span>Card</span><b>${scCardLabel}</b></div><div><span>Rewards</span><b class="num">${scEarn}</b></div><div><span>Ref</span><b class="mono">${SC_RECEIPT}</b></div></div><p class="rc-f">Saved on your phone</p></div>`;
 const scStatic = SC_STEPS.map(([t], i) => `${i + 1}, ${t.replace('&amp;', 'and')}`).join('; ');
 const showcase = `
 <section class="sc-hero"><div class="wrap">
-<p class="kicker"><b>TAPO</b> capstone prototype · the tap-to-pay demo</p>
-<h1 class="sc-h1">Tap a demo tag. <span class="accent">Watch a simulated checkout.</span></h1>
-<p class="lede">TAPO is a rewards wallet that tells you which card to use. Its demo shows what a tap could feel like, from start to finish, with fictional data only.</p>
-<p class="sc-safety"><span class="sc-pill">Simulation only</span>NFC only <em>triggers</em> the demo. No bank card is read and no payment is processed.</p>
+<p class="kicker"><b>TAPO</b> tap to pay</p>
+<h1 class="sc-h1">One tap. <span class="accent">The right card, every time.</span></h1>
+<p class="lede">Hold your phone to a TAPO tag at checkout. TAPO reads it, picks the card in your wallet that earns the most, and keeps the receipt on your phone.</p>
 </div></section>
 
 <section class="sc-stage-sec" aria-labelledby="flowTitle"><div class="wrap">
-<h2 class="sr" id="flowTitle">The demo flow</h2>
+<h2 class="sr" id="flowTitle">How a tap works</h2>
 <div class="sc-stage" id="scStage" data-step="3">
-<div class="scene" role="img" aria-label="Animated diagram of the demo flow: ${esc(scStatic)}. ${esc(SC_MERCHANT.name)}, ${esc(inr(SC_MERCHANT.amount, true))}, paid with the sample card ${esc(scCard.nickname)} in a simulation.">
+<div class="scene" role="img" aria-label="Animated walkthrough of a tap: ${esc(scStatic)}. ${esc(SC_MERCHANT.name)}, ${esc(inr(SC_MERCHANT.amount, true))}, with ${esc(scCard.nickname)}, earning ${esc(scEarn)}.">
 <div class="world" aria-hidden="true">
 <div class="floor"><i class="rail"></i><i class="node n0"></i><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i></div>
-<div class="tag3d"><div class="tag-face"><span class="tag-coil"></span><span class="tag-k">NFC demo tag</span><span class="tag-code">${SC_TAG}</span></div><span class="tag-shadow"></span></div>
+<div class="tag3d"><div class="tag-face"><span class="tag-coil"></span><span class="tag-k">TAPO</span><span class="tag-code">Tap here</span></div><span class="tag-shadow"></span></div>
 <div class="ripples"><i></i><i></i><i></i></div>
-<div class="phone3d-sc"><div class="ph-body"><div class="ph-screen"><p class="ph-banner">Demo mode — no real money is charged</p><div class="scrs">${scScreen.join('')}</div></div></div><span class="ph-shadow"></span></div>
-<div class="pick"><div class="pick-k"><span>Recommended for ${scCat}</span><b class="num">earns ${inr(scBest.rewardRupees, true)}</b></div>${cardFace(scCard)}</div>
+<div class="phone3d-sc"><div class="ph-body"><div class="ph-screen"><p class="ph-top"><span>9:41</span><span>TAPO</span></p><div class="scrs">${scScreen.join('')}</div></div></div><span class="ph-shadow"></span></div>
+<div class="pick"><div class="pick-k"><span>Best card for ${scCat}</span><b class="num">earns ${scEarn}</b></div>${cardFace(scCard).replace('<span class="cf-tag">EXAMPLE</span>', '')}</div>
 ${scReceipt}
 </div></div>
 <div class="sc-controls">
@@ -353,51 +348,19 @@ ${scReceipt}
 </div></div></section>
 
 <section class="sec"><div class="wrap">
-<div class="split-head rv"><div><p class="kicker">WHAT'S REAL, WHAT'S SIMULATED</p><h2 class="h2" style="margin-top:16px">Honest about every step.</h2></div><p class="lede">The demo uses real device features where it can, and says plainly where it is pretending.</p></div>
-<div class="keep sc-truth rv">
-<div><h3 class="keep-h">Really happens</h3><ul>
-<li><span>Reading a text code from an NFC sticker</span><span>Chrome for Android, or a native build</span></li>
-<li><span>Choosing the best sample card</span><span>TAPO's own rewards engine</span></li>
-<li><span>Checking the tag's text</span><span>long numbers are rejected</span></li>
-<li><span>Saving the last 50 receipts</span><span>on the device, deletable</span></li></ul></div>
-<div class="never"><h3 class="keep-h">Simulated or fictional</h3><ul>
-<li><span>Merchants and amounts</span><span>dummy, e.g. ${SC_MERCHANT.name}</span></li>
-<li><span>Cards</span><span>sample cards, nickname and last four only</span></li>
-<li><span>Approve or decline</span><span>chosen in a developer setting</span></li>
-<li><span>Receipts</span><span>dummy IDs starting with DEMO-</span></li>
-<li><span>Money</span><span>none moves, nothing is authorised</span></li></ul></div>
-</div></div></section>
-
-<section class="sec"><div class="wrap">
-<div class="split-head rv"><div><p class="kicker">WHERE THE TAP WORKS</p><h2 class="h2" style="margin-top:16px">Real tag where possible. Simulate tap everywhere.</h2></div><p class="lede"><b>Simulate tap</b> runs the same review, processing, result and receipt, so the demo works on any device.</p></div>
+<div class="split-head rv"><div><p class="kicker">WHERE YOU CAN TAP</p><h2 class="h2" style="margin-top:16px">Tap with your phone. Or tap on screen.</h2></div><p class="lede">Where your phone or browser can't read NFC tags, the same checkout runs with one tap on the screen.</p></div>
 <div class="sc-table rv" role="region" aria-label="NFC support by platform" tabindex="0"><table>
-<thead><tr><th scope="col">Where TAPO runs</th><th scope="col">Scans a demo tag</th></tr></thead>
+<thead><tr><th scope="col">Where you use TAPO</th><th scope="col">Reads TAPO tags</th></tr></thead>
 <tbody>
-<tr><td>Chrome on Android, over HTTPS</td><td><span class="yes">Yes</span> Web NFC</td></tr>
-<tr><td>Android app (development or release build)</td><td><span class="yes">Yes</span> native NFC</td></tr>
-<tr><td>iPhone app (development or release build)</td><td><span class="yes">Yes</span> iOS scanning sheet</td></tr>
-<tr><td>Safari and every iOS browser</td><td><span class="no">No</span> Simulate tap</td></tr>
-<tr><td>Desktop browsers</td><td><span class="no">No</span> Simulate tap</td></tr>
-<tr><td>Expo Go</td><td><span class="no">No</span> Simulate tap</td></tr>
+<tr><td>Chrome on Android</td><td><span class="yes">Yes</span> Web NFC</td></tr>
+<tr><td>TAPO for Android · coming soon</td><td><span class="yes">Yes</span> built-in NFC</td></tr>
+<tr><td>TAPO for iPhone · coming soon</td><td><span class="yes">Yes</span> iOS scanning sheet</td></tr>
+<tr><td>Safari and other iPhone browsers</td><td><span class="no">No</span> tap on screen</td></tr>
+<tr><td>Desktop browsers</td><td><span class="no">No</span> tap on screen</td></tr>
 </tbody></table></div>
 </div></section>
 
-<section class="sec"><div class="wrap">
-<div class="split-head rv"><div><p class="kicker">UNDER THE HOOD</p><h2 class="h2" style="margin-top:16px">One codebase: phone, web and this page.</h2></div><p class="lede">Expo SDK 58, React Native 0.88 and TypeScript, with Expo Router. This page is pre-rendered by the same build as the site, using the app's own reward logic.</p></div>
-<div class="sc-hood rv">
-<dl class="sc-files">
-<div><dt><code>src/app/demo-pay.tsx</code></dt><dd>The demo screen: set up, tap, review, result</dd></div>
-<div><dt><code>src/lib/demoNfc.ts</code></dt><dd>Tag parsing, NFC support checks, Web NFC scanning</dd></div>
-<div><dt><code>src/lib/nativeNfc.native.ts</code></dt><dd>Native NDEF text reading with <code>react-native-nfc-manager</code></dd></div>
-<div><dt><code>src/lib/rewards.ts</code></dt><dd>Ranks cards for a purchase, including monthly caps</dd></div>
-</dl>
-<pre class="sc-cmd" aria-label="Commands to run TAPO locally"><code><span class="c"># run it yourself</span>
-npm install
-npm run web        <span class="c"># web app on localhost:8081</span>
-npm start          <span class="c"># phone, with Expo Go</span></code></pre>
-</div></div></section>
-
-<section class="sec"><div class="wrap"><div class="closing rv"><h2 class="h2">Try the demo in the web app.</h2><div class="hero-cta" style="margin-top:0"><a class="btn btn-primary magnetic" href="/app/">Open TAPO ${arrow()}</a><a class="textlink" href="/security/">What TAPO never stores ${arrow()}</a></div><p class="subtle small" style="margin-top:18px;max-width:62ch">Create an account on your device, then go to <b>Wallet → Tap-to-pay demo</b>. On a desktop or iPhone, use <b>Simulate tap</b>.</p></div></div></section>`;
+<section class="sec"><div class="wrap"><div class="closing rv"><h2 class="h2">Make your next tap count.</h2><div class="hero-cta" style="margin-top:0"><a class="btn btn-primary magnetic" href="/app/">Open TAPO ${arrow()}</a><a class="textlink" href="/security/">How we protect your data ${arrow()}</a></div><p class="subtle small" style="margin-top:18px;max-width:62ch">Create an account, add your cards, then choose <b>Tap to pay</b> from your wallet.</p></div></div></section>`;
 
 /* ---------- write ---------- */
 fs.rmSync(path.join(out, 'product'), { recursive: true, force: true });
@@ -413,7 +376,7 @@ const PAGES = [
   { pathName: '/', file: 'index.html', title: 'Home', description: 'TAPO tells you which of your cards earns the most for every purchase, and shows the rewards you missed. Free, encrypted, built for India.', body: home, data: decideData },
   { pathName: '/product/', file: 'product/index.html', title: 'Product', description: 'How TAPO ranks your cards, tracks monthly caps and finds the rewards you missed.', body: product },
   { pathName: '/security/', file: 'security/index.html', title: 'Security', description: 'TAPO never asks for card numbers, OTPs or bank logins, and encrypts your wallet with your password.', body: security },
-  { pathName: '/showcase/', file: 'showcase/index.html', title: 'Showcase', description: 'How the TAPO tap-to-pay demo works: a demo NFC tag triggers a fully simulated checkout, the best sample card and a dummy receipt. No real card is read and no money moves.', body: showcase, css: fs.readFileSync(path.join(root, 'site/showcase.css'), 'utf8'), script: '/showcase.js' },
+  { pathName: '/showcase/', file: 'showcase/index.html', title: 'Tap to pay', description: 'Hold your phone to a TAPO tag at checkout. TAPO picks the card that earns the most and keeps the receipt on your phone.', body: showcase, css: fs.readFileSync(path.join(root, 'site/showcase.css'), 'utf8'), script: '/showcase.js' },
   { pathName: '/faq/', file: 'faq/index.html', title: 'FAQ', description: 'Answers about TAPO accounts, encryption, supported cards and reward estimates.', body: faq },
 ];
 for (const p of PAGES) {

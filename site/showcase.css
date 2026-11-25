@@ -1,6 +1,6 @@
 /* =====================================================================================
-   /showcase/ — the tap-to-pay demo as an animated, 3D "README".
-   One stage, four states (data-step 0–3): demo tag → phone → simulated checkout → card & receipt.
+   /showcase/ — tap to pay, as an animated 3D walkthrough.
+   One stage, four states (data-step 0–3): tag → phone → checkout → card & receipt.
    CSS 3D transforms only (no WebGL, no library). Only transform and opacity animate.
    Without JavaScript the stage shows the finished flow (data-step="3"); with reduced motion
    nothing plays by itself and steps change instantly (global tokens in styles.css drop to 0ms).
@@ -9,10 +9,6 @@
 .sc-h1 { font-size: var(--t-h1); line-height: .98; letter-spacing: -0.028em; margin-top: var(--s5); max-width: 18ch; }
 .sc-h1 .accent { color: var(--champagne); display: block; }
 .sc-hero .lede { margin-top: var(--s5); }
-.sc-safety { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: var(--s5); color: var(--text-2); font-size: var(--t-sm); }
-.sc-safety em { font-style: normal; color: var(--porcelain); }
-.sc-pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(227,174,107,.35); background: var(--ochre-bg); color: var(--ochre); font-weight: 700; font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; }
-.sc-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 .sc-stage-sec { padding-bottom: var(--s9); }
 .sc-stage { --step-ms: 2400ms; }
@@ -57,7 +53,8 @@
 .sc-stage[data-step="3"] .phone3d-sc { transform: rotateY(-8deg) rotateX(3deg) translateZ(10px); }
 .ph-body { aspect-ratio: 9 / 18.6; container-type: inline-size; border-radius: 15% / 7.2%; padding: 3.4%; background: linear-gradient(145deg, #2C2C31, #131316 60%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 0 0 3px #0A0A0B, var(--shadow-2), 30px 40px 60px -30px rgba(0,0,0,.9); }
 .ph-screen { position: relative; height: 100%; border-radius: 10cqw; background: #0F0F11; overflow: hidden; display: flex; flex-direction: column; }
-.ph-banner { margin: 9cqw 5cqw 0; padding: 2.6cqw 3cqw; border-radius: 3.4cqw; background: var(--ochre-bg); border: 1px solid #4A3820; color: var(--ochre); font-weight: 700; font-size: 4.3cqw; line-height: 1.25; text-align: center; }
+.ph-top { display: flex; justify-content: space-between; margin: 5cqw 9cqw 0; font-weight: 700; font-size: 4.4cqw; color: var(--text-2); }
+.ph-top span:last-child { color: var(--champagne); letter-spacing: .08em; }
 .scrs { position: relative; flex: 1; }
 .scr { position: absolute; inset: 0; padding: 7cqw 6cqw; display: flex; flex-direction: column; gap: 3cqw; opacity: 0; transform: translateY(3cqw); transition: opacity var(--d-std) var(--ease-out), transform var(--d-layout) var(--ease-out); }
 .sc-stage[data-step="0"] .s0, .sc-stage[data-step="1"] .s1, .sc-stage[data-step="2"] .s2, .sc-stage[data-step="3"] .s3 { opacity: 1; transform: none; }
@@ -143,19 +140,10 @@
 .sc-table td:first-child { color: var(--porcelain); }
 .sc-table .yes, .sc-table .no { display: inline-block; min-width: 38px; margin-right: 8px; font-weight: 700; }
 .sc-table .yes { color: var(--sage); } .sc-table .no { color: var(--text-3); }
-.sc-hood { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s6); align-items: start; }
-.sc-files { margin: 0; border-top: 1px solid var(--rule-strong); }
-.sc-files > div { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--s4); padding: 14px 0; border-bottom: 1px solid var(--rule); }
-.sc-files dt code { font: 600 13.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--champagne-2); overflow-wrap: anywhere; }
-.sc-files dd { margin: 0; color: var(--text-2); font-size: 15px; }
-.sc-files dd code { font: 13px ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-.sc-cmd { margin: 0; padding: var(--s5); border-radius: var(--r-lg); background: var(--graphite-1); border: 1px solid var(--rule); overflow-x: auto; font: 14px/1.75 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--porcelain); }
-.sc-cmd .c { color: var(--text-3); }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1060px) {
   .sc-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--s5); }
-  .sc-hood { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
   /* portrait stage: phone in front, tag above-left, result comes forward over the phone */
@@ -175,7 +163,6 @@
   .sc-rail { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .sc-step { padding: 14px 0; }
   .sc-play { margin-top: 0; align-self: flex-start; }
-  .sc-files > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sc-stage .tag3d, .sc-stage .ph-nfc, .sc-stage .ripples i { animation: none !important; }
@@ -184,5 +171,3 @@
 }
 html[data-quality="low"] .world { transform: none; }
 
-/* the "never" list on /security/ strikes items through; here they exist, they are just fictional */
-.sc-truth .never li span:first-child { text-decoration: none; }
