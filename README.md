@@ -34,6 +34,7 @@
 | [What we have not built](docs/NOT_BUILT.md) | Each gap, with our reason |
 | Slides: [PDF](docs/slides/TAPO-CEO-Presentation.pdf) · [PowerPoint](docs/slides/TAPO-CEO-Presentation.pptx) | The review deck; the PowerPoint has the animations and speaker notes, and each slide is also in [`docs/slides/images`](docs/slides/images) |
 | [Architecture](docs/ARCHITECTURE.md) | A walk through every module |
+| [AI usage](docs/AI_USAGE.md) | What AI produced, what we decided, and how the work was checked |
 
 ## Contents
 
