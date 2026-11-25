@@ -32,7 +32,7 @@
 | [Problem statement](docs/PROBLEM.md) | The problem from the beginning, who has it, and what TAPO does about it |
 | [Interview notes](docs/INTERVIEWS.md) | Who we spoke to, what they said, and what we changed ([method](docs/RESEARCH.md)) |
 | [What we have not built](docs/NOT_BUILT.md) | Each gap, with our reason |
-| Slides: [PDF](docs/slides/TAPO-CEO-Presentation.pdf) · [PowerPoint](docs/slides/TAPO-CEO-Presentation.pptx) | The review deck; the PowerPoint has the animations and speaker notes, and each slide is also in [`docs/slides/images`](docs/slides/images) |
+| Slides: [PDF](docs/slides/TAPO%20Presentation.pdf) · [PowerPoint](docs/slides/TAPO%20Presentation.pptx) | The review deck; the PowerPoint has the animations and speaker notes, and each slide is also in [`docs/slides/images`](docs/slides/images) |
 | [Architecture](docs/ARCHITECTURE.md) | A walk through every module |
 | [AI usage](docs/AI_USAGE.md) | What AI produced, what we decided, and how the work was checked |
 
