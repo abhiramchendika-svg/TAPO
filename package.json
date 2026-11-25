@@ -51,6 +51,7 @@
     "doctor": "npx expo-doctor",
     "build:web": "node scripts/build-web.mjs",
     "build:site": "node site/build.mjs",
+    "serve:dist": "node scripts/serve-dist.mjs 4173",
     "test:e2e": "playwright test"
   },
   "jest": {

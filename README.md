@@ -13,6 +13,12 @@
   iOS · Android · Web
 </p>
 
+<p align="center">
+  <a href="https://tapo-seven.vercel.app/showcase/"><strong>Live showcase</strong></a> ·
+  <a href="https://tapo-seven.vercel.app/">Website</a> ·
+  <a href="https://tapo-seven.vercel.app/app/">Web app</a>
+</p>
+
 > [!IMPORTANT]
 > **TAPO does not process payments.** Every merchant, amount, card and receipt in the demo is fictional.
 > NFC is used only as a *trigger* for the demo: the app reads a short text code from an ordinary NFC sticker.
@@ -21,6 +27,7 @@
 
 ## Contents
 
+- [See the demo in motion](#see-the-demo-in-motion)
 - [What TAPO is](#what-tapo-is)
 - [The tap-to-pay demo](#the-tap-to-pay-demo)
 - [Where NFC works, and where it falls back](#where-nfc-works-and-where-it-falls-back)
@@ -30,6 +37,20 @@
 - [Tech stack and structure](#tech-stack-and-structure)
 - [Checks and tests](#checks-and-tests)
 - [Limits of this prototype](#limits-of-this-prototype)
+
+## See the demo in motion
+
+<p align="center">
+  <a href="https://tapo-seven.vercel.app/showcase/"><img src="docs/readme/showcase.png" alt="The TAPO showcase stage after a simulated tap: a round NFC demo tag holding the text TAPO-DEMO:CAPSTONE-01, a phone showing 'Demo mode — no real money is charged' and 'Simulated approval, ₹845.00, no money moved', the sample card Everyday Cashback recommended for groceries, and a dummy receipt with ID DEMO-20261121-7KQ2XM." width="100%"></a>
+</p>
+
+<p align="center"><a href="https://tapo-seven.vercel.app/showcase/"><strong>Open the live, animated version →</strong></a></p>
+
+GitHub can't run the animation, so the image above is a still of its last step. The
+[live showcase](https://tapo-seven.vercel.app/showcase/) plays the whole flow in 3D:
+**demo tag → phone → simulated checkout → recommended card and dummy receipt**. It uses the demo's own fictional
+data (the dummy merchant *Demo Fresh Mart*, ₹845, and the sample card TAPO's rewards engine picks for groceries).
+You can pause it or step through it, and with *reduce motion* turned on it shows the finished flow without playing.
 
 ## What TAPO is
 
@@ -141,8 +162,12 @@ Profiles are defined in [`eas.json`](eas.json). Replace the placeholder `com.exa
 
 ```bash
 npm run build:web                   # Expo web app → dist/app, plus the pre-rendered public site → dist/
-node scripts/serve-dist.mjs 4173    # serve dist/ locally the way Vercel does
+npm run serve:dist                  # serve dist/ on http://localhost:4173 the way Vercel does
 ```
+
+The showcase is part of the public site, at `/showcase/` (open <http://localhost:4173/showcase/> locally). To
+rebuild only the site after editing it, run `npm run build:site`. Add `?step=1` to `?step=4` to the URL to open a
+step paused; that's how [`docs/readme/showcase.png`](docs/readme/showcase.png) was captured.
 
 [`vercel.json`](vercel.json) uses `npm run build:web`, serves `dist/`, routes `/app/*` to the web app and sets
 security headers. No environment variables are required; `SITE_URL` is optional and only makes link-preview URLs
@@ -173,7 +198,7 @@ absolute.
 | NFC | Web NFC (`NDEFReader`) on the web; `react-native-nfc-manager` 4 in native builds |
 | Storage and crypto | AsyncStorage, `expo-crypto` (AES-256-GCM), PBKDF2-SHA256 |
 | Graphics | `react-native-svg` for card faces, icons and the logo |
-| Public site | Static pages pre-rendered by [`site/build.mjs`](site/build.mjs) using the app's own logic |
+| Public site | Static pages pre-rendered by [`site/build.mjs`](site/build.mjs) using the app's own logic; the showcase's 3D is CSS transforms with no extra libraries |
 | Quality | Jest (`jest-expo`), Playwright end-to-end tests, ESLint, GitHub Actions CI |
 | Hosting | Vercel (static `dist/`) |
 
@@ -183,7 +208,7 @@ src/lib/demoNfc.ts    Tag parsing, support detection and Web NFC scanning
 src/lib/nativeNfc.*   Native NFC (iOS/Android) and the web stub
 src/lib/              Rewards engine, insights, CSV import, accounts, encrypted storage
 src/lib/__tests__/    Unit tests
-site/                 Public marketing site (Home, Product, Security, FAQ)
+site/                 Public site (Home, Product, Showcase, Security, FAQ); showcase.css/.js drive the 3D demo
 e2e/                  Playwright tests for the site and the web app
 docs/                 Architecture guide, research kit, AI usage declaration, README images
 ```
