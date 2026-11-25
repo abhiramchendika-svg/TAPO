@@ -25,6 +25,15 @@
 > It never reads, emulates or charges a contactless bank card, and a “simulated approval” is not a payment
 > authorization from any bank or card network.
 
+## For reviewers
+
+| Document | What's in it |
+| --- | --- |
+| [Problem statement](docs/PROBLEM.md) | The problem from the beginning, who has it, and what TAPO does about it |
+| [Interview notes](docs/INTERVIEWS.md) | Who we spoke to, what they said, and what we changed ([method](docs/RESEARCH.md)) |
+| [What we have not built](docs/NOT_BUILT.md) | Each gap, with our reason |
+| [Architecture](docs/ARCHITECTURE.md) | A walk through every module |
+
 ## Contents
 
 - [See the demo in motion](#see-the-demo-in-motion)
