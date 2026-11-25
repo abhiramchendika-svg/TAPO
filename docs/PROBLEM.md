@@ -36,6 +36,14 @@ These are the hypotheses our interviews tested. The results and the notes behind
 | H3 | They would check an app before or after paying. |
 | H4 | They would import a statement if it never leaves their phone. |
 
+### What we heard (8 interviews)
+
+- **7 of 8** couldn't name their best card for groceries, fuel and online shopping; only one person could.
+- **7 of 8** described paying with a card that earned less, or not knowing which card earned more.
+- **6 of 8** would use TAPO and one more said maybe. The one person who already knew their best cards said no.
+- **5 of 8** would import a statement; 3 wouldn't.
+- We did **not** measure how much people miss in rupees; that's the next round of research.
+
 ## What TAPO does about it
 
 TAPO is a rewards wallet. You add your cards with their reward rates and monthly caps (never a card number),

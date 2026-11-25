@@ -1,7 +1,7 @@
 # User research kit
 
 The sponsor's first question will be: **"How do you know people need this?"** This kit lets the team answer with
-evidence. It contains **no findings**: you must run the interviews yourselves and record what real people said.
+evidence. This file is the method; **what people actually told us is in [`INTERVIEWS.md`](INTERVIEWS.md)**.
 Never invent or "estimate" research results.
 
 ## Goal and hypotheses
