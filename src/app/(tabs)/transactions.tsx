@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -17,6 +18,18 @@ export default function TransactionsScreen() {
   const [category, setCategory] = useState<Category | 'all'>('all');
   const [cardId, setCardId] = useState<string | 'all'>('all');
   const cardsById = useMemo(() => new Map(data.cards.map((c) => [c.id, c])), [data.cards]);
+
+  // Links such as "See all" on a card open Activity filtered to that card (applied once per link).
+  const params = useLocalSearchParams<{ cardId?: string }>();
+  const [seenParam, setSeenParam] = useState<string | undefined>(undefined);
+  if (params.cardId !== seenParam) {
+    setSeenParam(params.cardId);
+    if (params.cardId && cardsById.has(params.cardId)) {
+      setCardId(params.cardId);
+      setCategory('all');
+      setQuery('');
+    }
+  }
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();

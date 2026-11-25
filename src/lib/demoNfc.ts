@@ -31,6 +31,16 @@ export type NfcSupport =
   | 'insecure-context' // browser has Web NFC but page isn't HTTPS/localhost
   | 'unsupported-browser'; // e.g. Safari on iOS, Firefox, desktop Chrome
 
+/** Short status labels for NFC support, shared by every screen that shows it. */
+export const NFC_SUPPORT_LABELS: Record<NfcSupport, string> = {
+  supported: 'Available',
+  'needs-dev-build': 'Needs a development build',
+  'nfc-disabled': 'NFC turned off',
+  'unsupported-device': 'No NFC on this device',
+  'insecure-context': 'Needs HTTPS or localhost',
+  'unsupported-browser': 'Not supported in this browser',
+};
+
 export type NfcErrorKind =
   | 'permission-denied'
   | 'unsupported'

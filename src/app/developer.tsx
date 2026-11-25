@@ -6,7 +6,7 @@ import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { DetailList, DetailRow, StatusBadge } from '../components/payments';
 import { Text } from '../components/Text';
 import { Button, Field, Notice, Panel, Screen, SectionHeader, Segmented } from '../components/ui';
-import { checkNfcSupport, NfcDemoError, parseDemoTagText, scanDemoTag, type NfcSupport } from '../lib/demoNfc';
+import { checkNfcSupport, NFC_SUPPORT_LABELS, NfcDemoError, parseDemoTagText, scanDemoTag, type NfcSupport } from '../lib/demoNfc';
 import { useWallet } from '../lib/wallet';
 import { colors, fonts, radius, space, type } from '../theme';
 
@@ -219,14 +219,7 @@ function runtimeLabel(): string {
   }
 }
 
-const SUPPORT_LABELS: Record<NfcSupport, string> = {
-  supported: 'Available',
-  'needs-dev-build': 'Needs a development build',
-  'nfc-disabled': 'NFC turned off',
-  'unsupported-device': 'No NFC on this device',
-  'insecure-context': 'Needs HTTPS or localhost',
-  'unsupported-browser': 'Not supported in this browser',
-};
+const SUPPORT_LABELS = NFC_SUPPORT_LABELS;
 
 /** Checks NFC support and tag parsing without starting a payment. */
 function NfcTester() {

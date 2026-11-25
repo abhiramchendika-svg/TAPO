@@ -6,6 +6,7 @@ import { Text } from '../../components/Text';
 import { CardTile, useCardWidth } from '../../components/CardTile';
 import { Stage } from '../../components/Gallery';
 import { CATEGORY_ICON, CATEGORY_TINT, Icon } from '../../components/Icon';
+import { TapReadiness } from '../../components/TapReadiness';
 import { TransactionRow } from '../../components/TransactionRow';
 import { Button, EmptyState, Panel, Screen, SectionHeader } from '../../components/ui';
 import { formatPercent, formatRupees } from '../../lib/format';
@@ -34,10 +35,8 @@ export default function CardDetailsScreen() {
   }
 
   const summary = monthSummary(card, data.transactions);
-  const txns = data.transactions
-    .filter((t) => t.cardId === card.id)
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5);
+  const allTxns = data.transactions.filter((t) => t.cardId === card.id);
+  const txns = [...allTxns].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
 
   return (
     <Screen edges={['bottom']}>
@@ -65,6 +64,8 @@ export default function CardDetailsScreen() {
           onPress={() => router.push(`/card/add?id=${card.id}`)}
         />
       </View>
+
+      <TapReadiness card={card} />
 
       <Panel style={{ marginTop: space.lg, paddingVertical: space.xs }}>
         <InfoRow label="Nickname" value={card.nickname} />
@@ -128,7 +129,21 @@ export default function CardDetailsScreen() {
         </Panel>
       )}
 
-      <SectionHeader title="Recent sample transactions" />
+      <SectionHeader
+        title="Recent transactions"
+        action={
+          allTxns.length > txns.length ? (
+            <Button
+              label={`See all ${allTxns.length}`}
+              variant="ghost"
+              size="sm"
+              iconRight="arrowRight"
+              onPress={() => router.push({ pathname: '/transactions', params: { cardId: card.id } })}
+              accessibilityHint="Opens Activity filtered to this card"
+            />
+          ) : undefined
+        }
+      />
       {txns.length === 0 ? (
         <EmptyState title="No transactions" message="This card has no sample activity yet." />
       ) : (
