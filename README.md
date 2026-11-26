@@ -39,6 +39,7 @@
 ## Contents
 
 - [See the demo in motion](#see-the-demo-in-motion)
+- [User Flow](#user-flow)
 - [What TAPO is](#what-tapo-is)
 - [The tap-to-pay demo](#the-tap-to-pay-demo)
 - [Where NFC works, and where it falls back](#where-nfc-works-and-where-it-falls-back)
@@ -57,12 +58,23 @@
 
 <p align="center"><a href="https://tapo-seven.vercel.app/showcase/"><strong>Open the live, animated version →</strong></a></p>
 
-GitHub can't run the animation, so the image above is a still of its last step. The
-[live page](https://tapo-seven.vercel.app/showcase/) plays the whole flow in 3D:
-**tag → phone → checkout → best card and receipt**. The card shown is the one TAPO's rewards engine picks for the
-purchase. You can pause it or step through it, and with *reduce motion* turned on it shows the finished flow
-without playing. The page is written as product marketing; like everything in this repository, the shop, amount,
-card and receipt it shows are fictional, and the flow it depicts is the simulated demo described below.
+## User Flow
+
+TAPO provides a simple journey for managing cards, discovering rewards, and tracking expenses.
+
+1. **Sign Up / Sign In** – Users access the TAPO application through their account.
+2. **Home Dashboard** – View added cards, card details, and available features.
+3. **Add & Manage Cards** – Add, view, and manage multiple sample bank cards.
+4. **Rewards Guide** – Select a merchant category, enter the purchase amount, and receive a recommended card based on reward rules.
+5. **Activity Tracking** – View and filter transaction history by merchant, category, or card.
+6. **Spending Insights** – Analyse monthly expenses, spending categories, and estimated rewards.
+7. **Account Settings** – Update profile details, manage account settings, and reset demo data.
+
+### User Journey
+
+`Sign In → Home Dashboard → Manage Cards → Rewards Recommendation → Activity Tracking → Spending Insights → Settings`
+
+**Note:** The current version is a frontend demo prototype using sample cards, reward rules, and transaction data. Real bank integration, card tokenization, and NFC tap-to-pay functionality are planned for future development.
 
 ## What TAPO is
 
