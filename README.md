@@ -74,6 +74,10 @@ TAPO provides a simple journey for managing cards, discovering rewards, and trac
 
 `Sign In → Home Dashboard → Manage Cards → Rewards Recommendation → Activity Tracking → Spending Insights → Settings`
 
+<p align="center">
+  <img src="docs/readme/user-journey.jpg" alt="TAPO user journey board: app screens in order from the splash screen and home dashboard, to choosing a card for a purchase, activity, monthly insights and settings, with notes on why TAPO, who it is for (young professionals, college students, frequent shoppers, frequent travellers, people with several cards) and its future scope." width="100%">
+</p>
+
 **Note:** The current version is a frontend demo prototype using sample cards, reward rules, and transaction data. Real bank integration, card tokenization, and NFC tap-to-pay functionality are planned for future development.
 
 ## What TAPO is
