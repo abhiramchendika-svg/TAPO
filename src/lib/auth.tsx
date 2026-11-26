@@ -3,9 +3,9 @@ import { getRandomBytes, type AESEncryptionKey } from 'expo-crypto';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState, Platform } from 'react-native';
 
-import { fromHex, PBKDF2_ITERATIONS, pbkdf2Sha256, safeEqualHex, toHex, utf8 } from './password';
+import { chooseIterations, derivePbkdf2, fromHex, needsStrongerHash, safeEqualHex, toHex, utf8 } from './password';
 import { validateAccountEmail, validateAccountName, validateNewPassword } from './validation';
-import { encryptionKeyBytesFrom, importKey, verifierFrom } from './vault';
+import { encryptionKeyBytesFrom, importKey, isEnvelope, openJson, sealJson, verifierFrom } from './vault';
 
 /**
  * On-device accounts with encrypted wallets.
@@ -13,6 +13,8 @@ import { encryptionKeyBytesFrom, importKey, verifierFrom } from './vault';
  * - An account stores a name, email, salt and a password *verifier*. Neither the password nor the
  *   wallet key is ever stored at rest.
  * - Signing in derives the wallet's AES-256 key from the password; without it the wallet can't be read.
+ * - Accounts hashed with fewer rounds than this device should use are upgraded on their next sign-in:
+ *   the wallet is re-encrypted under the new key and saved together with the account, or not at all.
  * - Inactivity lock: after IDLE_LIMIT_MS without a touch, click or key press (or that long in the
  *   background) the session ends and the key is dropped.
  * - Web only: the session survives a page refresh within the same tab (sessionStorage, cleared when
@@ -86,6 +88,33 @@ const nextFrame = () => new Promise<void>((r) => setTimeout(r, 30));
 
 export function walletKeyFor(userId: string) {
   return `tapo/users/${userId}/wallet/v1`;
+}
+
+/** Associated data bound into each account's wallet encryption. */
+export function walletAadFor(userId: string) {
+  return `tapo-wallet:${userId}`;
+}
+
+/**
+ * Re-encrypts a stored wallet from one key to another and returns the storage writes to make, so the
+ * caller saves it in the same write as the account's new hash. Throws (changing nothing) if the
+ * stored wallet can't be decrypted with the old key.
+ */
+export async function rekeyWallet(userId: string, oldKeyBytes: Uint8Array, newKeyBytes: Uint8Array): Promise<[string, string][]> {
+  const storageKey = walletKeyFor(userId);
+  const raw = await AsyncStorage.getItem(storageKey);
+  if (!raw) return [];
+  const outer: unknown = JSON.parse(raw);
+  // Saved before encryption existed: the wallet provider re-saves it under whichever key signs in.
+  if (!isEnvelope(outer)) return [];
+  const aad = walletAadFor(userId);
+  const value = await openJson(outer, await importKey(oldKeyBytes), aad);
+  const newKey = await importKey(newKeyBytes);
+  const sealed = await sealJson(value, newKey, aad);
+  const check: unknown = JSON.parse(sealed);
+  if (!isEnvelope(check)) throw new Error('Re-encryption produced an unexpected format.');
+  await openJson(check, newKey, aad); // make sure the new copy opens before anything is written
+  return [[storageKey, sealed]];
 }
 
 /** Tab-scoped storage on web; unavailable (null) on native. */
@@ -163,14 +192,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (accounts.some((a) => a.email === e)) throw new AuthError('An account with this email already exists on this device. Sign in instead.');
       await nextFrame();
       const salt = getRandomBytes(16);
-      const master = pbkdf2Sha256(utf8(password), salt, PBKDF2_ITERATIONS);
+      const iterations = chooseIterations();
+      const master = await derivePbkdf2(utf8(password), salt, iterations);
       const account: Account = {
         id: toHex(getRandomBytes(12)),
         name: cleanName,
         email: e,
         salt: toHex(salt),
         hash: toHex(verifierFrom(master)),
-        iterations: PBKDF2_ITERATIONS,
+        iterations,
         createdAt: new Date().toISOString(),
         version: 2,
       };
@@ -188,8 +218,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       await nextFrame();
       const account = accounts.find((a) => a.email === normEmail(email));
-      // Hash even when the email is unknown, so both cases take the same time.
-      const master = pbkdf2Sha256(utf8(password), account ? fromHex(account.salt) : new Uint8Array(16), account?.iterations ?? PBKDF2_ITERATIONS);
+      // Hash even when the email is unknown, so both cases take about the same time.
+      const master = await derivePbkdf2(utf8(password), account ? fromHex(account.salt) : new Uint8Array(16), account?.iterations ?? chooseIterations());
       const v2 = account?.version === 2;
       const ok = !!account && safeEqualHex(toHex(v2 ? verifierFrom(master) : master), account.hash);
       if (!ok || !account) {
@@ -201,13 +231,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new AuthError('Email or password is incorrect.');
       }
       failures.current = { count: 0, until: 0 };
-      let acct = account;
-      if (!v2) {
-        // Older account: replace the raw hash with a verifier so the stored value can't double as a key.
-        acct = { ...account, hash: toHex(verifierFrom(master)), version: 2 };
-        await save(accounts.map((a) => (a.id === acct.id ? acct : a)));
+      // Older account: replace the raw hash with a verifier so the stored value can't double as a key.
+      let acct: Account = v2 ? account : { ...account, hash: toHex(verifierFrom(master)), version: 2 };
+      let keyBytes = encryptionKeyBytesFrom(master);
+      let saved = false;
+      if (needsStrongerHash(account.iterations)) {
+        // Fewer rounds than this device should use: re-derive with more, re-encrypt the wallet under the
+        // new key, and save both in one write. If anything fails, keep the current setting and try next time.
+        try {
+          const iterations = chooseIterations();
+          const stronger = await derivePbkdf2(utf8(password), fromHex(account.salt), iterations);
+          const nextKeyBytes = encryptionKeyBytesFrom(stronger);
+          const upgraded: Account = { ...acct, hash: toHex(verifierFrom(stronger)), iterations, version: 2 };
+          const walletWrites = await rekeyWallet(account.id, keyBytes, nextKeyBytes);
+          const nextAccounts = accounts.map((a) => (a.id === upgraded.id ? upgraded : a));
+          await AsyncStorage.multiSet([[ACCOUNTS_KEY, JSON.stringify(nextAccounts)], ...walletWrites]);
+          setAccounts(nextAccounts);
+          acct = upgraded;
+          keyBytes = nextKeyBytes;
+          saved = true;
+        } catch {}
       }
-      await begin(acct, encryptionKeyBytesFrom(master), false);
+      if (!v2 && !saved) await save(accounts.map((a) => (a.id === acct.id ? acct : a)));
+      await begin(acct, keyBytes, false);
     },
     [accounts, save, begin],
   );

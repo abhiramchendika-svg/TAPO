@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import type { AESEncryptionKey } from 'expo-crypto';
 
-import { walletKeyFor } from './auth';
+import { walletAadFor, walletKeyFor } from './auth';
 import { isEnvelope, openJson, sealJson } from './vault';
 import { maskLongNumbers, type ImportedRow } from './csvImport';
 import { makeId } from './format';
@@ -180,7 +180,7 @@ export function WalletProvider({
   cryptoKey?: AESEncryptionKey;
 }) {
   const key = userId ? walletKeyFor(userId) : null;
-  const aad = userId ? `tapo-wallet:${userId}` : '';
+  const aad = userId ? walletAadFor(userId) : '';
   const [ready, setReady] = useState(!key);
   const [data, setData] = useState<WalletData>(() => buildDemoData());
   // If stored data exists but can't be decrypted, never overwrite it.

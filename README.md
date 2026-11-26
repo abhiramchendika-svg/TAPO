@@ -211,6 +211,9 @@ absolute.
 - **Accounts are on the device.** Signing up stores a name, email, salt and a password verifier; the password is
   never stored. The wallet is encrypted with **AES-256-GCM** using a key derived from the password (PBKDF2), held
   only in memory ([`src/lib/auth.tsx`](src/lib/auth.tsx), [`src/lib/vault.ts`](src/lib/vault.ts)).
+  PBKDF2-SHA256 runs **600,000 rounds** on the web (through the browser's Web Crypto). In the app it's calibrated to
+  the phone so unlocking takes about half a second, and never drops below 100,000. Older accounts are upgraded at
+  their next sign-in ([`src/lib/password.ts`](src/lib/password.ts)).
 - **Sessions lock themselves** after 10 minutes without activity. Five wrong passwords pause sign-in for
   30 seconds. On the web a session survives a refresh within the same tab; restarting the native app asks for the
   password again. Forgotten passwords can't be recovered: **Can't sign in?** removes that account and its data.
