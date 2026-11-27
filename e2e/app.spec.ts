@@ -73,6 +73,19 @@ test('Best answers on a category tap, and the amount makes it exact', async ({ p
   await expect(page.getByText(/Everyday Cashback is estimated to earn ₹50\.00 on a ₹1,000 purchase/)).toBeVisible();
 });
 
+test('the Developer screen shows how passwords are hashed and times one hash', async ({ page }) => {
+  await createAccount(page);
+  await page.goto('/app/settings');
+  const version = page.getByLabel(/^Version \d/);
+  for (let i = 0; i < 7; i++) await version.click();
+  await expect(page).toHaveURL(/\/app\/developer/);
+  // The test server is localhost, a secure context, so the browser's Web Crypto is used at 600,000 rounds.
+  await expect(page.getByText('Web Crypto', { exact: true })).toBeVisible();
+  await expect(page.getByText('600,000', { exact: true })).toHaveCount(2); // new passwords, and this account
+  await page.getByRole('button', { name: 'Time one hash' }).click();
+  await expect(page.getByText(/^600,000 rounds took [\d,]+ ms on this device\.$/)).toBeVisible();
+});
+
 test('statement import adds purchases', async ({ page }) => {
   await createAccount(page);
   await page.goto('/app/import');

@@ -1,12 +1,14 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
 import { DetailList, DetailRow, StatusBadge } from '../components/payments';
 import { Text } from '../components/Text';
 import { Button, Field, Notice, Panel, Screen, SectionHeader, Segmented } from '../components/ui';
+import { useAuth } from '../lib/auth';
 import { checkNfcSupport, NFC_SUPPORT_LABELS, NfcDemoError, parseDemoTagText, scanDemoTag, type NfcSupport } from '../lib/demoNfc';
+import { chooseIterations, derivePbkdf2, hasNativePbkdf2, MIN_PBKDF2_ITERATIONS, needsStrongerHash, utf8 } from '../lib/password';
 import { useWallet } from '../lib/wallet';
 import { colors, fonts, radius, space, type } from '../theme';
 
@@ -72,6 +74,10 @@ export default function DeveloperScreen() {
         <DetailRow label="Expo SDK" value={Constants.expoConfig?.sdkVersion ?? 'Unknown'} />
         <DetailRow label="Dev mode" value={__DEV__ ? 'On' : 'Off'} last />
       </DetailList>
+
+      {/* Password hashing on this device */}
+      <SectionHeader title="Password hashing" />
+      <HashingCheck />
 
       {/* Demo controls */}
       <SectionHeader title="Demo controls" />
@@ -217,6 +223,73 @@ function runtimeLabel(): string {
     default:
       return 'Unknown';
   }
+}
+
+/** 600000 → "600,000". */
+const grouped = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+/**
+ * Shows how passwords are hashed here and times one hash, so the real round count and its cost can
+ * be checked on an actual phone (the app has no Web Crypto, so the count is calibrated per device).
+ */
+function HashingCheck() {
+  const { session } = useAuth();
+  const native = hasNativePbkdf2();
+  const rounds = useMemo(() => chooseIterations(), []);
+  const mine = session?.iterations;
+  const [timing, setTiming] = useState<'idle' | 'running' | number>('idle');
+
+  async function timeOne() {
+    setTiming('running');
+    // Let the button repaint first: without Web Crypto the hash blocks the JS thread while it runs.
+    await new Promise((r) => setTimeout(r, 30));
+    const now = () => globalThis.performance?.now?.() ?? Date.now();
+    const t0 = now();
+    await derivePbkdf2(utf8('timing check'), new Uint8Array(16), rounds);
+    setTiming(Math.round(now() - t0));
+  }
+
+  return (
+    <>
+      <DetailList>
+        <DetailRow
+          label="Method"
+          value={native ? 'Web Crypto' : 'TypeScript'}
+          hint={native ? 'PBKDF2-SHA256 built into the browser' : 'TAPO’s own PBKDF2-SHA256; this device has no Web Crypto'}
+        />
+        <DetailRow
+          label="Rounds for new passwords"
+          value={grouped(rounds)}
+          hint={
+            native
+              ? 'Fixed when Web Crypto is available'
+              : `Timed on this device to take about half a second, never below ${grouped(MIN_PBKDF2_ITERATIONS)}`
+          }
+        />
+        <DetailRow
+          label="Rounds on your account"
+          value={mine ? grouped(mine) : 'Unknown'}
+          hint={mine && needsStrongerHash(mine) ? 'Raised at your next sign-in' : undefined}
+          last
+        />
+      </DetailList>
+      <Button
+        label={timing === 'running' ? 'Timing…' : 'Time one hash'}
+        variant="secondary"
+        size="sm"
+        icon="refresh"
+        disabled={timing === 'running'}
+        onPress={timeOne}
+        accessibilityHint="Hashes a test password once with the rounds above and shows how long it took"
+        style={{ alignSelf: 'flex-start', marginTop: space.sm }}
+      />
+      {typeof timing === 'number' ? (
+        <Text style={[type.small, { marginTop: space.sm }]} accessibilityRole="alert">
+          {grouped(rounds)} rounds took {grouped(timing)} ms on this device.
+        </Text>
+      ) : null}
+    </>
+  );
 }
 
 const SUPPORT_LABELS = NFC_SUPPORT_LABELS;

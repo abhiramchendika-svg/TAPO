@@ -45,6 +45,8 @@ export interface Session {
   email: string;
   /** The first account made on this device takes over data saved before accounts existed. */
   adoptLegacy: boolean;
+  /** PBKDF2 rounds this account's password is hashed with (shown on the Developer screen). */
+  iterations: number;
   /** AES-256 key for this account's wallet. Lives only in memory (and, on web, the tab's session). */
   key: AESEncryptionKey;
 }
@@ -153,7 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const s = JSON.parse(saved) as { userId: string; keyHex: string; lastActive: number };
           const acct = list.find((a) => a.id === s.userId);
           if (acct && /^[0-9a-f]{64}$/.test(s.keyHex) && Date.now() - s.lastActive < IDLE_LIMIT_MS) {
-            resumed = { userId: acct.id, name: acct.name, email: acct.email, adoptLegacy: false, key: await importKey(fromHex(s.keyHex)) };
+            resumed = {
+              userId: acct.id,
+              name: acct.name,
+              email: acct.email,
+              adoptLegacy: false,
+              iterations: acct.iterations,
+              key: await importKey(fromHex(s.keyHex)),
+            };
           } else store?.removeItem(WEB_SESSION_KEY);
         }
       } catch {
@@ -180,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     lastActive.current = Date.now();
     tabStore()?.setItem(WEB_SESSION_KEY, JSON.stringify({ userId: acct.id, keyHex: toHex(keyBytes), lastActive: lastActive.current }));
     setLockedForIdle(false);
-    setSession({ userId: acct.id, name: acct.name, email: acct.email, adoptLegacy, key });
+    setSession({ userId: acct.id, name: acct.name, email: acct.email, adoptLegacy, iterations: acct.iterations, key });
   }, []);
 
   const signUp = useCallback(
