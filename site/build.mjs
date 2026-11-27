@@ -232,7 +232,7 @@ const layers = [
 ];
 const chapters = [
   ['01', 'Your cards, in one place', 'Add each card with its reward rates and monthly caps. TAPO keeps a nickname and the last four digits as a label, and nothing else.'],
-  ['02', 'Ask before you pay', 'Type the shop or pick a category, enter the amount. TAPO ranks every card, checks how much of each cap is left this month, and tells you which to tap, with the reasons.'],
+  ['02', 'Ask before you pay', 'Tap what you’re buying. TAPO ranks every card by what it pays right now, checks how much of each cap is left this month, and tells you which to tap, with the reasons. Add the amount for the exact reward.'],
   ['03', 'See what you missed', 'Import a statement and TAPO compares every purchase against your best card. The difference is your missed rewards, with the swaps that recover them.'],
   ['04', 'Insights that pay off', 'Spending by category, rewards by card, and specific changes to make next month. All of it calculated on your device.'],
 ];

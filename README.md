@@ -65,7 +65,7 @@ TAPO provides a simple journey for managing cards, discovering rewards, and trac
 1. **Sign Up / Sign In** – Users access the TAPO application through their account.
 2. **Home Dashboard** – View added cards, card details, and available features.
 3. **Add & Manage Cards** – Add, view, and manage multiple sample bank cards.
-4. **Rewards Guide** – Select a merchant category, enter the purchase amount, and receive a recommended card based on reward rules.
+4. **Rewards Guide** – Tap what you're buying, on the Wallet screen or in Best, and get the recommended card straight away. Add the purchase amount for the exact reward.
 5. **Activity Tracking** – View and filter transaction history by merchant, category, or card.
 6. **Spending Insights** – Analyse monthly expenses, spending categories, and estimated rewards.
 7. **Account Settings** – Update profile details, manage account settings, and reset demo data.

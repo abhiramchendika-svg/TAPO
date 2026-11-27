@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from '../../components/Text';
+import { BestNow } from '../../components/BestNow';
 import { CardStack } from '../../components/CardStack';
 import { bestFor, CardList, GalleryWall } from '../../components/Gallery';
 import { Icon } from '../../components/Icon';
@@ -91,6 +92,8 @@ export default function HomeScreen() {
         </View>
       ) : (
         <>
+          <BestNow cards={data.cards} txns={data.transactions} />
+
           <View style={styles.collectionRow}>
             <Text style={[type.mono, { flex: 1 }]} numberOfLines={1}>
               {data.cards.length} card{data.cards.length === 1 ? '' : 's'}
@@ -215,7 +218,7 @@ export default function HomeScreen() {
         <Text style={[styles.heroKicker]}>Rewards guide</Text>
         <Text style={styles.heroTitle}>Which card should I use?</Text>
         <Text style={styles.heroBody}>
-          Pick a category and amount. We’ll compare your cards’ reward rules and explain the result.
+          Tap a category for the card to use. Add the amount for the exact reward, and see how every card compares.
         </Text>
         <Button
           label="Choose a card"

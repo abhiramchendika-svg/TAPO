@@ -97,6 +97,64 @@ export function rankCards(
     );
 }
 
+/* ------------------------------------------------- before the amount is known */
+
+/** The rate a card pays on this category right now: nothing once its monthly cap is used up. */
+export function rateNow(e: CardEvaluation): number {
+  return e.capRemaining === 0 ? 0 : e.ratePercent;
+}
+
+export interface QuickPick {
+  /** Cards ordered by the rate they pay right now. */
+  ranked: CardEvaluation[];
+  /**
+   * Set when the top card's monthly cap would run out on a big purchase: from `amount` rupees up,
+   * `card` earns more. Found by the same reward maths as `rankCards`.
+   */
+  switchAt?: { amount: number; card: Card };
+}
+
+/** Largest purchase the recommender accepts (see validateAmount). */
+const MAX_AMOUNT = 1_000_000;
+
+/**
+ * The answer for a single tap, before the amount is typed. Cards are ranked by the rate they pay right
+ * now, then by how much cap room they have left (none is best), then by name. If the top card's cap
+ * means another card would earn more on a big enough purchase, `switchAt` says from what amount.
+ */
+export function rankByRate(cards: Card[], category: Category, txns: Transaction[], now = new Date()): QuickPick {
+  const room = (e: CardEvaluation) => e.capRemaining ?? Infinity;
+  const ranked = cards
+    .map((c) => evaluateCard(c, category, 0, txns, now))
+    .sort((a, b) => rateNow(b) - rateNow(a) || room(b) - room(a) || a.card.nickname.localeCompare(b.card.nickname));
+
+  const top = ranked[0];
+  if (!top || top.capRemaining === undefined || rateNow(top) === 0) return { ranked };
+
+  // The top card can earn at most what's left of its cap. Another card beats it once that card's own
+  // reward goes past this, which needs a cap of its own (if any) bigger than this.
+  const ceilingPaise = Math.round(top.capRemaining * 100);
+  let switchAt: QuickPick['switchAt'];
+  for (const e of ranked.slice(1)) {
+    const rate = rateNow(e);
+    if (rate <= 0 || (e.capRemaining !== undefined && Math.round(e.capRemaining * 100) <= ceilingPaise)) continue;
+    // rawReward floors to the paisa, so the card needs at least one paisa more than the ceiling.
+    const amount = Math.ceil((ceilingPaise + 1) / rate);
+    if (amount <= MAX_AMOUNT && (!switchAt || amount < switchAt.amount)) switchAt = { amount, card: e.card };
+  }
+  return { ranked, switchAt };
+}
+
+/** One line on what a card pays right now on a category, for the quick answer. */
+export function quickReason(e: CardEvaluation, category: Category): string {
+  const label = CATEGORY_LABELS[category];
+  const rate = formatPercent(e.ratePercent);
+  const what = e.source === 'category' ? `${rate} back on ${label}` : `${rate} back (base rate; no ${label} rule)`;
+  if (e.capRupees === undefined || e.capRemaining === undefined) return `${what}, no monthly cap.`;
+  if (e.capRemaining === 0) return `${what}, but its ${formatRupees(e.capRupees)} monthly cap is used up, so nothing more this month.`;
+  return `${what}, ${formatRupees(e.capRemaining, { decimals: true })} of its ${formatRupees(e.capRupees)} monthly cap left.`;
+}
+
 /** Summary sentence for the top pick. */
 export function explainWinner(ranked: CardEvaluation[], amount: number): string {
   const [best, next] = ranked;

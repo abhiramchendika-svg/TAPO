@@ -7,60 +7,50 @@ import { CardTile, useCardWidth } from '../../components/CardTile';
 import { Stage } from '../../components/Gallery';
 import { CATEGORY_ICON } from '../../components/Icon';
 import { Amount, DetailList, DetailRow, StatusBadge } from '../../components/payments';
-import { NumberedHeading, StepCounter } from '../../components/Steps';
+import { NumberedHeading } from '../../components/Steps';
 import { Button, Chip, ChipGroup, EmptyState, Field, Notice, Panel, Screen, SectionHeader, Title } from '../../components/ui';
 import { formatPercent, formatRupees } from '../../lib/format';
-import { explainWinner, rankCards } from '../../lib/rewards';
+import { explainWinner, quickReason, rankByRate, rankCards, rateNow } from '../../lib/rewards';
 import { CATEGORIES, CATEGORY_LABELS, type Category } from '../../lib/types';
 import { parseNumber, validateAmount } from '../../lib/validation';
 import { useWallet } from '../../lib/wallet';
 import { colors, fonts, radius, space, type } from '../../theme';
 
-const STAGES = ['Category', 'Amount', 'Result'] as const;
-
 export default function RecommendScreen() {
   const { data } = useWallet();
   const [category, setCategory] = useState<Category | null>(null);
   const [amountText, setAmountText] = useState('');
-  const [submitted, setSubmitted] = useState<{ category: Category; amount: number } | null>(null);
-  const [touched, setTouched] = useState(false);
+  const [amountTouched, setAmountTouched] = useState(false);
 
-  // Prefill from links such as "Compare cards for this" on a transaction.
+  // Prefill from links: a category tapped on Wallet, or "Compare cards for this" on a purchase (with its amount).
   const params = useLocalSearchParams<{ category?: string; amount?: string }>();
   const paramKey = `${params.category ?? ''}|${params.amount ?? ''}`;
   const [seenParams, setSeenParams] = useState<string | null>(null);
   if (paramKey !== seenParams) {
     setSeenParams(paramKey);
     const pc = CATEGORIES.find((c) => c === params.category);
-    if (pc && params.amount && !validateAmount(params.amount)) {
+    if (pc) {
       setCategory(pc);
-      setAmountText(params.amount);
-      setTouched(false);
-      setSubmitted({ category: pc, amount: parseNumber(params.amount) });
+      setAmountText(params.amount && !validateAmount(params.amount) ? params.amount : '');
+      setAmountTouched(false);
     }
   }
 
   const cardW = useCardWidth(300, 80);
 
-  const amountError = touched ? validateAmount(amountText) : null;
-  const amountValid = !validateAmount(amountText);
-  /** 1 = choosing category, 2 = entering amount, 3 = viewing result. */
-  const stage = submitted ? 3 : category ? 2 : 1;
-  const categoryError = touched && !category ? 'Pick a merchant category.' : null;
+  // The answer comes from the category alone; the amount is optional and only makes it exact.
+  const amountEmpty = amountText.trim() === '';
+  const amountProblem = amountEmpty ? null : validateAmount(amountText);
+  const amount = !amountEmpty && !amountProblem ? parseNumber(amountText) : null;
 
-  const ranked = useMemo(
-    () => (submitted ? rankCards(data.cards, submitted.category, submitted.amount, data.transactions) : []),
-    [submitted, data.cards, data.transactions],
+  const quick = useMemo(
+    () => (category ? rankByRate(data.cards, category, data.transactions) : null),
+    [category, data.cards, data.transactions],
   );
-
-  function onRecommend() {
-    setTouched(true);
-    if (!category || validateAmount(amountText)) {
-      setSubmitted(null);
-      return;
-    }
-    setSubmitted({ category, amount: parseNumber(amountText) });
-  }
+  const exact = useMemo(
+    () => (category && amount !== null ? rankCards(data.cards, category, amount, data.transactions) : null),
+    [category, amount, data.cards, data.transactions],
+  );
 
   if (data.cards.length === 0) {
     return (
@@ -75,18 +65,33 @@ export default function RecommendScreen() {
     );
   }
 
+  const ranked = exact ?? quick?.ranked ?? [];
   const best = ranked[0];
+  const next = ranked[1];
+  const label = category ? CATEGORY_LABELS[category] : '';
+  const nothingEarns = !exact && best ? rateNow(best) === 0 : false;
+  const switchAt = !exact ? quick?.switchAt : undefined;
+
+  let answer = '';
+  if (best && category) {
+    if (exact && amount !== null) answer = explainWinner(exact, amount);
+    else if (nothingEarns) answer = `None of your cards earns anything more on ${label} this month.`;
+    else {
+      answer = quickReason(best, category);
+      if (next && rateNow(next) === rateNow(best) && rateNow(next) > 0) {
+        answer += ` ${next.card.nickname} pays the same rate, so either works.`;
+      }
+    }
+  }
 
   return (
     <Screen>
-      <Title kicker="Rewards guide" subtitle="We compare each card’s sample reward rules. Nothing is charged.">
+      <Title kicker="Rewards guide" subtitle="Tap what you’re buying to see which card to use. Nothing is charged.">
         Choose a card
       </Title>
 
-      <StepCounter label={STAGES[stage - 1]} step={stage} total={STAGES.length} />
-
-      <View style={{ height: space.xl }} />
-      <NumberedHeading n={1} title="Merchant category" state={category ? 'done' : 'active'} />
+      <View style={{ height: space.md }} />
+      <NumberedHeading n={1} title="What are you buying?" state={category ? 'done' : 'active'} />
       <ChipGroup label="Choose one">
         {CATEGORIES.map((c) => (
           <Chip
@@ -94,58 +99,20 @@ export default function RecommendScreen() {
             label={CATEGORY_LABELS[c]}
             icon={CATEGORY_ICON[c]}
             selected={category === c}
-            onPress={() => {
-              setCategory(c);
-              setSubmitted(null);
-            }}
+            onPress={() => setCategory(c)}
           />
         ))}
       </ChipGroup>
-      {categoryError ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {categoryError}
-        </Text>
-      ) : null}
 
-      <View style={{ height: space.md }} />
-      <NumberedHeading
-        n={2}
-        title="Purchase amount"
-        state={amountValid && (submitted || category) ? 'done' : category ? 'active' : 'todo'}
-      />
-      <Field
-        label="Amount in rupees"
-        prefix="₹"
-        placeholder="e.g. 2500"
-        keyboardType="decimal-pad"
-        inputMode="decimal"
-        value={amountText}
-        onChangeText={(t) => {
-          setAmountText(t.replace(/[^\d.,]/g, ''));
-          setSubmitted(null);
-        }}
-        error={amountError}
-        hint="Up to ₹10,00,000"
-        returnKeyType="done"
-        onSubmitEditing={onRecommend}
-      />
-
-      <Button label="Recommend a card" icon="spark" onPress={onRecommend} />
-
-      {submitted && best ? (
-        <>
-          <View style={{ height: space.xxl }} />
-          <NumberedHeading n={3} title="Result" state="done" />
+      {category && best ? (
+        <View accessibilityLiveRegion="polite">
           <Panel style={{ gap: space.md }}>
             <View style={{ flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' }}>
               <StatusBadge status="best" />
               <StatusBadge status="estimate" />
             </View>
-            <Stage caption={`${best.card.issuer} · sample · •• ${best.card.last4}`}>
-              <CardTile card={best.card} width={cardW} onPress={() => router.push(`/card/${best.card.id}`)} />
-            </Stage>
             <View>
-              <Text style={type.mono}>Use this card</Text>
+              <Text style={type.mono}>{nothingEarns ? 'No card earns here right now' : 'Use this card'}</Text>
               <Text style={type.title} accessibilityRole="header">
                 {best.card.nickname}
               </Text>
@@ -153,34 +120,69 @@ export default function RecommendScreen() {
                 {best.card.issuer} · {best.card.network} •• {best.card.last4}
               </Text>
             </View>
-            <Text style={type.body}>{explainWinner(ranked, submitted.amount)}</Text>
-          </Panel>
-
-          <Text style={[type.mono, { marginTop: space.lg, marginBottom: space.sm }]}>Review</Text>
-          <DetailList>
-            <DetailRow label="Purchase" value={CATEGORY_LABELS[submitted.category]} />
-            <DetailRow label="Amount">
-              <Amount value={submitted.amount} size="md" />
-            </DetailRow>
-            <DetailRow label="Rate applied" value={formatPercent(best.ratePercent)} hint={best.reasons[0]} />
-            {best.capRupees !== undefined && best.capRemaining !== undefined ? (
-              <DetailRow
-                label="Monthly cap left"
-                value={formatRupees(best.capRemaining, { decimals: true })}
-                hint={
-                  best.capLimited
-                    ? 'Reward limited by the cap this month'
-                    : `of ${formatRupees(best.capRupees)} · based on this month’s sample spend`
-                }
-              />
+            <Text style={type.body}>{answer}</Text>
+            {switchAt ? (
+              <View style={styles.switchNote}>
+                <Text style={[type.small, { color: colors.warningText }]}>
+                  For {formatRupees(switchAt.amount)} or more, {switchAt.card.nickname} earns more, because this card’s
+                  monthly cap runs out. Add the amount below to check.
+                </Text>
+              </View>
             ) : null}
-            <DetailRow label="Estimated reward" emphasis last>
-              <Amount value={best.rewardRupees} size="lg" kind="reward" decimals />
-            </DetailRow>
-          </DetailList>
+            <Stage caption={`${best.card.issuer} · sample · •• ${best.card.last4}`}>
+              <CardTile card={best.card} width={cardW} onPress={() => router.push(`/card/${best.card.id}`)} />
+            </Stage>
+          </Panel>
+        </View>
+      ) : null}
+
+      <View style={{ height: space.xl }} />
+      <NumberedHeading n={2} title="Amount (optional)" state={amount !== null ? 'done' : category ? 'active' : 'todo'} />
+      <Field
+        label="Amount in rupees"
+        prefix="₹"
+        placeholder="e.g. 2500"
+        keyboardType="decimal-pad"
+        inputMode="decimal"
+        value={amountText}
+        onChangeText={(t) => setAmountText(t.replace(/[^\d.,]/g, ''))}
+        onBlur={() => setAmountTouched(true)}
+        error={amountTouched ? amountProblem : null}
+        hint="Add it for the exact reward, counting monthly caps. Up to ₹10,00,000."
+        returnKeyType="done"
+      />
+
+      {category && best ? (
+        <>
+          {exact && amount !== null ? (
+            <>
+              <Text style={[type.mono, { marginBottom: space.sm }]}>Review</Text>
+              <DetailList>
+                <DetailRow label="Purchase" value={label} />
+                <DetailRow label="Amount">
+                  <Amount value={amount} size="md" />
+                </DetailRow>
+                <DetailRow label="Rate applied" value={formatPercent(best.ratePercent)} hint={best.reasons[0]} />
+                {best.capRupees !== undefined && best.capRemaining !== undefined ? (
+                  <DetailRow
+                    label="Monthly cap left"
+                    value={formatRupees(best.capRemaining, { decimals: true })}
+                    hint={
+                      best.capLimited
+                        ? 'Reward limited by the cap this month'
+                        : `of ${formatRupees(best.capRupees)} · based on this month’s spending`
+                    }
+                  />
+                ) : null}
+                <DetailRow label="Estimated reward" emphasis last>
+                  <Amount value={best.rewardRupees} size="lg" kind="reward" decimals />
+                </DetailRow>
+              </DetailList>
+            </>
+          ) : null}
           <Text style={[type.caption, { fontWeight: '500', marginTop: space.sm }]}>
-            An estimate from your sample rules, not an issuer quote. TAPO doesn’t make the payment — pay with your card as
-            usual.
+            An estimate from the reward rules in your wallet, not an issuer quote. TAPO doesn’t make the payment — pay
+            with your card as usual.
           </Text>
           <Button
             label="View this card"
@@ -194,42 +196,61 @@ export default function RecommendScreen() {
             <>
               <SectionHeader title="How every card compares" />
               <Panel style={{ paddingVertical: space.xs }}>
-                {ranked.map((e, i) => (
-                  <View
-                    key={e.card.id}
-                    style={[styles.rankRow, i === ranked.length - 1 && { borderBottomWidth: 0 }]}
-                    accessible
-                    accessibilityLabel={`Rank ${i + 1}: ${e.card.nickname}, ${formatPercent(e.ratePercent)}, estimated ${formatRupees(
-                      e.rewardRupees,
-                      { decimals: true },
-                    )}. ${e.reasons.join(' ')}`}
-                  >
-                    <View style={[styles.rankBadge, i === 0 && { backgroundColor: colors.successBg }]}>
-                      <Text style={[styles.rankNum, { color: i === 0 ? colors.success : colors.textMuted }]}>
-                        {String(i + 1).padStart(2, '0')}
-                      </Text>
+                {ranked.map((e, i) => {
+                  const detail = exact ? e.reasons.join(' ') : quickReason(e, category);
+                  return (
+                    <View
+                      key={e.card.id}
+                      style={[styles.rankRow, i === ranked.length - 1 && { borderBottomWidth: 0 }]}
+                      accessible
+                      accessibilityLabel={
+                        exact
+                          ? `Rank ${i + 1}: ${e.card.nickname}, ${formatPercent(e.ratePercent)}, estimated ${formatRupees(
+                              e.rewardRupees,
+                              { decimals: true },
+                            )}. ${detail}`
+                          : `Rank ${i + 1}: ${e.card.nickname}, pays ${formatPercent(rateNow(e))} now. ${detail}`
+                      }
+                    >
+                      <View style={[styles.rankBadge, i === 0 && { backgroundColor: colors.successBg }]}>
+                        <Text style={[styles.rankNum, { color: i === 0 ? colors.success : colors.textMuted }]}>
+                          {String(i + 1).padStart(2, '0')}
+                        </Text>
+                      </View>
+                      <View style={[styles.swatch, { backgroundColor: e.card.color }]} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[type.body, { fontWeight: '600' }]}>{e.card.nickname}</Text>
+                        <Text style={type.small}>{detail}</Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end', minWidth: 72 }}>
+                        {exact ? (
+                          <>
+                            <Amount value={e.rewardRupees} size="sm" kind={i === 0 ? 'reward' : 'plain'} decimals />
+                            <Text style={type.caption}>{formatPercent(e.ratePercent)}</Text>
+                          </>
+                        ) : (
+                          <>
+                            <Text style={[styles.rateNow, { color: i === 0 ? colors.success : colors.text }]}>
+                              {formatPercent(rateNow(e))}
+                            </Text>
+                            <Text style={type.caption}>now</Text>
+                          </>
+                        )}
+                      </View>
                     </View>
-                    <View style={[styles.swatch, { backgroundColor: e.card.color }]} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={[type.body, { fontWeight: '600' }]}>{e.card.nickname}</Text>
-                      <Text style={type.small}>{e.reasons.join(' ')}</Text>
-                    </View>
-                    <View style={{ alignItems: 'flex-end', minWidth: 72 }}>
-                      <Amount value={e.rewardRupees} size="sm" kind={i === 0 ? 'reward' : 'plain'} decimals />
-                      <Text style={type.caption}>{formatPercent(e.ratePercent)}</Text>
-                    </View>
-                  </View>
-                ))}
+                  );
+                })}
               </Panel>
             </>
           ) : null}
 
           <View style={{ marginTop: space.lg }}>
             <Notice title="How this is calculated">
-              Reward = amount × the card’s rate for this category (or its base rate if there’s no category rule),
-              limited by any monthly cap minus rewards already earned this month from sample transactions. Ties go
-              to the higher headline rate, then alphabetical order. These are illustrative sample rules, not real
-              card terms.
+              Without an amount, cards are ranked by the rate they pay on this category right now; a card whose
+              monthly cap is used up pays nothing more until next month. With an amount, reward = amount × the
+              card’s rate for this category (or its base rate if there’s no category rule), limited by what’s left of
+              any monthly cap after this month’s purchases. Ties go to the higher headline rate, then alphabetical
+              order. The rules are the ones saved in your wallet: sample rules unless you entered your own.
             </Notice>
             <Button
               label="How TAPO works"
@@ -247,8 +268,8 @@ export default function RecommendScreen() {
 }
 
 const styles = StyleSheet.create({
-  error: { color: colors.danger, fontSize: 14, fontWeight: '600', marginTop: -space.sm, marginBottom: space.lg },
   rankNum: { fontFamily: fonts.body, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  rateNow: { fontFamily: fonts.body, fontSize: 17, fontWeight: '700', fontVariant: ['tabular-nums'] },
   rankBadge: {
     width: 34,
     height: 28,
@@ -265,5 +286,12 @@ const styles = StyleSheet.create({
     paddingVertical: space.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
+  },
+  switchNote: {
+    backgroundColor: colors.warningBg,
+    borderColor: colors.warningBorder,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: space.md,
   },
 });

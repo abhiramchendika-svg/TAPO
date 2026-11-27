@@ -52,6 +52,27 @@ test('card finder recommends the best card', async ({ page }) => {
   await expect(page.getByText(/Everyday Cashback is estimated to earn ₹50\.00 on a ₹1,000 purchase/)).toBeVisible();
 });
 
+test('one tap on Wallet shows the card to use, with no amount to type', async ({ page }) => {
+  await createAccount(page);
+  await page.getByRole('radiogroup', { name: 'What are you buying?' }).getByRole('radio', { name: 'Groceries' }).click();
+  const answer = page.getByRole('button', { name: /^Use Everyday Cashback\. 5% back on Groceries/ });
+  await expect(answer).toBeVisible();
+  // The answer opens the full comparison for the same category.
+  await answer.click();
+  await expect(page).toHaveURL(/\/app\/recommend\?category=groceries/);
+  await expect(page.getByRole('heading', { name: 'Everyday Cashback' })).toBeVisible();
+});
+
+test('Best answers on a category tap, and the amount makes it exact', async ({ page }) => {
+  await createAccount(page);
+  await page.goto('/app/recommend');
+  await page.getByRole('radiogroup', { name: 'Choose one' }).getByRole('radio', { name: 'Groceries' }).click();
+  await expect(page.getByText('Use this card', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Everyday Cashback' })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Amount in rupees' }).fill('1000');
+  await expect(page.getByText(/Everyday Cashback is estimated to earn ₹50\.00 on a ₹1,000 purchase/)).toBeVisible();
+});
+
 test('statement import adds purchases', async ({ page }) => {
   await createAccount(page);
   await page.goto('/app/import');

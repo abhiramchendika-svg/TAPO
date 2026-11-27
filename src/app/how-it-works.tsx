@@ -66,8 +66,9 @@ export default function HowItWorksScreen() {
       <Accordion
         n={3}
         title="Ask for the best card"
-        summary="Pick a category and amount."
+        summary="Tap a category; the amount is optional."
         scope={[
+          'One tap ranks cards by the rate they pay now',
           'Reward = amount × the card’s rate for that category',
           'No category rule? The base rate applies',
           'Caps limit the reward to what’s left this month',

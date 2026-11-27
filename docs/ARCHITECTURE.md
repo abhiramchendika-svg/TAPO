@@ -48,7 +48,13 @@ source open. Each section ends with questions an evaluator is likely to ask; pra
 3. `evaluateCard(card, category, amount, txns, now)`: if the rule has a monthly cap, the reward is limited to
    `cap − rewards already earned in that category this month` (from the transactions).
 4. `rankCards(...)`: sorts by estimated reward, then by headline rate, then by name (a stable, explainable order).
-5. `monthSummary(card, txns, now)`: totals spend and reward per card for the month, applying caps per category.
+5. `rankByRate(cards, category, txns, now)`: the **one-tap answer**, before any amount is typed. It ranks cards by
+   the rate they pay right now: a card whose monthly cap is used up pays 0 until next month. Ties go to the card
+   with more cap room, then the name. If the top card's cap would run out on a big purchase, `switchAt` gives the
+   amount from which another card earns more. That's the smallest amount where the other card's reward passes
+   what's left of the top card's cap, worked out with the same rounding as `rankCards`. The tests check that
+   `rankCards` agrees on both sides of that amount.
+6. `monthSummary(card, txns, now)`: totals spend and reward per card for the month, applying caps per category.
 
 **Worked example** (from the tests): a grocery card gives 5% with a ₹500 monthly cap. ₹2,000 of groceries
 earned ₹100 already, so ₹400 of cap is left. A new ₹10,000 purchase would earn ₹500 uncapped, so it is
@@ -57,6 +63,9 @@ earned ₹100 already, so ₹400 of cap is left. A new ₹10,000 purchase would 
 **Likely questions**
 - *Why round down?* So the estimate never promises more than the bank would pay.
 - *How are ties broken?* Headline rate, then card name, so the result is the same every time.
+- *Why answer without an amount?* Our interviews found people pay by habit, so the answer has to come quicker
+  than reaching for the usual card. One tap is enough when no cap is close to running out. When one is,
+  `switchAt` says from what amount to switch, so the quick answer is never silently wrong.
 
 ## 4. Insights and the "missed rewards" metric (`src/lib/insights.ts`)
 
@@ -97,8 +106,8 @@ how much money the user left on the table.
 
 | File | What to say about it |
 | --- | --- |
-| `(tabs)/index.tsx` | Wallet: floating card gallery, month stats, **missed rewards**, recent activity |
-| `(tabs)/recommend.tsx` | Category + amount → ranked cards with reasons |
+| `(tabs)/index.tsx` | Wallet: **Paying now?** (one tap → card to use, from `components/BestNow.tsx`), floating card gallery, month stats, **missed rewards**, recent activity |
+| `(tabs)/recommend.tsx` | Best: tap a category → card to use at once (`rankByRate`); add an amount → exact rewards and caps (`rankCards`) |
 | `(tabs)/insights.tsx` | Monthly insights and tips |
 | `import.tsx` | Statement import: choose card → file/paste → preview → import |
 | `developer.tsx` | Hidden tools (7 taps on the version in Settings), linked both ways with Settings |

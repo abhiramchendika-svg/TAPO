@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { effectiveRule, evaluateCard, monthSummary, rankCards, rawReward } from '../rewards';
+import { effectiveRule, evaluateCard, monthSummary, quickReason, rankByRate, rankCards, rateNow, rawReward } from '../rewards';
 import { card, groceryCard, NOW, travelCard, txn } from '../testing/fixtures';
 
 describe('effectiveRule', () => {
@@ -60,6 +60,81 @@ describe('rankCards', () => {
     const b = card({ id: 'b', nickname: 'Alpha', baseRatePercent: 1 });
     const ranked = rankCards([a, b], 'other', 1000, [], NOW);
     expect(ranked.map((r) => r.card.nickname)).toEqual(['Alpha', 'Beta']);
+  });
+});
+
+describe('rankByRate (one tap, no amount)', () => {
+  const flatTwo = card({ id: 'flat', nickname: 'Flat Two', baseRatePercent: 2 });
+  const topId = (q: ReturnType<typeof rankByRate>) => q.ranked[0]!.card.id;
+  /** The card rankCards puts first for an amount, to check the one-tap answer against the exact maths. */
+  const exactTop = (cards: typeof flatTwo[], amount: number, txns: ReturnType<typeof txn>[] = []) =>
+    rankCards(cards, 'groceries', amount, txns, NOW)[0]!.card.id;
+
+  it('ranks by the rate each card pays right now', () => {
+    const q = rankByRate([travelCard, groceryCard], 'groceries', [], NOW);
+    expect(q.ranked.map((e) => e.card.id)).toEqual(['grocery', 'travel']);
+    expect(q.ranked.map(rateNow)).toEqual([5, 0.5]);
+  });
+
+  it('puts a card whose monthly cap is used up at the bottom', () => {
+    const txns = [txn({ cardId: 'grocery', category: 'groceries', amountRupees: 10000 })]; // 5% = ₹500, the whole cap
+    const q = rankByRate([groceryCard, flatTwo], 'groceries', txns, NOW);
+    expect(topId(q)).toBe('flat');
+    expect(rateNow(q.ranked[1]!)).toBe(0);
+    expect(quickReason(q.ranked[1]!, 'groceries')).toMatch(/monthly cap is used up/);
+  });
+
+  it('says from what amount another card earns more, matching the exact ranking either side', () => {
+    const txns = [txn({ cardId: 'grocery', category: 'groceries', amountRupees: 2000 })]; // ₹100 used, ₹400 left
+    const q = rankByRate([groceryCard, flatTwo], 'groceries', txns, NOW);
+    expect(topId(q)).toBe('grocery');
+    expect(q.switchAt).toEqual({ amount: 20001, card: flatTwo });
+    expect(exactTop([groceryCard, flatTwo], 20001, txns)).toBe('flat');
+    expect(exactTop([groceryCard, flatTwo], 20000, txns)).toBe('grocery');
+  });
+
+  it('works out the switch for low base rates too', () => {
+    const lowBase = card({ id: 'low', nickname: 'Low Base', baseRatePercent: 0.5 });
+    const q = rankByRate([groceryCard, lowBase], 'groceries', [], NOW);
+    expect(q.switchAt?.amount).toBe(100002);
+    expect(exactTop([groceryCard, lowBase], 100002)).toBe('low');
+    expect(exactTop([groceryCard, lowBase], 100001)).toBe('grocery');
+  });
+
+  it('gives no switch when the top card has no cap, or the others can never catch up', () => {
+    expect(rankByRate([groceryCard, travelCard], 'travel', [], NOW).switchAt).toBeUndefined();
+    const smallCap = card({
+      id: 'small',
+      nickname: 'Small Cap',
+      rules: [{ id: 's', category: 'groceries', ratePercent: 3, monthlyCapRupees: 300 }],
+    });
+    const q = rankByRate([groceryCard, smallCap], 'groceries', [], NOW);
+    expect(topId(q)).toBe('grocery');
+    expect(q.switchAt).toBeUndefined();
+  });
+
+  it('prefers more cap room when two cards pay the same rate', () => {
+    const capped = card({
+      id: 'capped',
+      nickname: 'Alpha',
+      rules: [{ id: 'c', category: 'groceries', ratePercent: 5, monthlyCapRupees: 500 }],
+    });
+    const open = card({ id: 'open', nickname: 'Zeta', rules: [{ id: 'o', category: 'groceries', ratePercent: 5 }] });
+    const q = rankByRate([capped, open], 'groceries', [], NOW);
+    expect(topId(q)).toBe('open');
+    expect(q.switchAt).toBeUndefined();
+  });
+});
+
+describe('quickReason', () => {
+  it('describes the rate, where it comes from and the cap left', () => {
+    const txns = [txn({ cardId: 'grocery', category: 'groceries', amountRupees: 2000 })];
+    expect(quickReason(evaluateCard(groceryCard, 'groceries', 0, txns, NOW), 'groceries')).toBe(
+      '5% back on Groceries, ₹400.00 of its ₹500 monthly cap left.',
+    );
+    expect(quickReason(evaluateCard(groceryCard, 'dining', 0, [], NOW), 'dining')).toBe(
+      '1% back (base rate; no Dining rule), no monthly cap.',
+    );
   });
 });
 
