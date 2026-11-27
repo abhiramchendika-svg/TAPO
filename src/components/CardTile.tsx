@@ -38,7 +38,7 @@ export function CardTile({
   accessibilityHint?: string;
   elevated?: boolean;
 }) {
-  const a11y = `Sample card. ${card.nickname}, ${card.type} card on ${card.network}, issued by ${
+  const a11y = `${card.isSample ? 'Sample card. ' : ''}${card.nickname}, ${card.type} card on ${card.network}, issued by ${
     card.issuer
   }, ending in ${card.last4.split('').join(' ')}`;
 

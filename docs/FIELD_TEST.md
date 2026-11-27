@@ -82,9 +82,10 @@ Start the timer when they open the link, and stop it when their last card is sav
 
 1. Open **<https://tapo-seven.vercel.app/app/>** and choose **Create account**. Any name, any email and a password
    they'll remember (there's no password reset).
-2. Skip the introduction. A new account starts with **sample cards**, so go to **Settings → Remove all cards →
-   Yes, remove**.
-3. For each card, tap **+** at the top of **Wallet**.
+2. On the last welcome screen (**Skip** goes straight there), choose **Add my cards**. The wallet starts empty
+   and Add card opens.
+3. Add each card in four short steps: name and issuer, network and type, last four digits, reward rules. After
+   the first card, tap **+** at the top of **Wallet** for the next.
    - Put the letter and description in **Nickname** (for example "A supermarket card").
    - **Issuer** is a sample list, so any choice is fine. Pick the right network and card type.
    - For **Last four digits**, any four digits will do: they're only a label. Say so.
@@ -175,3 +176,4 @@ Send this, word for word:
 | Date | Change | Why |
 | --- | --- | --- |
 | 2026-11-27 | Added a record of where people get stuck and when we help, and a summary after 6 sessions | The panel's shared plan asks for a written summary of where 6 users struggle, and the top fixes. Added before the first session; no pass mark changed |
+| 2026-11-27 | Setup step 2 is now "Add my cards" instead of removing the sample cards in Settings | The app now lets a new user start with an empty wallet. Setup is timed the same way; no pass mark changed |

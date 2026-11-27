@@ -39,7 +39,7 @@ type Step = 'setup' | 'tap' | 'review' | 'processing' | 'result';
 type Outcome = 'approved' | 'declined';
 type Trigger = { method: 'nfc-tag'; tagCode: string } | { method: 'simulated' };
 
-const PROCESSING_STAGES = ['Reading demo session', 'Checking sample card', 'Simulating authorisation'];
+const PROCESSING_STAGES = ['Reading demo session', 'Checking card label', 'Simulating authorisation'];
 
 function validateMerchant(v: string): string | null {
   const t = v.trim();
@@ -147,8 +147,8 @@ export default function DemoPayScreen() {
         <DemoModeBanner />
         <View style={{ height: space.lg }} />
         <EmptyState
-          title="Add a sample card first"
-          message="The demo pays with one of your sample cards. Only its nickname and last four digits are shown."
+          title="Add a card first"
+          message="The demo uses one of your cards by its label only: the nickname and last four digits. Nothing is charged."
           action={<Button label="Add a card" icon="plus" onPress={() => router.push('/card/add')} />}
         />
       </Screen>
@@ -208,7 +208,7 @@ export default function DemoPayScreen() {
             ))}
           </View>
 
-          <ChipGroup label="Pay with (sample card)">
+          <ChipGroup label="Pay with (card label only)">
             {data.cards.map((c) => (
               <Chip
                 key={c.id}
@@ -251,7 +251,7 @@ export default function DemoPayScreen() {
           </View>
           <DetailList>
             <DetailRow label="Merchant" value={merchantName} />
-            <DetailRow label="Pay with" value={`${card.nickname} •• ${card.last4}`} hint="Sample card label only" />
+            <DetailRow label="Pay with" value={`${card.nickname} •• ${card.last4}`} hint="Card label only; nothing is charged" />
             <DetailRow
               label="Trigger"
               value={trigger.method === 'nfc-tag' ? 'NFC demo tag' : 'Simulated tap'}

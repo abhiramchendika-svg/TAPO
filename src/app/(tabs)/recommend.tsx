@@ -129,7 +129,7 @@ export default function RecommendScreen() {
                 </Text>
               </View>
             ) : null}
-            <Stage caption={`${best.card.issuer} · sample · •• ${best.card.last4}`}>
+            <Stage caption={`${best.card.issuer}${best.card.isSample ? ' · sample' : ''} · •• ${best.card.last4}`}>
               <CardTile card={best.card} width={cardW} onPress={() => router.push(`/card/${best.card.id}`)} />
             </Stage>
           </Panel>

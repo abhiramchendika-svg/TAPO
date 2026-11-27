@@ -41,7 +41,7 @@ export default function CardDetailsScreen() {
   return (
     <Screen edges={['bottom']}>
       <View style={{ paddingTop: space.sm, paddingBottom: space.md }}>
-        <Stage caption={`${card.issuer} · sample · •• ${card.last4}`}>
+        <Stage caption={`${card.issuer}${card.isSample ? ' · sample' : ''} · •• ${card.last4}`}>
           <CardTile card={card} width={cardW} />
         </Stage>
       </View>

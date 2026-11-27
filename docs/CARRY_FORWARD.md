@@ -24,6 +24,7 @@ we made it.
 | 2026-11-26 | Passwords hashed with 600,000 rounds on the web, at least 100,000 timed per phone; older accounts upgraded at sign-in | 20,000 rounds was below current guidance | To confirm |
 | 2026-11-27 | Best card answers in one tap; the amount is optional | Interviews showed habit wins at the counter. **Built before both of us agreed it in the shared plan** | To confirm |
 | 2026-11-27 | Field-test pass marks fixed before the first session | So results can't be bent to fit them afterwards ([`FIELD_TEST.md`](FIELD_TEST.md)) | To confirm |
+| 2026-11-27 | A new user chooses "Add my cards" (an empty wallet, straight into Add card) or "Explore with sample cards" at the end of the introduction. "Sample" labels now appear only on sample data | Shared plan step 4: the core flow has to run on real data without help. Before, a real user had to find "Remove all cards" in Settings | To confirm |
 
 ## Lessons
 
@@ -47,8 +48,8 @@ Step numbers refer to the shared project plan in the panel's report.
 | 1 | Fill in where each interview was held, who led it and the person's exact words in [`INTERVIEWS.md`](INTERVIEWS.md). If fewer than 5 were off campus or 3 led by the CTO, run more | CEO (CTO for the 3) | 1 | Columns ready to fill |
 | 2 | Run at least 6 field-test sessions, then write a summary of the six and the top fixes | Both | 5 | Kit ready |
 | 3 | Add a "where they got stuck" field to the field-test sheet | CTO | 5 | Done 2026-11-27 |
-| 4 | Decide whether a new account can start empty instead of with sample cards | Both | 4 | To discuss |
-| 5 | Try the one-tap best card on a real phone | CTO | 4 | Open |
+| 4 | Decide whether a new account can start empty instead of with sample cards | Both | 4 | Built 2026-11-27 as a choice; confirm the decision above |
+| 5 | On a real phone, go through sign-up, "Add my cards", two cards and a one-tap answer | CTO | 4 | Open |
 | 6 | On the demo phone, note the hashing rounds and time (Settings, tap the version 7 times, Developer, Password hashing) | CTO | 3 | Open |
 | 7 | Label the architecture diagram: no backend, no AI, and the outside services (Vercel, GitHub Actions, EAS) | CTO | 3 | Done 2026-11-27 ([`ARCHITECTURE.md`](ARCHITECTURE.md)); walk through it together |
 | 8 | Rebuild the pitch on field proof. [`PITCH_CHECK.md`](PITCH_CHECK.md) lists the 12 claims that need work and what's missing | CEO | 6 | Claims checked; rebuild after the field test |
@@ -59,3 +60,4 @@ Step numbers refer to the shared project plan in the panel's report.
 | 13 | Tick and sign [`AI_USAGE.md`](AI_USAGE.md) | Both | — | Open |
 | 14 | Find out whether real cards drop to the base rate once a cap is used up, and model it if they do | CTO | — | Open |
 | 15 | Run the browser tests in CI, not only on our laptops | CTO | — | Open |
+| 16 | Decide whether a user's own card should still show the SAMPLE badge and "DEMO CARDHOLDER" on its picture. Today every card picture does, because it uses a made-up bank name | Both | 4 | To discuss |

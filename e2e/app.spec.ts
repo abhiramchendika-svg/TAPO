@@ -1,6 +1,31 @@
 import { expect, test } from '@playwright/test';
 
-import { createAccount, TEST_PASSWORD } from './helpers';
+import { createAccount, signUp, TEST_PASSWORD } from './helpers';
+
+test('a new user starts with their own cards and gets an answer in one tap', async ({ page }) => {
+  await signUp(page);
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('button', { name: 'Add my cards' }).click();
+  await expect(page).toHaveURL(/\/app\/card\/add/);
+
+  await page.getByRole('textbox', { name: 'Nickname' }).fill('My grocery card');
+  await page.getByRole('button', { name: 'Next' }).click(); // network and type: keep the defaults
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByRole('textbox', { name: 'Last four digits' }).fill('4321');
+  await page.getByRole('button', { name: 'Next' }).click();
+  await page.getByRole('radio', { name: '+ Groceries' }).click();
+  await page.getByRole('textbox', { name: 'Rate', exact: true }).fill('5');
+  await page.getByRole('button', { name: 'Add card' }).click();
+
+  // Back on Wallet with only this card: no sample cards, and no "sample data" label.
+  await expect(page.getByText('1 card', { exact: true })).toBeVisible();
+  await expect(page.getByText('Prototype · no payments')).toBeVisible();
+  await expect(page.getByText('Everyday Cashback')).toHaveCount(0);
+  await page.getByRole('radiogroup', { name: 'What are you buying?' }).getByRole('radio', { name: 'Groceries' }).click();
+  await expect(
+    page.getByRole('button', { name: /^Use My grocery card\. 5% back on Groceries, no monthly cap\./ }),
+  ).toBeVisible();
+});
 
 test('sign-up stores the wallet encrypted, never in plain text', async ({ page }) => {
   await createAccount(page);

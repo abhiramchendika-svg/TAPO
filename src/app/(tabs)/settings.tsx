@@ -145,7 +145,8 @@ export default function SettingsScreen() {
       />
       <Notice title="Prototype only">
         This is a demonstration app. It cannot make payments and has no partnership, approval or affiliation with
-        any bank, card network or payment provider. Issuer names and reward rules are fictional samples.
+        any bank, card network or payment provider. Issuer names are fictional samples, and reward rules are either
+        samples or your own estimates.
       </Notice>
     </Screen>
   );

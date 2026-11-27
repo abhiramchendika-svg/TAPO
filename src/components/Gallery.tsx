@@ -91,7 +91,7 @@ export function Placard({ card, width }: { card: Card; width: number }) {
         {card.nickname}
       </Text>
       <Text style={styles.placardMeta} numberOfLines={1}>
-        Sample · •• {card.last4}
+        {card.isSample ? 'Sample · ' : ''}•• {card.last4}
       </Text>
     </View>
   );
@@ -297,7 +297,7 @@ export function GalleryWall({
                     ) : (
                       <View style={[styles.placard, { width: placardW }]}>
                         <Text style={styles.placardTitle}>Empty frame</Text>
-                        <Text style={styles.placardMeta}>Add a sample card</Text>
+                        <Text style={styles.placardMeta}>Add a card</Text>
                       </View>
                     )}
                   </View>
@@ -344,7 +344,7 @@ function AddTile({ width, height, onPress }: { width: number; height: number; on
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel="Add a sample card"
+      accessibilityLabel="Add a card"
       style={(state) => [
         styles.add,
         { width, height, borderRadius: Math.round(width * 0.052) },
@@ -381,7 +381,7 @@ export function CardList({
           key={c.id}
           onPress={() => onOpen(c)}
           accessibilityRole="button"
-          accessibilityLabel={`Sample card ${c.nickname}, ${c.network} ending ${c.last4}. Best: ${bestFor(c)}`}
+          accessibilityLabel={`${c.isSample ? 'Sample card ' : ''}${c.nickname}, ${c.network} ending ${c.last4}. Best: ${bestFor(c)}`}
           accessibilityHint="Opens card details"
           style={({ pressed }) => [styles.listRow, i > 0 && styles.listDivider, pressed && { backgroundColor: colors.surfaceAlt }]}
         >
@@ -405,13 +405,13 @@ export function CardList({
       <Pressable
         onPress={onAdd}
         accessibilityRole="button"
-        accessibilityLabel="Add a sample card"
+        accessibilityLabel="Add a card"
         style={({ pressed }) => [styles.listRow, cards.length > 0 && styles.listDivider, pressed && { backgroundColor: colors.surfaceAlt }]}
       >
         <View style={styles.listAdd}>
           <Icon name="plus" color={colors.ink} size={22} />
         </View>
-        <Text style={[type.label, { flex: 1 }]}>Add a sample card</Text>
+        <Text style={[type.label, { flex: 1 }]}>Add a card</Text>
         <Icon name="chevronRight" color={colors.textSubtle} size={20} />
       </Pressable>
     </View>

@@ -45,6 +45,7 @@ export default function HomeScreen() {
   const insights = useMemo(() => buildInsights(data.cards, data.transactions, new Date()), [data]);
   const missed = Math.round(insights.tips.reduce((s, t) => s + t.extra, 0) * 100) / 100;
   const hasImported = data.transactions.some((t) => t.source === 'imported');
+  const hasSampleData = data.cards.some((c) => c.isSample) || data.transactions.some((t) => t.isSample);
   const activeCard: Card | undefined = data.cards[active];
   const open = (c: Card) => router.push(`/card/${c.id}`);
   const add = () => router.push('/card/add');
@@ -80,13 +81,13 @@ export default function HomeScreen() {
           {name ?? 'Your wallet'}
         </Text>
       </View>
-      <DemoBanner />
+      <DemoBanner text={hasSampleData ? 'Demo only · sample data · no payments' : 'Prototype · no payments'} />
 
       {data.cards.length === 0 ? (
         <View style={{ marginTop: space.xl }}>
           <EmptyState
-            title="The gallery is empty"
-            message="Add a sample card, or restore the demo cards from Settings."
+            title="Add your first card"
+            message="You need its nickname, the last four digits and its reward rates. Never the card number. To look around first, load sample cards from Settings."
             action={<Button label="Add a card" icon="plus" onPress={add} />}
           />
         </View>
@@ -121,7 +122,7 @@ export default function HomeScreen() {
                   {activeCard ? `You are viewing · ${active + 1} of ${data.cards.length}` : 'An empty frame'}
                 </Text>
                 <Text style={[type.title, { textAlign: 'center' }]} numberOfLines={2}>
-                  {activeCard ? activeCard.nickname : 'Add a sample card'}
+                  {activeCard ? activeCard.nickname : 'Add a card'}
                 </Text>
                 {activeCard ? (
                   <View style={styles.bestRow}>

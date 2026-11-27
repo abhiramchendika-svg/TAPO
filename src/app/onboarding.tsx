@@ -59,7 +59,7 @@ const PAGES: Page[] = [
     title: 'Ask before you pay',
     body: 'Tell TAPO what you’re buying and it compares your cards for you.',
     points: [
-      'Pick a category and enter the amount in ₹',
+      'Tap what you’re buying; add the amount in ₹ for the exact reward',
       'See every card ranked, with the maths shown',
       'Set your own reward rates and monthly caps',
     ],
@@ -69,9 +69,9 @@ const PAGES: Page[] = [
     icon: 'tap',
     kicker: 'Honest about what it is',
     title: 'A demo, not a bank',
-    body: 'TAPO is a prototype for exploring rewards.',
+    body: 'TAPO is a prototype for exploring rewards. Start with your own cards, or look around with sample ones first.',
     points: [
-      'Cards, issuers and activity are sample data',
+      'Bank names in TAPO are samples: it isn’t linked to any bank',
       'TAPO never moves money or charges a card',
       'The tap-to-pay demo is clearly marked as a simulation',
     ],
@@ -79,7 +79,7 @@ const PAGES: Page[] = [
 ];
 
 export default function OnboardingScreen() {
-  const { data, setOnboarded, setProfile } = useWallet();
+  const { data, setOnboarded, setProfile, clearAll } = useWallet();
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const [name, setName] = useState(data.profile?.displayName ?? '');
@@ -91,9 +91,9 @@ export default function OnboardingScreen() {
   const nameError = nameTouched && name.trim() ? validateDisplayName(name) : null;
   const sampleCard = data.cards[0];
 
-  function goTo(i: number) {
+  function goTo(i: number, animated = true) {
     const n = Math.max(0, Math.min(PAGES.length - 1, i));
-    listRef.current?.scrollToOffset({ offset: n * width, animated: true });
+    listRef.current?.scrollToOffset({ offset: n * width, animated });
     setIndex(n);
   }
 
@@ -103,7 +103,11 @@ export default function OnboardingScreen() {
     if (i !== index && i >= 0 && i < PAGES.length) setIndex(i);
   }
 
-  function finish() {
+  /**
+   * Ends the introduction. `ownCards` starts the wallet empty and opens Add card, so a real user works with
+   * their own cards from the first minute; otherwise the sample cards stay, to look around with.
+   */
+  function finish(ownCards: boolean) {
     const trimmed = name.trim();
     if (trimmed) {
       if (validateDisplayName(trimmed)) {
@@ -112,13 +116,20 @@ export default function OnboardingScreen() {
       }
       setProfile({ displayName: trimmed });
     }
+    // The introduction can be replayed from Settings, so only clear a wallet that holds nothing but samples.
+    const onlySamples = data.cards.every((c) => c.isSample) && !data.transactions.some((t) => t.source === 'imported');
+    if (ownCards && onlySamples) void clearAll();
     setOnboarded(true);
     router.replace('/');
+    if (ownCards) router.push('/card/add');
   }
 
+  /**
+   * Skip jumps to the last page, where the person chooses their own cards or the samples. No animation: a
+   * scroll across several pages reports the pages in between, which would briefly change the buttons.
+   */
   function skip() {
-    setOnboarded(true);
-    router.replace('/');
+    goTo(PAGES.length - 1, false);
   }
 
   return (
@@ -132,7 +143,7 @@ export default function OnboardingScreen() {
             {String(PAGES.length).padStart(2, '0')}
           </Text>
           {!last ? (
-            <Button label="Skip" variant="ghost" size="sm" onPress={skip} accessibilityHint="Skips the introduction" />
+            <Button label="Skip" variant="ghost" size="sm" onPress={skip} accessibilityHint="Goes to the last page of the introduction" />
           ) : null}
         </View>
 
@@ -213,7 +224,7 @@ export default function OnboardingScreen() {
                           error={nameError}
                           hint="Used only for your greeting. Stored on this device."
                           returnKeyType="done"
-                          onSubmitEditing={finish}
+                          onSubmitEditing={() => finish(true)}
                         />
                       </View>
                     ) : null}
@@ -252,12 +263,23 @@ export default function OnboardingScreen() {
               />
             ) : null}
             <Button
-              label={last ? 'Get started' : 'Next'}
-              iconRight={last ? 'check' : 'arrowRight'}
-              onPress={() => (last ? finish() : goTo(index + 1))}
+              label={last ? 'Add my cards' : 'Next'}
+              iconRight={last ? 'plus' : 'arrowRight'}
+              onPress={() => (last ? finish(true) : goTo(index + 1))}
+              accessibilityHint={last ? 'Starts with an empty wallet and opens Add card' : undefined}
               style={{ flex: index > 0 ? 1.5 : 1 }}
             />
           </View>
+          {last ? (
+            <Button
+              label="Explore with sample cards"
+              variant="ghost"
+              size="sm"
+              onPress={() => finish(false)}
+              accessibilityHint="Starts with four sample cards and sample spending; remove them later in Settings"
+              style={{ alignSelf: 'center', marginTop: -space.sm }}
+            />
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

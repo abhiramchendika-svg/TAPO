@@ -157,7 +157,7 @@ export default function AddCardScreen() {
       <Stack.Screen options={{ title: existing ? 'Edit card' : 'Add card' }} />
       <Screen edges={['bottom']}>
         <View style={{ paddingTop: space.sm, marginBottom: space.lg }}>
-          <Stage caption="Live preview · sample card">
+          <Stage caption={preview.isSample ? 'Live preview · sample card' : 'Live preview'}>
             <CardTile card={preview} width={cardW} />
           </Stage>
         </View>
@@ -218,11 +218,14 @@ export default function AddCardScreen() {
                 returnKeyType="next"
                 onSubmitEditing={next}
               />
-              <ChipGroup label="Issuer (fictional sample)">
+              <ChipGroup label="Issuer (sample names only)">
                 {SAMPLE_ISSUERS.map((i) => (
                   <Chip key={i} label={i} selected={issuer === i} onPress={() => setIssuer(i)} />
                 ))}
               </ChipGroup>
+              <Text style={[type.caption, { marginTop: -space.sm, marginBottom: space.lg }]}>
+                TAPO doesn’t list real banks. Any name here is fine; put your card’s real name in the nickname.
+              </Text>
             </>
           ) : null}
 

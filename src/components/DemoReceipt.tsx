@@ -55,7 +55,7 @@ export function DemoReceipt({ payment }: { payment: DemoPayment }) {
         <DetailRow label="Date" value={formatDate(payment.createdAt)} />
         <DetailRow label="Time" value={formatTime(payment.createdAt)} />
         <DetailRow label="Merchant" value={payment.merchant} />
-        <DetailRow label="Card" value={payment.cardLabel} hint="Sample card label only" />
+        <DetailRow label="Card" value={payment.cardLabel} hint="Card label only; nothing was charged" />
         <DetailRow
           label="Trigger"
           value={payment.method === 'nfc-tag' ? 'NFC demo tag' : 'Simulated tap'}
