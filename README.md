@@ -32,7 +32,9 @@
 | [Problem statement](docs/PROBLEM.md) | The problem from the beginning, who has it, and what TAPO does about it |
 | [Interview notes](docs/INTERVIEWS.md) | Who we spoke to, what they said, and what we changed ([method](docs/RESEARCH.md)) |
 | [Field test plan](docs/FIELD_TEST.md) | The next round: real people use the live app with their own cards. Thresholds set before the first session, with a [session sheet](docs/field-test/session-sheet.pdf) and a [results sheet](docs/field-test/results.csv) |
+| [Market note](docs/MARKET.md) | How people choose a card today, what it costs them, and the alternatives, with sources |
 | [What we have not built](docs/NOT_BUILT.md) | Each gap, with our reason |
+| [Carry-forward register](docs/CARRY_FORWARD.md) | Our decisions, lessons and open items, with an owner for each |
 | Slides: [PDF](docs/slides/TAPO%20Presentation.pdf) · [PowerPoint](docs/slides/TAPO%20Presentation.pptx) | The review deck; the PowerPoint has the animations and speaker notes, and each slide is also in [`docs/slides/images`](docs/slides/images) |
 | [Architecture](docs/ARCHITECTURE.md) | A walk through every module |
 | [AI usage](docs/AI_USAGE.md) | What AI produced, what we decided, and how the work was checked |
