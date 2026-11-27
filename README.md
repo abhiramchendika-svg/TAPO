@@ -31,6 +31,7 @@
 | --- | --- |
 | [Problem statement](docs/PROBLEM.md) | The problem from the beginning, who has it, and what TAPO does about it |
 | [Interview notes](docs/INTERVIEWS.md) | Who we spoke to, what they said, and what we changed ([method](docs/RESEARCH.md)) |
+| [Field test plan](docs/FIELD_TEST.md) | The next round: real people use the live app with their own cards. Thresholds set before the first session, with a [session sheet](docs/field-test/session-sheet.pdf) and a [results sheet](docs/field-test/results.csv) |
 | [What we have not built](docs/NOT_BUILT.md) | Each gap, with our reason |
 | Slides: [PDF](docs/slides/TAPO%20Presentation.pdf) · [PowerPoint](docs/slides/TAPO%20Presentation.pptx) | The review deck; the PowerPoint has the animations and speaker notes, and each slide is also in [`docs/slides/images`](docs/slides/images) |
 | [Architecture](docs/ARCHITECTURE.md) | A walk through every module |

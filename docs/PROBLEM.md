@@ -42,7 +42,8 @@ These are the hypotheses our interviews tested. The results and the notes behind
 - **7 of 8** described paying with a card that earned less, or not knowing which card earned more.
 - **6 of 8** would use TAPO and one more said maybe. The one person who already knew their best cards said no.
 - **5 of 8** would import a statement; 3 wouldn't.
-- We did **not** measure how much people miss in rupees; that's the next round of research.
+- We did **not** measure how much people miss in rupees. That's the next round of research, planned in
+  [`FIELD_TEST.md`](FIELD_TEST.md).
 
 ## What TAPO does about it
 

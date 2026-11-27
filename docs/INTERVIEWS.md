@@ -51,4 +51,4 @@ The questions we asked are in [`RESEARCH.md`](RESEARCH.md); the problem these in
 | 4 would check before paying, 3 after | Keep both **Best card** (before) and **Missed rewards** (after) |
 | 3 of 8 wouldn't import a statement | Best card has to be useful on its own, without an import |
 | A missed offer, not a missed rate (P7) | Time-limited offers aren't tracked today; they're a candidate for a later version |
-| Missed rewards not measured | Next round: measure missed ₹ with participants' own statements on their own phones |
+| Missed rewards not measured | Next round: measure missed ₹ with participants' own statements on their own phones. The plan is in [`FIELD_TEST.md`](FIELD_TEST.md) |

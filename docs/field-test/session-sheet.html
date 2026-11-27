@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TAPO field test: session sheet</title>
+<!-- Source for session-sheet.pdf. Print with: msedge --headless --print-to-pdf=session-sheet.pdf --no-pdf-header-footer session-sheet.html -->
+<style>
+  @page { size: A4; margin: 12mm 13mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 9.4pt/1.38 "Segoe UI", Arial, sans-serif; color: #12202f; }
+  .page { page-break-after: always; break-after: page; }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #0e9f8e; padding-bottom: 4px; margin-bottom: 8px; }
+  header h1 { font-size: 15pt; margin: 0; letter-spacing: -0.01em; }
+  header span { font-size: 8.5pt; color: #5a6878; }
+  h2 { font-size: 10.5pt; margin: 9px 0 3px; color: #0b5e56; }
+  h2 small { font-weight: 400; color: #5a6878; font-size: 8.5pt; }
+  p, ol, ul { margin: 0 0 4px; }
+  ol, ul { padding-left: 17px; }
+  li { margin-bottom: 1px; }
+  .say { border-left: 3px solid #0e9f8e; background: #eef8f6; padding: 5px 8px; margin: 3px 0 4px; }
+  .rule { background: #fdf3e6; border: 1px solid #f0d3a8; padding: 4px 8px; margin: 4px 0; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #b9c3cd; padding: 3px 6px; text-align: left; vertical-align: top; }
+  th { background: #f1f4f7; font-weight: 600; font-size: 8.6pt; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .box { display: inline-block; width: 9px; height: 9px; border: 1px solid #12202f; margin: 0 3px 0 8px; vertical-align: -1px; }
+  .box:first-child { margin-left: 0; }
+  .line { border-bottom: 1px solid #9aa6b2; display: inline-block; min-width: 70px; height: 14px; vertical-align: bottom; }
+  .w40 { min-width: 40px; } .w110 { min-width: 110px; } .w160 { min-width: 160px; } .wide { min-width: 100%; display: block; }
+  .field { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; align-items: flex-end; }
+  .field > div { white-space: nowrap; }
+  .q { margin: 0 0 2px; }
+  .ans { border-bottom: 1px solid #9aa6b2; height: 19px; margin-bottom: 2px; }
+  .rec td { height: 25px; }
+  .muted { color: #5a6878; font-size: 8.4pt; }
+  .tick td:nth-child(n+2) { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <header><h1>TAPO field test · session script</h1><span>About 30 minutes · full plan in docs/FIELD_TEST.md</span></header>
+
+  <p class="rule">Never hold their phone, never look at their statement, never write a card number. Code people F1, F2… not by name.</p>
+
+  <h2>1 · Consent <small>2 min · read aloud, then tick on the record</small></h2>
+  <div class="say">Thanks for helping. We're testing TAPO, a student project that suggests which of your cards to use when you pay. It's a prototype: it doesn't make payments, and it never asks for your card number, CVV, PIN, OTP or bank login. Anything you type stays on your phone; we don't see it. We'll note your answers and timings under a code, not your name. You can skip any part or stop at any time. Is it OK if we quote something you say, without your name? Shall we start?</div>
+
+  <h2>2 · Without TAPO <small>3 min</small></h2>
+  <p>Ask them to name each card they use with a letter and a few words ("A: supermarket card"); write these on the record. Read each scenario, start the timer, stop it when they name a card. Don't react. Then ask: <em>"How sure are you: not sure, fairly sure, or certain?"</em></p>
+  <table>
+    <tr><th style="width:34px">S1</th><td>"You're paying <b>₹1,200</b> for <b>groceries</b> at a supermarket. Which of your cards do you use?"</td></tr>
+    <tr><th>S2</th><td>"You're filling up <b>₹2,500</b> of <b>fuel</b> at a petrol pump. Which card?"</td></tr>
+    <tr><th>S3</th><td>"You're paying <b>₹4,000</b> for <b>online shopping</b>. Which card?"</td></tr>
+  </table>
+
+  <h2>3 · Set up TAPO on their phone <small>about 10 min · time it from opening the link to the last card saved</small></h2>
+  <ol>
+    <li>Open <b>tapo-seven.vercel.app/app</b> → <b>Create account</b>: any name and email, and a password they'll remember (there's no reset).</li>
+    <li>Skip the introduction, then <b>Settings → Remove all cards → Yes, remove</b> to clear the sample cards.</li>
+    <li>For each card, tap <b>+</b> at the top of <b>Wallet</b>.<b>Nickname</b> = the letter and description. <b>Issuer</b> is a sample list (any choice is fine). <b>Last four digits</b> = any four digits; they're only a label. Enter the <b>base rate</b>, plus <b>category rates and caps</b>, checked on the bank's site if they can. Note <b>checked</b> or <b>estimated</b>.</li>
+  </ol>
+
+  <h2>4 · With TAPO <small>3 min</small></h2>
+  <p>Read S1–S3 again in the same order, with the app open on <b>Wallet</b> each time. They tap the category under <b>Paying now?</b> and name the card (if TAPO says another card earns more from some amount up, they go by the scenario's amount). Time from the end of your sentence to them naming the card. Then, for scoring, they open <b>Best</b>, tap each category and type its amount: write the top card as <b>TAPO's top card</b> (for a tie, write "A/B").</p>
+
+  <h2>5 · Last month's missed rewards <small>optional, 5 min · only with a CSV statement on their phone</small></h2>
+  <p><b>Insights → Import your statement</b> → pick the card the statement is for → choose the file → import. On <b>Insights</b>, choose <b>Last Month</b> and ask them to read out <em>"You could have earned about ₹… more by switching cards."</em> Write down the figure and the month.</p>
+
+  <h2>6 · Questions <small>5 min · write down their words; don't explain or defend TAPO</small></h2>
+  <ol>
+    <li>What, if anything, surprised you?</li>
+    <li>What was the hardest part of setting it up?</li>
+    <li>Think of the last time you paid by card. Would TAPO have changed the card you used? Why?</li>
+    <li>Would you keep TAPO on your phone after today? (Yes, maybe or no.) Why?</li>
+    <li>What would make you stop using it?</li>
+    <li>Some similar apps charge a monthly fee. If TAPO did, what's the most you'd pay, if anything?</li>
+  </ol>
+  <p>Ask if you can message them in a week. If they'd rather not keep TAPO, show them <b>Settings → Delete account</b>.</p>
+
+  <h2>7 · Seven days later <small>send word for word</small></h2>
+  <div class="say">Hi, thanks again for trying TAPO last week. Two quick questions: in the last 7 days, how many times did you open Best before paying (0, 1–2, or 3 or more)? And did it change which card you used? An example would help.</div>
+  <p class="muted">Type each record into docs/field-test/results.csv the same day. Leave an answer blank rather than filling it in later from memory.</p>
+</section>
+
+<section class="page">
+  <header><h1>Participant record · F<span class="line w40"></span></h1><span>Print one per participant</span></header>
+
+  <div class="field">
+    <div>Date <span class="line w110"></span></div>
+    <div>Run by <span class="line w110"></span></div>
+    <div>Recruited via <span class="box"></span>friend<span class="box"></span>family<span class="box"></span>classmate<span class="box"></span>referral<span class="box"></span>new</div>
+  </div>
+  <div class="field">
+    <div>Was an interviewee? <span class="box"></span>no<span class="box"></span>yes, P<span class="line w40"></span></div>
+    <div>Monthly card spend <span class="box"></span>under 15k<span class="box"></span>15–30k<span class="box"></span>30–50k<span class="box"></span>over 50k</div>
+  </div>
+  <div class="field">
+    <div><span class="box"></span>Consent given</div>
+    <div><span class="box"></span>OK to quote without name</div>
+    <div>Cards used <span class="line w40"></span></div>
+  </div>
+
+  <h2>Their cards <small>letter and a few words; no card numbers</small></h2>
+  <div class="two">
+    <div class="field"><div>A <span class="line w160"></span></div></div>
+    <div class="field"><div>B <span class="line w160"></span></div></div>
+    <div class="field"><div>C <span class="line w160"></span></div></div>
+    <div class="field"><div>D <span class="line w160"></span></div></div>
+    <div class="field"><div>E <span class="line w160"></span></div></div>
+  </div>
+
+  <h2>Scenarios <small>card = letter · seconds = timer · sure = N (not sure) / F (fairly) / C (certain)</small></h2>
+  <table class="rec">
+    <tr><th rowspan="2" style="width:132px"></th><th colspan="3" style="text-align:center">Without TAPO</th><th colspan="2" style="text-align:center">With TAPO</th><th rowspan="2" style="width:92px">TAPO's top card</th></tr>
+    <tr><th>Card</th><th>Seconds</th><th>Sure</th><th>Card</th><th>Seconds</th></tr>
+    <tr><th>S1 · Groceries ₹1,200</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th>S2 · Fuel ₹2,500</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th>S3 · Online ₹4,000</th><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <h2>Setup and statement</h2>
+  <div class="field">
+    <div>Setup time (minutes) <span class="line w40"></span></div>
+    <div>Rates <span class="box"></span>checked<span class="box"></span>estimated<span class="box"></span>mixed</div>
+  </div>
+  <div class="field">
+    <div>Statement imported <span class="box"></span>Y<span class="box"></span>N</div>
+    <div>Month <span class="line w110"></span></div>
+    <div>"Could have earned about" ₹<span class="line w110"></span></div>
+  </div>
+
+  <h2>Questions <small>their words</small></h2>
+  <p class="q">1 · What surprised you?</p><div class="ans"></div>
+  <p class="q">2 · Hardest part of setup?</p><div class="ans"></div>
+  <p class="q">3 · Would TAPO have changed the card you last used? Why?</p><div class="ans"></div><div class="ans"></div>
+  <p class="q">4 · Keep TAPO after today? <span class="box"></span>yes<span class="box"></span>maybe<span class="box"></span>no &nbsp; Why?</p><div class="ans"></div>
+  <p class="q">5 · What would make you stop using it?</p><div class="ans"></div>
+  <p class="q">6 · Most you'd pay a month, if anything: ₹<span class="line w110"></span></p>
+
+  <h2>Seven days later</h2>
+  <div class="field">
+    <div>Opened Best before paying <span class="box"></span>0<span class="box"></span>1–2<span class="box"></span>3+</div>
+    <div>Changed the card they used? <span class="box"></span>Y<span class="box"></span>N</div>
+  </div>
+  <p class="q">Example</p><div class="ans"></div>
+
+  <h2>Notes</h2>
+  <div class="ans"></div><div class="ans"></div>
+</section>
+
+</body>
+</html>
