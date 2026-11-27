@@ -5,27 +5,18 @@ source open. Each section ends with questions an evaluator is likely to ask; pra
 
 ## 1. The big picture
 
-```
- ┌──────────── src/app (screens, Expo Router) ────────────┐
- │ Wallet · Best card · Activity · Insights · Settings     │
- │ Add card · Card details · Import · Demo pay · Developer │
- └───────────────┬─────────────────────────────────────────┘
-                 │ useWallet()
- ┌───────────────▼─────────────── src/lib ─────────────────┐
- │ wallet.tsx   state + AsyncStorage + sanitising           │
- │ rewards.ts   reward maths (pure functions)               │
- │ insights.ts  monthly totals + "missed rewards" tips      │
- │ csvImport.ts statement parsing, masking, categorising    │
- │ demoNfc.ts   NFC demo trigger (web) → nativeNfc.*.ts     │
- │ validation.ts, format.ts, types.ts, sampleData.ts        │
- └──────────────────────────────────────────────────────────┘
-```
+<img src="readme/architecture.svg" alt="TAPO's architecture in four layers. Screens in src/app (sign in, Wallet and Best, Import and Insights, the tap demo) use two providers through useAuth() and useWallet(): AuthProvider in auth.tsx handles sign-in, keeps the key in memory and runs the idle lock; WalletProvider in wallet.tsx keeps one wallet per account and sanitises it on load. Screens and providers call plain functions in src/lib: password and vault (PBKDF2 key, AES-256-GCM), rewards.ts, insights.ts, csvImport.ts, demoNfc.ts and validation.ts. The wallet provider saves, encrypted, to the device: AsyncStorage holds the accounts list (name, email, salt, verifier, no password) and the encrypted wallet. There is no backend and no AI. Outside the app, Vercel hosts the website and web app, GitHub Actions checks every change and EAS builds the Android app; none of them sees cards or spending." width="100%">
 
-- **No server.** Everything lives on the device in AsyncStorage (localStorage on web).
+- **No backend and no AI.** There's no server of ours and no AI model; recommendations are arithmetic on the
+  rates the user enters.
+- **Outside services only build and host the app:** Vercel serves the website and web app as static files, GitHub
+  Actions runs the checks on every push, and EAS builds the Android app. None of them receives cards or spending.
+- **Everything lives on the device** in AsyncStorage (localStorage on web), with each wallet encrypted.
 - **Pure logic is separate from UI.** `rewards.ts`, `insights.ts` and `csvImport.ts` are plain functions with
   no React, which is why they are easy to unit-test (`src/lib/__tests__`).
-- **One state container.** `WalletProvider` (in `wallet.tsx`) holds all data and exposes actions like
-  `upsertCard`, `importTransactions`, `setDemoOutcome`. Screens call `useWallet()`.
+- **Two providers.** `AuthProvider` (in `auth.tsx`) handles accounts, sign-in and the wallet key; screens call
+  `useAuth()`. `WalletProvider` (in `wallet.tsx`) holds the signed-in account's data and exposes actions like
+  `upsertCard`, `importTransactions`, `setDemoOutcome`; screens call `useWallet()`.
 
 ## 2. Data model and safety (`src/lib/types.ts`)
 

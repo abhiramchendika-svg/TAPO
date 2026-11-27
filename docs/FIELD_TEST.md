@@ -28,7 +28,7 @@ H1 to H3 are numbered as in [`INTERVIEWS.md`](INTERVIEWS.md); H5 and H6 are new.
 
 ## Who to recruit
 
-- **10 to 15 people**, coded **F1, F2, …** (the interviews used P1–P8).
+- **10 to 15 people**, coded **F1, F2, …** (the interviews used P1–P8). The panel asks for at least 6.
 - Each holds **2 or more cards** they actually use and pays by card at least once a week.
 - **Not** someone who has already seen a TAPO demo. The 8 interviewees can take part; note it in their row.
 - Aim for a spread of monthly card spend. Write down how each person was found (friend, family, classmate,
@@ -91,6 +91,10 @@ Start the timer when they open the link, and stop it when their last card is sav
    - Enter the **base reward rate** and any **category rates and monthly caps**. Ask them to check these on
      their bank's site if they can. Write down whether they **checked** them or **estimated** them.
 
+**From here to the end of step 5, note where they get stuck:** a pause of more than about 10 seconds, a question
+about what to do, or a wrong screen. Write the screen and what happened, for example "Add card, rates: didn't know
+what a cap is". Only help once they've been stuck for 30 seconds or they ask, and count each time you do.
+
 ### 4. With TAPO (3 min)
 
 Read S1 to S3 again, in the same order. Before each one, the app should be open on **Wallet**. They tap the
@@ -143,7 +147,11 @@ Send this, word for word:
   - `rates_checked_or_estimated`: `checked`, `estimated` or `mixed`.
   - `keep_using`: `yes`, `maybe` or `no`.
   - `day7_best_opens`: `0`, `1-2` or `3+`.
+  - `stuck_points`: each one as `screen: what happened`, separated by semicolons. `times_helped`: a number.
   - Yes/no columns: `Y` or `N`.
+- **After the first 6 sessions,** write a short summary: how many people got through setup and the three
+  scenarios without help, the stuck points grouped by screen, and the top fixes (the problems that came up most).
+  Add the fixes to [`CARRY_FORWARD.md`](CARRY_FORWARD.md) as open items.
 - **Report every participant**, including people who stopped early or whose answers don't help us. Say how many
   sessions were run, how many finished, and how people were recruited.
 - Write the results up in a new section below, with the numbers against each threshold, then update
@@ -166,4 +174,4 @@ Send this, word for word:
 
 | Date | Change | Why |
 | --- | --- | --- |
-| | | |
+| 2026-11-27 | Added a record of where people get stuck and when we help, and a summary after 6 sessions | The panel's shared plan asks for a written summary of where 6 users struggle, and the top fixes. Added before the first session; no pass mark changed |

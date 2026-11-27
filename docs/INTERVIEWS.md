@@ -23,6 +23,26 @@ The questions we asked are in [`RESEARCH.md`](RESEARCH.md); the problem these in
 | P7 | 2 | ₹22,000 | 1 | Missed a promotional offer because they forgot which card qualified | Yes | After | No | Not measured |
 | P8 | 4 | ₹51,000 | 2 | Uses one preferred card for most purchases despite having alternatives | Maybe | Before | Yes | Not measured |
 
+## Where, who and in their words
+
+The panel's shared plan asks for at least 5 interviews held off campus, 3 led by the CTO, and each person's exact
+words. We didn't record these at the time, so they're filled in here from our notes. Only use a quote that was
+written down during the interview; if there isn't one, leave the cell blank and get exact words next time.
+
+| P# | Held on or off campus | Led by (CEO or CTO) | In their words (an exact quote) |
+| --- | --- | --- | --- |
+| P1 | | | |
+| P2 | | | |
+| P3 | | | |
+| P4 | | | |
+| P5 | | | |
+| P6 | | | |
+| P7 | | | |
+| P8 | | | |
+
+**Count:** off campus ___ of 8 (5 needed) · led by the CTO ___ of 8 (3 needed). If either falls short, run more
+interviews with the same questions in [`RESEARCH.md`](RESEARCH.md) and add them as P9 onwards.
+
 ## What we found
 
 | # | Hypothesis | Result | Evidence |

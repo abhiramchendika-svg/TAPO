@@ -44,14 +44,14 @@ Step numbers refer to the shared project plan in the panel's report.
 
 | # | Item | Owner | Step | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Add where each interview was held, who led it and the person's exact words to [`INTERVIEWS.md`](INTERVIEWS.md). If fewer than 5 were off campus or 3 led by the CTO, run more | CEO (CTO for the 3) | 1 | Open |
+| 1 | Fill in where each interview was held, who led it and the person's exact words in [`INTERVIEWS.md`](INTERVIEWS.md). If fewer than 5 were off campus or 3 led by the CTO, run more | CEO (CTO for the 3) | 1 | Columns ready to fill |
 | 2 | Run at least 6 field-test sessions, then write a summary of the six and the top fixes | Both | 5 | Kit ready |
-| 3 | Add a "where they got stuck" field to the field-test sheet | CTO | 5 | Open |
+| 3 | Add a "where they got stuck" field to the field-test sheet | CTO | 5 | Done 2026-11-27 |
 | 4 | Decide whether a new account can start empty instead of with sample cards | Both | 4 | To discuss |
 | 5 | Try the one-tap best card on a real phone | CTO | 4 | Open |
 | 6 | On the demo phone, note the hashing rounds and time (Settings, tap the version 7 times, Developer, Password hashing) | CTO | 3 | Open |
-| 7 | Label the architecture diagram: no backend, no AI, and the outside services (Vercel, GitHub Actions, EAS) | CTO | 3 | Open |
-| 8 | Rebuild the pitch on field proof, checking every claim has interview notes, user feedback or a source behind it | CEO | 6 | Open |
+| 7 | Label the architecture diagram: no backend, no AI, and the outside services (Vercel, GitHub Actions, EAS) | CTO | 3 | Done 2026-11-27 ([`ARCHITECTURE.md`](ARCHITECTURE.md)); walk through it together |
+| 8 | Rebuild the pitch on field proof. [`PITCH_CHECK.md`](PITCH_CHECK.md) lists the 12 claims that need work and what's missing | CEO | 6 | Claims checked; rebuild after the field test |
 | 9 | Practise the swap demo: the CEO demos the product, the CTO answers business questions | Both | 7 | Open |
 | 10 | Each write the problem in one line without looking at the other's, then compare | Both | Self-check | Open |
 | 11 | Work out the cost to serve one user: hosting, storage and any paid service | CEO | CEO path, stage 3 | Open |

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 828" role="img" aria-label="TAPO architecture: everything runs on the device; no server holds your data" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#8c959f"/>
+    </marker>
+  </defs>
+  <rect width="760" height="828" fill="#ffffff"/>
+
+  <text x="24" y="30" font-size="15" font-weight="600" fill="#1f2328">Everything runs on the device; no server holds your data</text>
+  <text x="24" y="50" font-size="11.5" fill="#57606a">The four layers, top to bottom, with the files to open. No backend and no AI.</text>
+
+  <!-- Screens -->
+  <g fill="none" stroke="#8c959f">
+    <rect x="24" y="68" width="712" height="104" rx="8"/>
+    <rect x="40" y="100" width="158" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="214" y="100" width="158" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="388" y="100" width="158" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="562" y="100" width="158" height="56" rx="8" stroke-width="1.25"/>
+  </g>
+  <text x="40" y="90" font-weight="600" fill="#1f2328">Screens · src/app, routed by Expo Router</text>
+  <g text-anchor="middle">
+    <text x="119" y="124" font-weight="600" fill="#1f2328">Sign in</text>
+    <text x="119" y="140" font-size="11.5" fill="#57606a">sign-in.tsx</text>
+    <text x="293" y="124" font-weight="600" fill="#1f2328">Wallet and Best</text>
+    <text x="293" y="140" font-size="11.5" fill="#57606a">index, recommend</text>
+    <text x="467" y="124" font-weight="600" fill="#1f2328">Import, Insights</text>
+    <text x="467" y="140" font-size="11.5" fill="#57606a">import, insights</text>
+    <text x="641" y="124" font-weight="600" fill="#1f2328">Tap demo</text>
+    <text x="641" y="140" font-size="11.5" fill="#57606a">demo-pay.tsx</text>
+  </g>
+
+  <!-- State -->
+  <g fill="none" stroke="#8c959f">
+    <rect x="24" y="212" width="712" height="104" rx="8"/>
+    <rect x="40" y="244" width="332" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="388" y="244" width="332" height="56" rx="8" stroke-width="1.25"/>
+  </g>
+  <text x="40" y="234" font-weight="600" fill="#1f2328">State · one provider each, in src/lib</text>
+  <g text-anchor="middle">
+    <text x="206" y="268" font-weight="600" fill="#1f2328">AuthProvider · auth.tsx</text>
+    <text x="206" y="284" font-size="11.5" fill="#57606a">sign-in, key in memory, idle lock</text>
+    <text x="554" y="268" font-weight="600" fill="#1f2328">WalletProvider · wallet.tsx</text>
+    <text x="554" y="284" font-size="11.5" fill="#57606a">one wallet per account, sanitize on load</text>
+  </g>
+
+  <!-- Plain functions -->
+  <g fill="none" stroke="#8c959f">
+    <rect x="24" y="356" width="632" height="176" rx="8"/>
+    <rect x="40" y="388" width="189" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="245" y="388" width="189" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="450" y="388" width="189" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="40" y="460" width="189" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="245" y="460" width="189" height="56" rx="8" stroke-width="1.25"/>
+    <rect x="450" y="460" width="189" height="56" rx="8" stroke-width="1.25"/>
+  </g>
+  <text x="40" y="378" font-weight="600" fill="#1f2328">Plain functions · src/lib, no screens, easy to test</text>
+  <g text-anchor="middle">
+    <text x="134.5" y="412" font-weight="600" fill="#1f2328">password + vault</text>
+    <text x="134.5" y="428" font-size="11.5" fill="#57606a">PBKDF2 key, AES-256-GCM</text>
+    <text x="339.5" y="412" font-weight="600" fill="#1f2328">rewards.ts</text>
+    <text x="339.5" y="428" font-size="11.5" fill="#57606a">best card, caps, switch</text>
+    <text x="544.5" y="412" font-weight="600" fill="#1f2328">insights.ts</text>
+    <text x="544.5" y="428" font-size="11.5" fill="#57606a">missed rewards a month</text>
+    <text x="134.5" y="484" font-weight="600" fill="#1f2328">csvImport.ts</text>
+    <text x="134.5" y="500" font-size="11.5" fill="#57606a">columns, dates, masking</text>
+    <text x="339.5" y="484" font-weight="600" fill="#1f2328">demoNfc.ts</text>
+    <text x="339.5" y="500" font-size="11.5" fill="#57606a">reads TAPO-DEMO tags</text>
+    <text x="544.5" y="484" font-weight="600" fill="#1f2328">validation.ts</text>
+    <text x="544.5" y="500" font-size="11.5" fill="#57606a">blocks card numbers</text>
+  </g>
+
+  <!-- On this device -->
+  <rect x="24" y="572" width="712" height="104" rx="8" fill="#0969da" fill-opacity="0.08" stroke="#0969da" stroke-width="2"/>
+  <g fill="none" stroke="#8c959f" stroke-width="1.25">
+    <rect x="40" y="604" width="332" height="56" rx="8"/>
+    <rect x="388" y="604" width="332" height="56" rx="8"/>
+  </g>
+  <text x="40" y="594" font-weight="600" fill="#1f2328">On this device · AsyncStorage (localStorage on the web)</text>
+  <g text-anchor="middle">
+    <text x="206" y="628" font-weight="600" fill="#1f2328">Accounts list</text>
+    <text x="206" y="644" font-size="11.5" fill="#57606a">name, email, salt, verifier; no password</text>
+    <text x="554" y="628" font-weight="600" fill="#1f2328">Encrypted wallet</text>
+    <text x="554" y="644" font-size="11.5" fill="#57606a">AES-256-GCM; opens only with your key</text>
+  </g>
+
+  <!-- Outside the app -->
+  <rect x="24" y="700" width="712" height="104" rx="8" fill="none" stroke="#8c959f" stroke-dasharray="5 4"/>
+  <g fill="none" stroke="#8c959f" stroke-width="1.25">
+    <rect x="40" y="732" width="216" height="56" rx="8"/>
+    <rect x="272" y="732" width="216" height="56" rx="8"/>
+    <rect x="504" y="732" width="216" height="56" rx="8"/>
+  </g>
+  <text x="40" y="722" font-weight="600" fill="#1f2328">Outside the app · builds and hosts it, never sees your cards or spending</text>
+  <g text-anchor="middle">
+    <text x="148" y="756" font-weight="600" fill="#1f2328">Vercel</text>
+    <text x="148" y="772" font-size="11.5" fill="#57606a">hosts the website and web app</text>
+    <text x="380" y="756" font-weight="600" fill="#1f2328">GitHub Actions</text>
+    <text x="380" y="772" font-size="11.5" fill="#57606a">checks every change</text>
+    <text x="612" y="756" font-weight="600" fill="#1f2328">EAS (Expo)</text>
+    <text x="612" y="772" font-size="11.5" fill="#57606a">builds the Android app</text>
+  </g>
+
+  <!-- Connectors -->
+  <g fill="none" stroke="#8c959f" stroke-width="1.25">
+    <path d="M380 172V212" marker-end="url(#arrow)"/>
+    <path d="M332 316V356" marker-end="url(#arrow)"/>
+    <path d="M688 300V572" marker-end="url(#arrow)"/>
+  </g>
+  <g font-size="11.5" fill="#57606a">
+    <text x="390" y="196">useAuth(), useWallet()</text>
+    <text x="342" y="340">screens and providers call these</text>
+    <text x="680" y="340" text-anchor="end">saves, encrypted</text>
+  </g>
+</svg>
